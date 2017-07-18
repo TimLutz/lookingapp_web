@@ -1,0 +1,1 @@
+<h1>Congratulations! Your account activation is successful.</h1>

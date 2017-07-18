@@ -1,0 +1,854 @@
+<?php
+
+App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+
+class UsersController extends AppController {
+
+    public $components = array('Qimage');
+    public $uses = array('User', 'Profile', 'User_partner', 'User_album', 'Blocked_user', 'UserLookdate', 'UserLooksex', 'Archive', 'ShareAlbum', 'ReceiveAlbum');
+
+    public function index() {
+        $this->autoRender = false;
+        echo 'Index Page';
+        //$id=$this->Session->read('Auth.User.id');  	
+        //$data=$this->User->findAllByUsernameAndPassword('ramesh','65cea807eef6b9a9b8816955da0e313761d88a85');
+        //pr($data);
+        //pr($this->User->getDataSource()->getLog());
+    }
+
+    public function profile() {
+        $this->autoRender = false;
+        // * START This block for profile upadte and profile create of particular memeber ===========
+        if ($this->request->is('post')) {
+            if (isset($this->request->data['userid'])) {
+                //pr($this->request->data);//die;
+                $start_time = isset($this->request->data['start_time']) ? $this->request->data['start_time'] : '0000-00-00 00:00:00';
+                $end_time = isset($this->request->data['end_time']) ? $this->request->data['end_time'] : '0000-00-00 00:00:00';
+                $bith_day = isset($this->request->data['birthday']) ? $this->request->data['birthday'] : '0000-00-00 00:00:00';
+
+                $userdata['Profile']['user_id'] = isset($this->request->data['userid']) ? $this->request->data['userid'] : '';
+                $userdata['Profile']['start_time'] = isset($this->request->data['start_time']) ? $this->request->data['start_time'] : '0000-00-00 00:00:00';
+                $userdata['Profile']['end_time'] = isset($this->request->data['end_time']) ? $this->request->data['end_time'] : '0000-00-00 00:00:00';
+                $userdata['Profile']['profile_name'] = isset($this->request->data['profile_name']) ? $this->request->data['profile_name'] : '';
+                $userdata['Profile']['position'] = isset($this->request->data['position']) ? $this->request->data['position'] : '';
+                $userdata['Profile']['location'] = isset($this->request->data['location']) ? $this->request->data['location'] : '';
+                $userdata['Profile']['identity'] = isset($this->request->data['identity']) ? $this->request->data['identity'] : '';
+                $userdata['Profile']['ethnicity'] = isset($this->request->data['ethnicity']) ? $this->request->data['ethnicity'] : '';
+                $userdata['Profile']['behaviour'] = isset($this->request->data['behaviour']) ? $this->request->data['behaviour'] : '';
+                $userdata['Profile']['latitude'] = isset($this->request->data['latitude']) ? $this->request->data['latitude'] : '';
+                $userdata['Profile']['longitude'] = isset($this->request->data['longitude']) ? $this->request->data['longitude'] : '';
+                $userdata['Profile']['travel_plans'] = isset($this->request->data['travel_plans']) ? $this->request->data['travel_plans'] : '';
+                $userdata['Profile']['orientation'] = isset($this->request->data['orientation']) ? $this->request->data['orientation'] : '';
+                $userdata['Profile']['safe_sex'] = isset($this->request->data['safe_sex']) ? $this->request->data['safe_sex'] : '';
+                $userdata['Profile']['HIV_status'] = isset($this->request->data['HIV_status']) ? $this->request->data['HIV_status'] : '';
+                $userdata['Profile']['cock_size'] = isset($this->request->data['cock_size']) ? $this->request->data['cock_size'] : '';
+                $userdata['Profile']['cock_type'] = isset($this->request->data['cock_type']) ? $this->request->data['cock_type'] : '';
+                $userdata['Profile']['kinks_and_fetishes'] = isset($this->request->data['kinks_and_fetishes']) ? $this->request->data['kinks_and_fetishes'] : '';
+                $userdata['Profile']['birthday'] = isset($this->request->data['birthday']) ? $this->request->data['birthday'] : '';
+                $userdata['Profile']['race'] = isset($this->request->data['race']) ? $this->request->data['race'] : '';
+                $userdata['Profile']['height'] = isset($this->request->data['height']) ? $this->request->data['height'] : '';
+                $userdata['Profile']['weight'] = isset($this->request->data['weight']) ? $this->request->data['weight'] : '';
+                $userdata['Profile']['hair_color'] = isset($this->request->data['hair_color']) ? $this->request->data['hair_color'] : '';
+                $userdata['Profile']['body_hair'] = isset($this->request->data['body_hair']) ? $this->request->data['body_hair'] : '';
+                $userdata['Profile']['facial_hair'] = isset($this->request->data['facial_hair']) ? $this->request->data['facial_hair'] : '';
+                $userdata['Profile']['eye_color'] = isset($this->request->data['eye_color']) ? $this->request->data['eye_color'] : '';
+                $userdata['Profile']['body_type'] = isset($this->request->data['body_type']) ? $this->request->data['body_type'] : '';
+                $userdata['Profile']['drugs'] = isset($this->request->data['drugs']) ? $this->request->data['drugs'] : '';
+                $userdata['Profile']['drinking'] = isset($this->request->data['drinking']) ? $this->request->data['drinking'] : '';
+                $userdata['Profile']['smoking'] = isset($this->request->data['smoking']) ? $this->request->data['smoking'] : '';
+                $userdata['Profile']['about_me'] = isset($this->request->data['about_me']) ? $this->request->data['about_me'] : '';
+                $userdata['Profile']['open_to'] = isset($this->request->data['open_to']) ? $this->request->data['open_to'] : '';
+                $userdata['Profile']['relationship_status'] = isset($this->request->data['relationship_status']) ? $this->request->data['relationship_status'] : '';
+                $userdata['Profile']['where_I_leave'] = isset($this->request->data['where_I_leave']) ? $this->request->data['where_I_leave'] : '';
+                $userdata['Profile']['facebook_link'] = isset($this->request->data['facebook_link']) ? $this->request->data['facebook_link'] : '';
+                $userdata['Profile']['twitter_link'] = isset($this->request->data['twitter_link']) ? $this->request->data['twitter_link'] : '';
+                $userdata['Profile']['linkedin_link'] = isset($this->request->data['linkedin_link']) ? $this->request->data['linkedin_link'] : '';
+
+                //Start checking profile is completed============
+                $is_completed = 0;
+                foreach ($userdata['Profile'] as $key => $val):
+                    if (trim($val) == '') {
+                        $is_completed = 1;
+                    }
+                endforeach;
+                $finish = ($is_completed == 0) ? 1 : 0;
+                $ret = $this->User->updateAll(array(' User.is_completed ' => $finish), array(' User.id ' => $this->request->data['userid']));
+                //end checking profile is completed============
+
+                $userdata['Profile']['start_time'] = $start_time;
+                $userdata['Profile']['end_time'] = $end_time;
+                $userdata['Profile']['birthday'] = $bith_day;
+
+                $chk = $this->Profile->find('first', array('conditions' => array('Profile.user_id' => $userdata['Profile']['user_id'])));
+                if (empty($chk)) {
+                    $this->Profile->save($userdata);
+                    echo json_encode(array('success' => 1, 'msg' => 'Data has been successfully saved'));
+                    exit;
+                } else {
+
+                    $userdata['Profile']['id'] = $chk['Profile']['id'];
+                    $this->Profile->save($userdata);
+                    echo json_encode(array('success' => 1, 'msg' => 'Data has been successfully updated'));
+                    exit;
+                }
+            } else {
+                echo json_encode(array('success' => 0, 'msg' => 'error in update'));
+            }
+        }
+        // * END This block for profile upadte and profile create of particular memeber ===========
+    }
+
+    // * START Here This block for profile deatails of particular memeber ========================
+    public function profile_details() {
+        $this->autoRender = false;
+        if (isset($this->request->data['userid'])) {
+            $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
+            $user_data = $this->User->find('first', array('conditions' => array('User.id' => $this->request->data['userid'])));
+            echo json_encode(array('success' => 1, 'data' => $user_data, 'path' => PIC_PATH));
+        } else {
+            echo json_encode(array('success' => 0));
+        }
+        die;
+    }
+
+    // * END Here This block for profile deatails of particular memeber ===========================
+
+
+    public function find_members() {
+        $this->autoRender = false;
+        // $id = $this->request->data['userid'];
+        $con = array();
+        if (isset($this->request->data['lat']) && isset($this->request->data['long']) && isset($this->request->data['userid'])) {
+            $latitude = $this->request->data['lat'];
+            $longitude = $this->request->data['long'];
+            $id = $this->request->data['userid'];
+            $con = array('conditions' => array('(3958*3.1415926*sqrt((`User.lat` - ' . $latitude . ')*(`User.lat` - ' . $latitude . ') + cos(`User.lat`/57.29578)*cos(' . $latitude . '/57.29578)*(`User.long` - ' . $longitude . ')*(`User.long` - ' . $longitude . '))/180) <= 200',
+                    'AND' => array(
+                        array('User.id !=' => $id),
+                    //array('Like.is_notified' => )
+                    )
+                ),
+                'limit' => 0, 'offset' => 25);
+        } else if (isset($this->request->data['userid'])) {
+            $id = $this->request->data['userid'];
+            $con = array('conditions' => array('User.id !=' => $id
+                ),
+            );
+        }
+        $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
+        $user_data = $this->User->find('all', $con);
+        echo json_encode(array('success' => 1, 'data' => $user_data, 'path' => PIC_PATH));
+        die;
+    }
+
+    public function partner_profile() {
+        $this->autoRender = false;
+
+        if ($this->request->is('post')) {
+            if (isset($this->request->data['userid'])) {
+                $userdata['User_partner']['user_id'] = isset($this->request->data['userid']) ? $this->request->data['userid'] : '';
+                $userdata['User_partner']['sexual_role'] = isset($this->request->data['sexual_role']) ? $this->request->data['sexual_role'] : '';
+                $userdata['User_partner']['orientation'] = isset($this->request->data['orientation']) ? $this->request->data['orientation'] : '';
+                $userdata['User_partner']['safe_sex'] = isset($this->request->data['safe_sex']) ? $this->request->data['safe_sex'] : '';
+                $userdata['User_partner']['HIV_status'] = isset($this->request->data['HIV_status']) ? $this->request->data['HIV_status'] : '';
+                $userdata['User_partner']['cock_size'] = isset($this->request->data['cock_size']) ? $this->request->data['cock_size'] : '';
+                $userdata['User_partner']['cock_type'] = isset($this->request->data['cock_type']) ? $this->request->data['cock_type'] : '';
+                $userdata['User_partner']['kinks_and_fetishes'] = isset($this->request->data['kinks_and_fetishes']) ? $this->request->data['kinks_and_fetishes'] : '';
+                $userdata['User_partner']['age_range'] = isset($this->request->data['age_range']) ? $this->request->data['age_range'] : '';
+                $userdata['User_partner']['race'] = isset($this->request->data['race']) ? $this->request->data['race'] : '';
+                $userdata['User_partner']['height'] = isset($this->request->data['height']) ? $this->request->data['height'] : '';
+                $userdata['User_partner']['weight'] = isset($this->request->data['weight']) ? $this->request->data['weight'] : '';
+                $userdata['User_partner']['hair_color'] = isset($this->request->data['hair_color']) ? $this->request->data['hair_color'] : '';
+                $userdata['User_partner']['body_hair'] = isset($this->request->data['body_hair']) ? $this->request->data['body_hair'] : '';
+                $userdata['User_partner']['facial_hair'] = isset($this->request->data['facial_hair']) ? $this->request->data['facial_hair'] : '';
+                $userdata['User_partner']['eye_color'] = isset($this->request->data['eye_color']) ? $this->request->data['eye_color'] : '';
+                $userdata['User_partner']['body_type'] = isset($this->request->data['body_type']) ? $this->request->data['body_type'] : '';
+                $userdata['User_partner']['drugs'] = isset($this->request->data['drugs']) ? $this->request->data['drugs'] : '';
+                $userdata['User_partner']['drinking'] = isset($this->request->data['drinking']) ? $this->request->data['drinking'] : '';
+                $userdata['User_partner']['smoking'] = isset($this->request->data['smoking']) ? $this->request->data['smoking'] : '';
+                $userdata['User_partner']['ethinicity'] = isset($this->request->data['ethinicity']) ? $this->request->data['ethinicity'] : '';
+                $userdata['User_partner']['identities'] = isset($this->request->data['identities']) ? $this->request->data['identities'] : '';
+                $userdata['User_partner']['position'] = isset($this->request->data['position']) ? $this->request->data['position'] : '';
+                $userdata['User_partner']['behaviour'] = isset($this->request->data['behaviour']) ? $this->request->data['behaviour'] : '';
+                $userdata['User_partner']['location'] = isset($this->request->data['location']) ? $this->request->data['location'] : '';
+
+
+                $chk = $this->User_partner->find('first', array('conditions' => array('User_partner.user_id' => $userdata['User_partner']['user_id'])));
+                if (empty($chk)) {
+                    $this->User_partner->save($userdata);
+                    echo json_encode(array('success' => 1, 'msg' => 'Data has been successfully saved'));
+                    exit;
+                } else {
+
+                    $userdata['User_partner']['id'] = $chk['User_partner']['id'];
+                    $this->User_partner->save($userdata);
+                    echo json_encode(array('success' => 1, 'msg' => 'Data has been successfully updated'));
+                    exit;
+                }
+            } else {
+                echo json_encode(array('success' => 0, 'msg' => 'error in update'));
+            }
+        }
+    }
+
+    // START here,  this function will be work for member profile picture upload/update and album picture upload ============
+    public function profile_picture($type = 'profile_pic') {
+        $this->autoRender = false;
+        //pr($this->request->form['pic']['tmp_name']);
+        //die;
+        $resize = true;
+        $resizeOptions = array('width' => '250', 'height' => '200', 'destination' => 'profile_pic/thumb/');
+        $file = $this->request->form['pic'];
+        $rootPath = WWW_ROOT;
+        $destination = 'profile_pic/';
+
+        if (!$file || !is_array($file)) {
+            return false;
+        }
+
+        $userId = $this->request->data['userid'];
+
+        if ($type == 'profile_pic') {  // this block for profile picture when user will be upload his profile picture.
+            $profileData = $this->User->find('first', array('conditions' => array('User.id' => $userId), 'fields' => array('id', 'profile_pic')));
+            if (!empty($profileData['User']['profile_pic'])) {
+                @unlink($rootPath . 'profile_pic/' . $profileData['User']['profile_pic']);
+                @unlink($rootPath . 'profile_pic/thumb/' . $profileData['User']['profile_pic']);
+            }
+        }
+
+
+        $data = array();
+        $data['file'] = $file;
+        $data['path'] = $rootPath . $destination;
+        $imageName = $this->Qimage->copy($data);
+
+        if ($resize && count($resizeOptions) > 0) {
+            $data = array();
+            $data['file'] = $rootPath . $destination . $imageName;
+            $data['width'] = ($resizeOptions['width']) ? $resizeOptions['width'] : 100;
+            $data['height'] = ($resizeOptions['height']) ? $resizeOptions['height'] : 100;
+            $destinationThumb = ($resizeOptions['destination']) ? $resizeOptions['destination'] : $destination;
+            $data['output'] = $rootPath . $destinationThumb;
+            $data['proportional'] = TRUE;
+            $this->Qimage->resize($data);
+        }
+
+        if ($imageName) {
+            if ($type == 'profile_pic') {
+                $ret = $this->User->updateAll(array(' User.profile_pic ' => "'$imageName'"), array(' User.id ' => $userId));
+                echo json_encode(array('success' => 1, 'msg' => 'profile picture has been successfully uploaded', 'path' => PIC_PATH));
+                exit;
+            } else {
+                $album_data['User_album']['user_id'] = $userId;
+                $album_data['User_album']['photo_name'] = $imageName;
+                // $album_data['User_album']['album_id'] = $this->request->data['album_id'];
+                ;
+                $ret = $this->User_album->save($album_data);
+                echo json_encode(array('success' => 1, 'msg' => 'picture has been successfully uploaded', 'path' => PIC_PATH));
+                exit;
+            }
+        }
+    }
+
+    // End here,  this function will be work for member profile picture upload/update and album picture upload ============
+
+
+    public function member_album() {
+        $this->autoRender = false;
+        if (isset($this->request->data['userid'])) {
+            $arr = array();
+            $album = $this->User_album->find('all', array('conditions' => array('User_album.user_id' => $this->request->data['userid'])));
+            foreach ($album as $data) {
+                $arr[] = $data['User_album'];
+            }
+            echo json_encode(array('success' => 1, 'data' => $arr, 'path' => PIC_PATH));
+        } else {
+            echo json_encode(array('success' => 0, 'msg' => 'user id not found'));
+        }
+        exit;
+    }
+
+    public function user_block($type = null) {
+        $this->autoRender = false;
+        if (isset($this->request->data['userid']) && isset($this->request->data['blockid'])) {
+            if ($type == 'unblock') {
+                $this->Blocked_user->deleteAll(array('Blocked_user.user_id' => $this->request->data['userid'], 'Blocked_user.blocked_id' => $this->request->data['blockid']));
+                pr($this->Blocked_user->getDataSource()->getLog());
+                echo json_encode(array('success' => 1, 'msg' => 'user has been successfully un-blocked'));
+                exit;
+            }
+
+            $chk = $this->Blocked_user->find('all', array('conditions' => array('Blocked_user.user_id' => $this->request->data['userid'], 'AND ' => array('Blocked_user.blocked_id' => $this->request->data['blockid']))));
+            if (empty($chk)) {
+                $data['Blocked_user']['user_id'] = $this->request->data['userid'];
+                $data['Blocked_user']['blocked_id'] = $this->request->data['blockid'];
+                $this->Blocked_user->save($data);
+                echo json_encode(array('success' => 1, 'msg' => 'user has been successfully blocked'));
+                exit;
+            } else {
+                echo json_encode(array('success' => 0, 'msg' => 'already blocked'));
+                exit;
+            }
+        }
+    }
+
+    public function delete_album_picture() {
+        $this->autoRender = false;
+        if (isset($this->request->data['pic_id'])) {
+            $chk = $this->User_album->findAllById($this->request->data['pic_id']);
+            if (!empty($chk[0]['User_album']['photo_name'])) {
+                @unlink($rootPath . 'profile_pic/' . $chk[0]['User_album']['photo_name']);
+                @unlink($rootPath . 'profile_pic/thumb/' . $chk[0]['User_album']['photo_name']);
+            }
+            $this->User_album->delete($this->request->data['pic_id']);
+            echo json_encode(array('success' => 1, 'msg' => 'picture has been successful deleted'));
+            exit;
+        }
+    }
+
+    public function matches_members() {
+        $this->autoRender = false;
+
+        $con = array();
+        if (isset($this->request->data['userid']) && $this->request->data['userid'] != '') {
+
+            $user_data = $this->User->find('all', array('conditions' => array('User.id' => $this->request->data['userid'])));
+            $block_id = $this->user_blockedId($user_data[0]['BlockedUser']);
+            array_push($block_id, $this->request->data['userid']);
+
+            $matches_data = $this->User->find('all', array('conditions' => array(
+                    'NOT' => array('User.id' => $block_id),
+                    'OR' => array(
+                        array('UserPartner.sexual_role' => $user_data[0]['UserPartner']['sexual_role'])
+                    )
+            )));
+
+
+            //pr($this->User->getDataSource()->getLog());
+            //die;
+            //pr($matches_data);
+            echo json_encode(array('success' => 1, 'data' => $matches_data, 'path' => PIC_PATH));
+            die;
+        }
+    }
+
+    public function user_blockedId($arr) {
+        $this->autoRender = false;
+
+        $block_id = array();
+        foreach ($arr as $blockedId) {
+            array_push($block_id, $blockedId['blocked_id']);
+        }
+        return $block_id;
+    }
+
+    public function registration() {
+        $this->autoRender = false;
+        $r = fopen('../../app/webroot/tracker3.txt', 'a+');
+
+        fwrite($r, 'Time: ' . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL . 'ip address:' . $_SERVER['REMOTE_ADDR']);
+        foreach ($this->request->data as $k => $v) {
+
+            fwrite($r, $k . ' : ' . $v . PHP_EOL . PHP_EOL);
+        }
+
+        if ($this->request->is('post')) {
+
+            $name = $this->request->data['username'];
+            $email = $this->request->data['email'];
+            $password = $this->request->data['password'];
+            $country = $this->request->data['country'];
+            $city = $this->request->data['city'];
+
+            $chk = $this->User->find('first', array('conditions' => array('User.email' => $email)));
+            if (empty($chk)) {
+                $userdata['User']['token'] = $this->generateRandomString('upper-alphanumaric', 5);
+                $userdata['User']['username'] = $name;
+                $userdata['User']['email'] = $email;
+                $userdata['User']['password'] = $password;
+                $userdata['User']['country'] = $country;
+                $userdata['User']['city'] = $city;
+                $this->User->save($userdata);
+                /*                 * **** send user id after registration ******** */
+                $userdata['User']['id'] = $this->User->getLastInsertId();
+                /*                 * ******** end ************* */
+                $user['Profile']['user_id'] = $this->User->getLastInsertId();
+                $user['User_partner']['user_id'] = $this->User->getLastInsertId();
+                $user['User_album']['user_id'] = $this->User->getLastInsertId();
+                $this->Profile->create();
+                $this->Profile->save($user);
+                $this->User_partner->create();
+                $this->User_partner->save($user);
+                //$this->User_album->create();
+                //$this->User_album->save($user);
+                echo json_encode(array('success' => 1, 'msg' => 'regtration successful', 'response_data' => $userdata));
+                exit;
+            } else {
+                echo json_encode(array('success' => 0, 'msg' => 'email already exist'));
+                exit;
+            }
+        }
+    }
+
+    public function login() {
+        //pr(PIC_PATH);
+        //pr($_SERVER);
+
+        $this->autoRender = false;
+        //$passwordHasher = new SimplePasswordHasher();
+        //echo $passwordHasher->hash('ramesh');	             
+        $this->Auth->authenticate = array(
+            AuthComponent::ALL => array('userModel' => 'User'),
+            'Form' => array('fields' => array('username' => 'email')),
+            'Basic'
+        );
+
+        if ($this->request->is('post')) {
+            $userdata = $this->request->data;
+            unset($this->request->data['email']);
+            unset($this->request->data['password']);
+            $this->request->data['User']['email'] = $userdata['email'];
+            $this->request->data['User']['password'] = $userdata['password'];
+
+            if ($this->Auth->login()) {
+                echo json_encode(array('success' => 1, 'msg' => 'succefully logged in', 'user_data' => $this->Session->read('Auth.User'), 'path' => PIC_PATH));
+                $this->Auth->logout();
+                exit;
+            } else {
+                echo json_encode(array('success' => 0, 'msg' => 'email or password is invalid'));
+                exit;
+            }
+        }
+    }
+
+    public function logout() {
+        $this->Session->setFlash('You have successfully logout !!!', 'default', array('class' => 'success'), 'msg');
+        return $this->redirect($this->Auth->logout());
+    }
+
+    /*     * ****** this service use for create album --- Mir ---********* */
+
+    /*    public function create_album() {
+      $this->autoRender = false;
+      if (isset($this->request->data['user_id']) && isset($this->request->data['album_name'])) {
+      $userid = $this->request->data['user_id'];
+      $album_name = $this->request->data['album_name'];
+      $user['UserCreatealbum']['user_id'] = $userid;
+      $user['UserCreatealbum']['album_name'] = $album_name;
+      $user['UserCreatealbum']['creation_date'] = date('Y-m-d h:i:s');
+      $this->UserCreatealbum->create();
+      $this->UserCreatealbum->save($user);
+      echo json_encode(array('success' => 1, 'msg' => 'successfully create album'));
+      exit;
+      } else {
+      echo json_encode(array('success' => 0, 'msg' => 'fail to create album'));
+      exit;
+      }
+      }
+
+      /*     * ****** this service use for show album --- Mir ---******** */
+
+    /*  public function show_album() {
+      $this->autoRender = false;
+      if (isset($this->request->data['user_id'])) {
+      $userid = $this->request->data['user_id'];
+      // echo 1;die;
+      $this->UserCreatealbum->bindModel(
+      array(
+      'hasMany' => array(
+      'User_album' => array(
+      'className' => 'User_album',
+      'foreignKey' => 'album_id',
+      //'conditions' => array('NpoMember.status' => 'Active'),
+      )
+      )
+      )
+      );
+      $data = $this->UserCreatealbum->find('all', array('conditions' => array('UserCreatealbum.user_id' => $userid)));
+      echo json_encode(array('success' => 1, 'msg' => 'successfully show album', 'data' => $data, 'path' => PIC_PATH));
+      exit;
+      } else {
+      echo json_encode(array('success' => 0, 'msg' => 'fail to show album'));
+      exit;
+      }
+      }
+      /* * ****** this service use for delete album  13022015 --- Mir ---******** */
+    /* public function delete_album() {
+      $this->autoRender = false;
+      $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+      $album_id = isset($this->request->data['album_id']) ? $this->request->data['album_id'] : '';
+      if (isset($user_id) && isset($album_id)) {
+      $chk = $this->User_album->find('all', array('conditions' => array('User_album.user_id' => $user_id, 'User_album.album_id' => $album_id)));
+      //pr($chk);die;
+      foreach($chk as $useralbum) {
+      // pr($useralbum['User_album']['photo_name']);
+
+      if (!empty($useralbum['User_album']['photo_name'])) {
+      @unlink($rootPath . 'profile_pic/' . $useralbum['User_album']['photo_name']);
+      @unlink($rootPath . 'profile_pic/thumb/' . $useralbum['User_album']['photo_name']);
+      $this->User_album->delete($useralbum['User_album']['id']);
+      }
+      }
+      $this->UserCreatealbum->delete($album_id);
+      echo json_encode(array('success' => 1, 'msg' => 'album has been successful deleted'));
+
+      }
+      else {
+      echo json_encode(array('success' => 0, 'msg' => 'unable to deleted '));
+      }
+      }
+
+      /*     * ****** this service use for add looking sex data 11022015 --- Mir ---******** */
+
+    public function add_looking_sex() {
+
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        $start_time = isset($this->request->data['start_time']) ? $this->request->data['start_time'] : '0000-00-00 00:00:00';
+        $end_time = isset($this->request->data['end_time']) ? $this->request->data['end_time'] : '0000-00-00 00:00:00';
+        $profile_name = isset($this->request->data['profile_name']) ? $this->request->data['profile_name'] : '';
+        $my_physical_appearance = isset($this->request->data['my_physical_appearance']) ? $this->request->data['my_physical_appearance'] : '';
+        $his_physical_appearance = isset($this->request->data['his_physical_appearance']) ? $this->request->data['his_physical_appearance'] : '';
+        $my_sextual_preferences = isset($this->request->data['my_sextual_preferences']) ? $this->request->data['my_sextual_preferences'] : '';
+        $his_sextual_preferences = isset($this->request->data['his_sextual_preferences']) ? $this->request->data['his_sextual_preferences'] : '';
+        $my_social_habits = isset($this->request->data['my_social_habits']) ? $this->request->data['my_social_habits'] : '';
+        $his_social_habits = isset($this->request->data['his_social_habits']) ? $this->request->data['his_social_habits'] : '';
+        if ($user_id) {
+            /* check if profile name already exists then update sex profile  else in sert sex profile */
+            $looksex = $this->UserLooksex->find('all', array('conditions' => array('UserLooksex.user_id' => $user_id, 'UserLooksex.profile_name' => $profile_name)));
+            //pr($looksex[0]['UserLooksex']);die;
+            if ($looksex) {
+                $user['UserLooksex'] = array(
+                    'id' => $looksex[0]['UserLooksex']['id'],
+                    'user_id' => $user_id,
+                    'profile_name' => $profile_name,
+                    'my_physical_appearance' => $my_physical_appearance,
+                    'his_physical_appearance' => $his_physical_appearance,
+                    'my_sextual_preferences' => $my_sextual_preferences,
+                    'his_sextual_preferences' => $his_sextual_preferences,
+                    'my_social_habits' => $my_social_habits,
+                    'his_social_habits' => $his_social_habits,
+                    'start_time' => date('Y-m-d h:i:s', strtotime($start_time)),
+                    'end_time' => date('Y-m-d h:i:s', strtotime($end_time)),
+                    'is_active' => 1,
+                    'modification_date' => date('Y-m-d h:i:s')
+                );
+            } else {
+                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
+                $user['UserLooksex'] = array(
+                    'user_id' => $user_id,
+                    'profile_name' => $profile_name,
+                    'my_physical_appearance' => $my_physical_appearance,
+                    'his_physical_appearance' => $his_physical_appearance,
+                    'my_sextual_preferences' => $my_sextual_preferences,
+                    'his_sextual_preferences' => $his_sextual_preferences,
+                    'my_social_habits' => $my_social_habits,
+                    'his_social_habits' => $his_social_habits,
+                    'start_time' => date('Y-m-d h:i:s', strtotime($start_time)),
+                    'end_time' => date('Y-m-d h:i:s', strtotime($end_time)),
+                    'is_active' => 1,
+                    'creation_date' => date('Y-m-d h:i:s')
+                );
+            }
+            if ($this->UserLooksex->save($user)) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id not found';
+        }
+        echo json_encode($data);
+    }
+
+    /*     * *****************End**************************** */
+
+    /*     * ****** this service use for view looking sex data 11022015 --- Mir ---******** */
+
+    public function view_looking_sex() {
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        if ($user_id) {
+            $userlooksex = $this->UserLooksex->find('all', array('conditions' => array('UserLooksex.user_id' => $user_id)));
+            if ($userlooksex) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+                $data['data'] = Hash::extract($userlooksex, '{n}.UserLooksex');
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id not found';
+        }
+        echo json_encode($data);
+    }
+
+    /*     * *****************End**************************** */
+    /*     * ****** this service use for view looking date data 11022015 --- Mir ---******** */
+
+    public function view_looking_date() {
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        if ($user_id) {
+            $UserLookdate = $this->UserLookdate->find('all', array('conditions' => array('UserLookdate.user_id' => $user_id)));
+            if ($UserLookdate) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+                $data['data'] = Hash::extract($UserLookdate, '{n}.UserLookdate');
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id not found';
+        }
+        echo json_encode($data);
+    }
+
+    /*     * *****************End**************************** */
+    /*     * ****** this service use for add looking date data 11022015 --- Mir ---******** */
+
+    public function add_looking_date() {
+
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        $my_traits = isset($this->request->data['my_traits']) ? $this->request->data['my_traits'] : '';
+        $his_traits = isset($this->request->data['his_traits']) ? $this->request->data['his_traits'] : '';
+        $profile_name = isset($this->request->data['profile_name']) ? $this->request->data['profile_name'] : '';
+        $my_interest = isset($this->request->data['my_interest']) ? $this->request->data['my_interest'] : '';
+        $my_physical_appearance = isset($this->request->data['my_physical_appearance']) ? $this->request->data['my_physical_appearance'] : '';
+        $his_physical_appearance = isset($this->request->data['his_physical_appearance']) ? $this->request->data['his_physical_appearance'] : '';
+        $my_sextual_preferences = isset($this->request->data['my_sextual_preferences']) ? $this->request->data['my_sextual_preferences'] : '';
+        $his_sextual_preferences = isset($this->request->data['his_sextual_preferences']) ? $this->request->data['his_sextual_preferences'] : '';
+        $my_social_habits = isset($this->request->data['my_social_habits']) ? $this->request->data['my_social_habits'] : '';
+        $his_social_habits = isset($this->request->data['his_social_habits']) ? $this->request->data['his_social_habits'] : '';
+        if ($user_id) {
+            /* check if profile name already exists then update sex profile  else in sert sex profile */
+            $lookdate = $this->UserLookdate->find('all', array('conditions' => array('UserLookdate.user_id' => $user_id, 'UserLookdate.profile_name' => $profile_name)));
+            //pr($looksex[0]['UserLooksex']);die;
+            if ($lookdate) {
+                $user['UserLookdate'] = array(
+                    'id' => $lookdate[0]['UserLookdate']['id'],
+                    'user_id' => $user_id,
+                    'profile_name' => $profile_name,
+                    'my_traits' => $my_traits,
+                    'his_traits' => $his_traits,
+                    'my_interest' => $my_interest,
+                    'my_physical_appearance' => $my_physical_appearance,
+                    'his_physical_appearance' => $his_physical_appearance,
+                    'my_sextual_preferences' => $my_sextual_preferences,
+                    'his_sextual_preferences' => $his_sextual_preferences,
+                    'my_social_habits' => $my_social_habits,
+                    'his_social_habits' => $his_social_habits,
+                    'is_active' => 1,
+                    'modification_date' => date('Y-m-d h:i:s')
+                );
+                //echo $my_physical_appearance;die;
+            } else {
+                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
+                $user['UserLookdate'] = array(
+                    'user_id' => $user_id,
+                    'profile_name' => $profile_name,
+                    'my_traits' => $my_traits,
+                    'his_traits' => $his_traits,
+                    'my_interest' => $my_interest,
+                    'my_physical_appearance' => $my_physical_appearance,
+                    'his_physical_appearance' => $his_physical_appearance,
+                    'my_sextual_preferences' => $my_sextual_preferences,
+                    'his_sextual_preferences' => $his_sextual_preferences,
+                    'my_social_habits' => $my_social_habits,
+                    'his_social_habits' => $his_social_habits,
+                    'is_active' => 1,
+                    'creation_date' => date('Y-m-d h:i:s')
+                );
+            }
+            if ($this->UserLookdate->save($user)) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id not found';
+        }
+        echo json_encode($data);
+    }
+
+    /*     * *****************End**************************** */
+    /*     * ****** this service use for move image to archive 13022015 --- Mir ---******** */
+
+    public function move_archive() {
+
+        $this->autoRender = false;
+        $picid = isset($this->request->data['id']) ? $this->request->data['id'] : '';
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        if ($user_id && $picid) {
+            $UserLookdate = $this->User_album->findById($picid);
+            $photoname = $UserLookdate['User_album']['photo_name'];
+            $user['Archive'] = array(
+                'user_id' => $user_id,
+                'photo_name' => $photoname,
+                'creation_date' => date('Y-m-d h:i:s')
+            );
+            if ($this->Archive->save($user)) {
+                $this->User_album->delete($picid);
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id and pic id not found';
+        }
+        echo json_encode($data);
+    }
+
+    /*     * ********************* END************************************ */
+    /*     * ****** this service use for view archive  data 13022015 --- Mir ---******** */
+
+    public function view_archive() {
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        if ($user_id) {
+            $archive = $this->Archive->find('all', array('conditions' => array('Archive.user_id' => $user_id)));
+            if ($archive) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+                $data['data'] = Hash::extract($archive, '{n}.Archive');
+                $data['path'] = PIC_PATH;
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id not found';
+        }
+        echo json_encode($data);
+    }
+
+    /*     * *****************End**************************** */
+    /*     * ****** this service use for delete archive  data 13022015 --- Mir ---******** */
+
+    public function delete_archive() {
+        $this->autoRender = false;
+        if (isset($this->request->data['id'])) {
+            $chk = $this->Archive->findAllById($this->request->data['id']);
+            if (!empty($chk[0]['Archive']['photo_name'])) {
+                @unlink($rootPath . 'profile_pic/' . $chk[0]['Archive']['photo_name']);
+                @unlink($rootPath . 'profile_pic/thumb/' . $chk[0]['Archive']['photo_name']);
+            }
+            $this->Archive->delete($this->request->data['id']);
+            echo json_encode(array('success' => 1, 'msg' => 'picture has been successful deleted'));
+        } else {
+            echo json_encode(array('success' => 0, 'msg' => 'id not found'));
+        }
+    }
+
+    /*     * *****************End**************************** */
+    /*     * ****** this service use for share album  data 13022015 --- Mir ---******** */
+
+    public function share_album() {
+        $this->autoRender = false;
+        $sender_id = isset($this->request->data['sender_id']) ? $this->request->data['sender_id'] : '';
+        $receiver_id = isset($this->request->data['receiver_id']) ? $this->request->data['receiver_id'] : '';
+        if ($sender_id && $receiver_id) {
+            $sharealbum = $this->ShareAlbum->find('all', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.receiver_id' => $receiver_id)));
+            if ($sharealbum) {
+                $user['ShareAlbum'] = array(
+                    'id' => $sharealbum[0]['ShareAlbum']['id'],
+                    'sender_id' => $sender_id,
+                    'receiver_id' => $receiver_id,
+                    'is_received' => 0,
+                    'modification_date' => date('Y-m-d h:i:s')
+                );
+                // pr($sharealbum);
+            } else {
+                $user['ShareAlbum'] = array(
+                    //'id' => $sharealbum[0]['ShareAlbum']['id'],
+                    'sender_id' => $sender_id,
+                    'receiver_id' => $receiver_id,
+                    'is_received' => 0,
+                    'creation_date' => date('Y-m-d h:i:s')
+                );
+            }
+            $this->ShareAlbum->save($user);
+            echo json_encode(array('success' => 1, 'msg' => 'success'));
+        } else {
+            echo json_encode(array('success' => 0, 'msg' => 'sener id and receiver id not found'));
+        }
+    }
+
+    /*     * *****************End**************************** */
+    /*     * ****** this service use for receive album  data 13022015 --- Mir ---******** */
+
+    public function receive_album() {
+        $this->autoRender = false;
+        $sender_id = isset($this->request->data['sender_id']) ? $this->request->data['sender_id'] : ''; //who send album
+        $receiver_id = isset($this->request->data['receiver_id']) ? $this->request->data['receiver_id'] : ''; // who receive album
+        $is_received = isset($this->request->data['is_received']) ? $this->request->data['is_received'] : '';
+        if ($sender_id && $receiver_id) {
+            $this->ShareAlbum->query("UPDATE `share_albums` SET `is_received` = '" . $is_received . "' WHERE `sender_id` ='" . $sender_id . "' and `receiver_id`='" . $receiver_id . "'");
+
+            if ($is_received == 1) {
+                $sharealbum = $this->User_album->find('all', array('conditions' => array('User_album.user_id' => $sender_id)));
+                $resize = true;
+                $resizeOptions = array('width' => '250', 'height' => '200', 'destination' => 'receive_album/thumb/');
+                //$file = $this->request->form['pic'];
+
+                $rootPath = WWW_ROOT;
+                $destination = 'profile_pic/';
+
+                foreach ($sharealbum as $receivealbum) {
+                    //pr($receivealbum);
+                    $file = $rootPath . $destination . $receivealbum['User_album']['photo_name'];
+                    $newfile = $rootPath . 'receive_album/' . $receivealbum['User_album']['photo_name'];
+                    copy($file, $newfile);
+                    //pr($rootPath . $destination . $receivealbum['User_album']['photo_name']);die;
+                    //$data = array();
+                    // $data['file'] = $rootPath . $destination . $receivealbum['User_album']['photo_name'];
+                    // $data['path'] = $rootPath . 'receive_album';
+                    // $imageName = $this->Qimage->copy($data);
+
+                    if ($resize && count($resizeOptions) > 0) {
+                        $data = array();
+                        $data['file'] = $rootPath . $destination . $receivealbum['User_album']['photo_name'];
+                        $data['width'] = ($resizeOptions['width']) ? $resizeOptions['width'] : 100;
+                        $data['height'] = ($resizeOptions['height']) ? $resizeOptions['height'] : 100;
+                        $destinationThumb = ($resizeOptions['destination']) ? $resizeOptions['destination'] : $destination;
+                        $data['output'] = $rootPath . $destinationThumb;
+                        $data['proportional'] = TRUE;
+                        $this->Qimage->resize($data);
+                    }
+                    $user['ReceiveAlbum'] = array(
+                        //'id' => $sharealbum[0]['ShareAlbum']['id'],
+                        'sender_id' => $sender_id,
+                        'receiver_id' => $receiver_id,
+                        'photo_name' => $receivealbum['User_album']['photo_name'],
+                        'creation_date' => date('Y-m-d h:i:s')
+                    );
+                    pr($user);
+                    $this->ReceiveAlbum->save($user);
+                }
+pr($this->ReceiveAlbum->getDataSource()->getLog());
+                // pr($sharealbum);
+            }
+
+            echo json_encode(array('success' => 1, 'msg' => 'success'));
+        } else {
+            echo json_encode(array('success' => 0, 'msg' => 'sener id and receiver id not found'));
+        }
+    }
+
+    /*     * *****************End**************************** */
+}
