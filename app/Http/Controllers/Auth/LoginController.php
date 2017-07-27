@@ -70,7 +70,7 @@ class LoginController extends Controller
 
             'email'               => 'required:email|exists:users,email',
             'password'            => 'required',
-            'role'                => 'required',
+            //'role'                => 'required',
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
