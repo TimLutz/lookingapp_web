@@ -106,6 +106,7 @@ class LoginController extends Controller
                       $response['message']      = 'Login Successfull';
                       $response['status']       = 1;
                       $response['userdata'] = User::where('email',$request['email'])->first();
+                      $http_status=200;
                 }
                 else{
                      return response()->json(array('errors'=>array('email'=>'Invalid Email/Password','status'=>0)));
