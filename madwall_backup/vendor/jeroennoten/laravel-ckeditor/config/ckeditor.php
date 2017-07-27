@@ -1,5 +1,0 @@
-<?php
-
-return [
-    'disk' => 'public'
-];
