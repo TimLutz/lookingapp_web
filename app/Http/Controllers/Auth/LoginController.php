@@ -68,7 +68,7 @@ class LoginController extends Controller
         }
         $validator = Validator::make( $data  ,      [
 
-            'email'               => 'required:email|exists:users,email',
+            'email'               => 'required|email',
             'password'            => 'required',
             //'role'                => 'required',
         ],
@@ -98,7 +98,7 @@ class LoginController extends Controller
                 $credentials = $request->only('email','password');
                 $credentials['status']=1;
                   
-                   echo $token = JWTAuth::attempt($credentials,array()); die;
+                   //$token = JWTAuth::attempt($credentials,array());
                          // return $credentials;die;
                       // verify the credentials and create a token for the user
                     if ($token = JWTAuth::attempt($credentials,array())) {
