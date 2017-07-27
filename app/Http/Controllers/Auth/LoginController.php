@@ -108,7 +108,7 @@ print_r($credentials); die;
                       $response['userdata'] = User::where('email',$request['email'])->first();
                 }
                 else{
-                     return response()->json(array('errors'=>array('email'=>'Invalid Email/Password','status'=>0));
+                     return response()->json(array('errors'=>array('email'=>'Invalid Email/Password','status'=>0)));
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
