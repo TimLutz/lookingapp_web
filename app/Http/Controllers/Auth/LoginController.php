@@ -97,7 +97,7 @@ class LoginController extends Controller
             try {
                // echo $request->input('phone');
                // die('here');
-                $credentials = $request->only('email','password');
+                $credentials = $request->only('email','password','role');
                 $credentials['status']=1;
 
                 // verify the credentials and create a token for the user
