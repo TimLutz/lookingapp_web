@@ -68,15 +68,12 @@ class LoginController extends Controller
         }
         $validator = Validator::make( $data  ,      [
 
-            'email'               => 'required_without:phone|email|exists:users,email',
+            'email'               => 'required:email|exists:users,email',
             'password'            => 'required',
             'role'                => 'required',
-            'phone'               => 'required_without:email|exists:users,phone'
-
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
-            'phone.exists'=>"We couldn't find you.Please check your credentials.",
         ]);
 
         if ($validator->fails()) {
@@ -88,55 +85,37 @@ class LoginController extends Controller
 
         }else{
         // grab credentials from the request
-            if($request->has('phone')){
-                $credentials=$request->only('phone', 'password','role');
-                $phone = $request->input('phone');
-            }else{
-                $credentials=$request->only('email', 'password','role');
-                $credentials['email']=strtolower($credentials['email']);
-            }
             
-            $credentials['status']=true;
+            $credentials=$request->only('email', 'password');
+            $credentials['email']=strtolower($credentials['email']);
+            
+            $credentials['status']=1;
             //return $credentials;
-
+print_r($credentials); die;
             try {
                // echo $request->input('phone');
                // die('here');
-                if ( isset( $credentials['email'] ) ){
-                    $approved = User::where('email',$credentials['email'])->value('approved');
-                    if ( $approved == 2 ) {
-                    return response()->json(['errors' => "Sorry, your profile has been declined by Madwall Administrator",'status'=>0]);
-                    } 
+                $credentials = $request->only('email','password');
+                $credentials['status']=1;
+                  
+                   //$token = JWTAuth::attempt($credentials,array());
+                         // return $credentials;die;
+                      // verify the credentials and create a token for the user
+                    if ($token = JWTAuth::attempt($credentials,array())) {
+                      $response = compact('token');
+                      $response['message']      = 'Login Successfull';
+                      $response['status']       = 1;
+                      $response['userdata'] = User::where('email',$request['email'])->first();
                 }
-                
-                if ( isset( $phone ) ){
-                    $approved = User::where('phone',$phone)->value('approved');
-                    if ( $approved == 2 ) {
-                    return response()->json(['errors' => "Sorry, your profile has been declined by Madwall Administrator",'status'=>0]);
-                    } 
-                }
-                
-                // attempt to verify the credentials and create a token for the user
-                if (! $token = JWTAuth::attempt($credentials)) {
-                    return response()->json(['errors' => "Invalid Credentials",'status'=>0]);
+                else{
+                     return response()->json(array('errors'=>array('email'=>'Invalid Email/Password','status'=>0));
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
                 return response()->json(['error' => 'could_not_create_token'], 500);
             }
             
-            $response = compact('token');
-            if($request->has('phone')){
-//            $response['data'] =User::where('email',strtolower($request->input('email')))->orWhere('phone',$request->input('phone'))->first();
-            $response['data'] =User::where('phone',$request->input('phone'))->first();
-            }
-            else
-            {
-                $response['data'] =User::where('email',strtolower($request->input('email')))->first();
-            }
-            $response['status']=1;
-            $http_status=200;
-            $common->getManageToken($token,$response['data']->_id);
+            
         }
 
         // all good so return the token
