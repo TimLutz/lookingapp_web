@@ -1,6 +1,8 @@
 /node_modules
 /public/hot
 /stats
+/public/storage
+/public_html/database/migrations
 /public/admin/js/path.js
 /storage/*.key
 /.idea
