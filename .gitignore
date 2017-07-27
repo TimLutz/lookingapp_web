@@ -2,7 +2,7 @@
 /public/hot
 /stats
 /public/storage
-/public_html/database/migrations
+/public/database/migrations
 /public/admin/js/path.js
 /storage/*.key
 /.idea
