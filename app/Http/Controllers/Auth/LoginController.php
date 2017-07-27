@@ -91,14 +91,14 @@ class LoginController extends Controller
             
             $credentials['status']=1;
             //return $credentials;
-print_r($credentials); die;
+//print_r($credentials); die;
             try {
                // echo $request->input('phone');
                // die('here');
                 $credentials = $request->only('email','password');
                 $credentials['status']=1;
                   
-                   //$token = JWTAuth::attempt($credentials,array());
+                   echo $token = JWTAuth::attempt($credentials,array()); die;
                          // return $credentials;die;
                       // verify the credentials and create a token for the user
                     if ($token = JWTAuth::attempt($credentials,array())) {
