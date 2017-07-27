@@ -25,7 +25,7 @@ class User extends Model implements
      * @var array
      */
 
-    protected $fillable = [ ];
+    protected $fillable = ['' ];
 
 
     /**

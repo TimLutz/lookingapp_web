@@ -68,9 +68,11 @@ class LoginController extends Controller
         }
         $validator = Validator::make( $data  ,      [
 
-            'email'               => 'required|email',
+            'email'               => 'required|email|exists:users,email',
             'password'            => 'required',
-            //'role'                => 'required',
+            'role'                => 'required',
+            'device_token'        => 'required',
+            'device_type'         => 'required',
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
@@ -81,7 +83,7 @@ class LoginController extends Controller
             $response['errors']   = $validator->errors()->first();
 
             $response['status']   = 0;
-            $http_status=400;
+            $http_status=422;
 
         }else{
         // grab credentials from the request
@@ -97,26 +99,24 @@ class LoginController extends Controller
                // die('here');
                 $credentials = $request->only('email','password');
                 $credentials['status']=1;
-                  
-                   //$token = JWTAuth::attempt($credentials,array());
-                         // return $credentials;die;
-                      // verify the credentials and create a token for the user
-                    if ($token = JWTAuth::attempt($credentials,array())) {
-                      $response = compact('token');
-                      $response['message']      = 'Login Successfull';
-                      $response['status']       = 1;
-                      $response['userdata'] = User::where('email',$request['email'])->first();
-                      $http_status=200;
+
+                // verify the credentials and create a token for the user
+                if ($token = JWTAuth::attempt($credentials,array())) {
+                  $response = compact('token');
+                  $response['message']      = 'Login Successfull';
+                  $response['status']       = 1;
+                  $response['userdata'] = User::where('email',$request['email'])->first();
+                  $http_status=200;
                 }
                 else{
-                     return response()->json(array('errors'=>array('email'=>'Invalid Email/Password','status'=>0)));
+                    $response['message']      = 'Invalid Email/Password';
+                    $response['status']       = 0;
+                    $http_status=400;
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
                 return response()->json(['error' => 'could_not_create_token'], 500);
             }
-            
-            
         }
 
         // all good so return the token
