@@ -1,0 +1,57 @@
+.fa-circle.active{
+	color: #008000;
+}
+
+.fa-circle.inactive{
+	color: #DD4B39;
+}
+
+#loading_indicator {
+
+display:none;
+
+}
+.star
+	{ color:red; }
+	
+.notification
+	{
+		background-color:#E2DBD9;
+	}
+	#mce-responses {
+    display: none;
+}
+
+.short_textarea{
+	height:75px !important;
+}
+.passwordlength{
+	width:1000px;
+}
+
+.statuscenter{
+	text-align: center;
+}
+
+.commonmessagemain{ width:100%; float:left; padding:25px 0; background:rgba(248,17,21,0.70); position:fixed; top:0; left:0; z-index:99999; 
+ -webkit-transform: translate3d(0, -100%, 0);
+    transform: translate3d(0, -100%, 0);
+	transition: all 1s ease-in-out;
+-moz-transition: all 1s ease-in-out;
+-webkit-transition: all 1s ease-in-out;
+	}
+.commonmessageIn{ font-size:25px; line-height:36px; text-align:center; color:#fff;}
+.commonmessagemain.active{  opacity: 1;
+    -webkit-transform: none;
+    transform: none; transition: all 1s ease-in-out;
+-moz-transition: all 1s ease-in-out;
+-webkit-transition: all 1s ease-in-out; }
+.msgcross{ cursor:pointer; font-size:22px; color:#fff; float:right; position:absolute; right:15px; top:20px;}
+
+	
+.msg-success.commonmessagemain{background: #dff0d8}
+.msg-success.commonmessagemain .commonmessageIn{ color: #3c763d }
+.msg-success.commonmessagemain .msgcross{ color: #3c763d }
+
+
+.datepicker-days td{ cursor:pointer}
