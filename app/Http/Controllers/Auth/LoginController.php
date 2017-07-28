@@ -98,19 +98,29 @@ class LoginController extends Controller
 
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials,array())) {
-                  $response = compact('token');
-                  $response['success']       = 1;
-                  $response['message']      = 'Login Successfull';
+                  
                    $user = User::where('email',$request['email'])->first();
-
-                   /* Update device token and device type */
-                   $userdata['device_token'] = $request->Input('device_token');
-                   $userdata['device_type'] = $request->Input('device_type');
-                   $userdata['modification_date'] = Carbon::now();
-                   $response['user_data']      = $user;
-                   
-                   $user->update($userdata);  
-                   $http_status=200;
+                   if($user)
+                   {
+                       /* Update device token and device type */
+                       $userdata['device_token'] = $request->Input('device_token');
+                       $userdata['device_type'] = $request->Input('device_type');
+                       $userdata['modification_date'] = Carbon::now();
+                       
+                       if($user->update($userdata)){
+                           $http_status=200;
+                           $response['success']       = 1;
+                           $response['message']      = 'Login Successfull'; 
+                           $response = compact('token');
+                           $response['user_data']      = $user;
+                       }  
+                       else
+                       {
+                            $response['success']       = 0;
+                            $response['message']      = 'Something worng!';
+                            $http_status=400;
+                       }
+                   }
                 }
                 else{
                     $response['success']       = 0;
