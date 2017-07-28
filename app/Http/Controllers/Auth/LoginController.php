@@ -92,6 +92,7 @@ class LoginController extends Controller
             $credentials['email']=strtolower($credentials['email']);
             
             $credentials['status']=1;
+            print_r($credentials); die;
             try {
                 $credentials = $request->only('email','password','role');
                 $credentials['status']=1;
