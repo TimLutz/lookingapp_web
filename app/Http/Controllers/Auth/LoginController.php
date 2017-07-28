@@ -102,7 +102,7 @@ class LoginController extends Controller
                   $response = compact('token');
                   $response['success']       = 1;
                   $response['message']      = 'Login Successfull';
-                  print_r($response);
+                  print_r($response); die;
                    $user = User::where('email',$request['email'])->first();
 
                    $data['device_token'] = $request->Input('device_token');
