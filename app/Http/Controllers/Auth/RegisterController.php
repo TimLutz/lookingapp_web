@@ -154,6 +154,8 @@ class RegisterController extends Controller
             $data['online_status']=0;
             $data['role']=2;
             $data['status']=1;
+            $data['lat']=$request->lat;
+            $data['long']=$request->long;
             $user=new User($data);
             if($user->save()){
                 ProfileModel::create(['user_id'=>$user->id]);
