@@ -72,9 +72,7 @@ class LoginController extends Controller
             'password'            => 'required',
             'role'                => 'required',
             'device_token'        => 'required',
-            'device_type'         => 'required',
-            /*'lat'                 => 'required',
-            'lng'                 => 'required'*/
+            'device_type'         => 'required'
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
@@ -100,7 +98,7 @@ class LoginController extends Controller
 
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials,array())) {
-                  
+
                   $response = compact('token');
                   $response['success']       = 1;
                   $response['message']      = 'Login Successfull';
