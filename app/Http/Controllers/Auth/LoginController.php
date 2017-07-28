@@ -83,9 +83,8 @@ class LoginController extends Controller
         if ($validator->fails()) {
 
             //$response['errors']   = $validator->errors()->first();
-            $response['errors']   = $validator->errors();
-
             $response['success']   = 0;
+            $response['errors']   = $validator->errors();
             $http_status=422;
 
         }else{
@@ -101,9 +100,10 @@ class LoginController extends Controller
 
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials,array())) {
+                    die('cvnvnv');
                   $response = compact('token');
-                  $response['message']      = 'Login Successfull';
                   $response['success']       = 1;
+                  $response['message']      = 'Login Successfull';
                    $user = User::where('email',$request['email'])->first();
 
                    $data['device_token'] = $request->Input('device_token');
@@ -115,19 +115,18 @@ class LoginController extends Controller
                    $http_status=200;
                 }
                 else{
-                    $response['message']      = 'Invalid Email/Password';
                     $response['success']       = 0;
+                    $response['message']      = 'Invalid Email/Password';
                     $http_status=204;
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
                 //return response()->json(['error' => 'could_not_create_token'], 500);
-                $response['errors']      = 'could_not_create_token';
                 $response['success']       = 0;
+                $response['errors']      = 'could_not_create_token';
                 $http_status=400;
             }
         }
-
         // all good so return the token
         return response()->json($response,$http_status);
     }
