@@ -111,7 +111,6 @@ class LoginController extends Controller
                    $http_status=200;
                 }
                 else{
-                    die('dxcbnvbmnbv');
                     $response['success']       = 0;
                     $response['message']      = 'Invalid Email/Password';
                     $http_status=204;
@@ -119,7 +118,6 @@ class LoginController extends Controller
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
                 //return response()->json(['error' => 'could_not_create_token'], 500);
-                die('here');
                 $response['success']       = 0;
                 $response['errors']      = 'could_not_create_token';
                 $http_status=400;
