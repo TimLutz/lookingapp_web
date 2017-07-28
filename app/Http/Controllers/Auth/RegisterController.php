@@ -132,7 +132,7 @@ class RegisterController extends Controller
             $data['screen_name'] = $request->screen_name;
             $data['email'] = $request->email;
             $data['pasword'] = $request->password;
-            $data['currency'] = $request->currency;
+            $data['country'] = $request->currency;
             $data['city'] = $request->city;
             $data['device_token'] = $request->device_token;
             $data['device_type'] = $request->device_type;
