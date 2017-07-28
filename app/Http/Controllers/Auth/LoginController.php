@@ -73,8 +73,8 @@ class LoginController extends Controller
             'role'                => 'required',
             'device_token'        => 'required',
             'device_type'         => 'required',
-            'lat'                 => 'required',
-            'lng'                 => 'required'
+            /*'lat'                 => 'required',
+            'lng'                 => 'required'*/
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
@@ -102,7 +102,7 @@ class LoginController extends Controller
                 if ($token = JWTAuth::attempt($credentials,array())) {
                   $response = compact('token');
                   $response['message']      = 'Login Successfull';
-                  $response['status']       = 1;
+                  $response['success']       = 1;
                    $user = User::where('email',$request['email'])->first();
 
                    $data['device_token'] = $request->Input('device_token');
@@ -120,7 +120,7 @@ class LoginController extends Controller
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
                 //return response()->json(['error' => 'could_not_create_token'], 500);
-                $response['error']      = 'could_not_create_token';
+                $response['errors']      = 'could_not_create_token';
                 $response['success']       = 0;
                 $http_status=400;
             }
