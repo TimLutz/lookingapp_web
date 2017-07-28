@@ -100,7 +100,7 @@ class LoginController extends Controller
 
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials,array())) {
-                  return 'jghjh';  
+                  
                   $response = compact('token');
                   $response['success']       = 1;
                   $response['message']      = 'Login Successfull';
