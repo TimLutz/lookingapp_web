@@ -25,7 +25,7 @@ class User extends Model implements
      * @var array
      */
 
-    protected $fillable = ['' ];
+    protected $fillable = ['screen_name','token','email','password','original_password','country','city','status','profile_status','online_status','lat','long','profile_pic','profile_pic_type','profile_pic_date','is_completed','device_token','device_type','registration_status','accuracy','  member_type','valid_upto','is_trial','removead','removead_valid_upto','profiletext_change','photo_change','role','remember_token','created_at','updated_at' ];
 
 
     /**

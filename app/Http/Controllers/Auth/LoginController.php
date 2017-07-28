@@ -109,6 +109,7 @@ class LoginController extends Controller
                    $data['device_type'] = $request->Input('device_type');
                   /* $data['lat'] = $request->Input('lat');
                    $data['lng'] = $request->Input('lat');*/
+                   $response['user_data']      = $user;
                    $user->update($data);  
                    $http_status=200;
                 }
