@@ -151,6 +151,7 @@ class RegisterController extends Controller
             $data['token']=$common->randomGeneratorRefferal();
             $data['password_reset_requested']=false;
             $data['remember_token']=false;
+            $data['online_status']=0;
             $data['role']=2;
             $data['status']=1;
             $user=new User($data);
