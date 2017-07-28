@@ -21,7 +21,7 @@ use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Lang; 
 use Cookie;
-
+use carbon\carbon;
 class LoginController extends Controller
 {
     /*
@@ -73,6 +73,8 @@ class LoginController extends Controller
             'role'                => 'required',
             'device_token'        => 'required',
             'device_type'         => 'required',
+            'lat'                 => 'required',
+            'lng'                 => 'required'
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
@@ -82,7 +84,7 @@ class LoginController extends Controller
 
             $response['errors']   = $validator->errors()->first();
 
-            $response['status']   = 0;
+            $response['success']   = 0;
             $http_status=422;
 
         }else{
@@ -92,32 +94,35 @@ class LoginController extends Controller
             $credentials['email']=strtolower($credentials['email']);
             
             $credentials['status']=1;
-            //return $credentials;
-//print_r($credentials); die;
             try {
-               // echo $request->input('phone');
-               // die('here');
                 $credentials = $request->only('email','password','role');
                 $credentials['status']=1;
 
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials,array())) {
-                    echo $user_id = JWTAuth::parseToken()->authenticate()->id; die;
                   $response = compact('token');
                   $response['message']      = 'Login Successfull';
                   $response['status']       = 1;
-                  $response['userdata'] = User::where('email',$request['email'])->first();
+                   $user = User::where('email',$request['email'])->first();
 
-                  $http_status=200;
+                   $data['device_token'] = $request->Input('device_token');
+                   $data['device_type'] = $request->Input('device_type');
+                  /* $data['lat'] = $request->Input('lat');
+                   $data['lng'] = $request->Input('lat');*/
+                   $user->update($data);  
+                   $http_status=200;
                 }
                 else{
                     $response['message']      = 'Invalid Email/Password';
-                    $response['status']       = 0;
-                    $http_status=400;
+                    $response['success']       = 0;
+                    $http_status=204;
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
-                return response()->json(['error' => 'could_not_create_token'], 500);
+                //return response()->json(['error' => 'could_not_create_token'], 500);
+                $response['error']      = 'could_not_create_token';
+                $response['success']       = 0;
+                $http_status=400;
             }
         }
 
