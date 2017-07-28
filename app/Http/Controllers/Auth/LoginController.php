@@ -113,7 +113,7 @@ class LoginController extends Controller
                 else{
                     $response['success']       = 0;
                     $response['message']      = 'Invalid Email/Password';
-                    $http_status=204;
+                    $http_status=400;
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
