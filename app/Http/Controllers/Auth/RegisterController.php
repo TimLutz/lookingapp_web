@@ -20,6 +20,9 @@ use App\Http\Requests\EmployerRequest;
 use Input;
 use Flash;
 use App\Model\TrialModel;
+use App\Model\ProfileModel;
+use App\Model\UserpartnerModel;
+
 class RegisterController extends Controller
 {
     /*
@@ -82,20 +85,10 @@ class RegisterController extends Controller
             'role'          => 1,
         ]);
     }
-    public function postRegister(Request $request,CommonRepositary $common){
-        $data=$request->all();
-        $data['email']=strtolower($request->input('email'));
-        if($request->has('email')){
-            $match=array('role'=>2,'email'=>$data['email']);
-        }
 
-            $user=User::where($match)->first();
-            if($user) {
-                    $response['errors']  ='Email already exist.';
-                    $response['status']  =0;
-                    $http_status=200;    
-            } else{
-                $validator = Validator::make( $data  ,      [
+
+    public function postRegister(Request $request,CommonRepositary $common){
+        $validator = Validator::make( $request->all()  ,      [
            
             'screen_name'           => 'required',
             'email'                 => 'required|email|unique:users,email',
@@ -124,9 +117,6 @@ class RegisterController extends Controller
             $response['success']     = 0;
             $http_status=400;
         }else{
-            //if user enetered a refferal code at the time of registration
-            
-            
             $trial_details = TrialModel::first();
             $trial_month = 0;
             $member_type = 0;
@@ -138,26 +128,35 @@ class RegisterController extends Controller
                     $is_trial = 1;
                 }
             }
+            
+            $data['screen_name'] = $request->screen_name;
+            $data['email'] = $request->email;
+            $data['pasword'] = $request->password;
+            $data['currency'] = $request->currency;
+            $data['city'] = $request->city;
+            $data['device_token'] = $request->device_token;
+            $data['device_type'] = $request->device_type;
             $valid_upto = date('Y-m-d', strtotime('+' . $trial_month . ' days', strtotime(date('Y-m-d'))));
-            $data['original_password'] = base64_encode($data['password']);
+            $data['original_password'] = base64_encode($request->password);
             $data['profile_status'] = 1;
             $data['registration_status'] = 1;
-            $data['accuracy'] = (int) $accuracy;
+            $data['accuracy'] = (int) $request->accuracy;
             $data['member_type'] = $member_type; //for first 1 month free
             $data['valid_upto'] = $valid_upto; //for first 1 month free
             $data['is_trial'] = $is_trial; //for first 1 month free  trial preiod
             
-            $data['User']['profiletext_change'] = 1;
-            $data['User']['photo_change'] = 1;
+            $data['profiletext_change'] = 1;
+            $data['photo_change'] = 1;
             $data['password']=Hash::make($request->input('password'));
             $data['token']=$common->randomGeneratorRefferal();
             $data['password_reset_requested']=false;
             $data['remember_token']=false;
             $data['role']=2;
             $data['status']=1;
-            
             $user=new User($data);
             if($user->save()){
+                ProfileModel::create(['user_id'=>$user->id]);
+                UserpartnerModel::create(['user_id'=>$user->id]);
                 $response['message'] ="Registration done successfully";
                 $response['success']  =1;
                 $response['data']    =$user;
@@ -169,7 +168,6 @@ class RegisterController extends Controller
             }
             
         }
-            }
 
         
         return response()->json($response,$http_status);
