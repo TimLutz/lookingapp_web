@@ -109,9 +109,9 @@ class LoginController extends Controller
                        
                        if($user->update($userdata)){
                            $http_status=200;
+                           $response = compact('token');
                            $response['success']       = 1;
                            $response['message']      = 'Login Successfull'; 
-                           $response = compact('token');
                            $response['user_data']      = $user;
                        }  
                        else
