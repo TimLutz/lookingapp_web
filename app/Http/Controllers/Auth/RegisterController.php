@@ -90,7 +90,7 @@ class RegisterController extends Controller
     public function postRegister(Request $request,CommonRepositary $common){
         $validator = Validator::make( $request->all()  ,      [
            
-            'screen_name'           => 'required',
+            'screen_name'           => 'required|Alpha',
             'email'                 => 'required|email|unique:users,email',
             'password'              => 'required|confirmed',
             'password_confirmation' => 'required',
