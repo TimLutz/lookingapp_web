@@ -139,7 +139,7 @@ class RegisterController extends Controller
                 }
             }
             $valid_upto = date('Y-m-d', strtotime('+' . $trial_month . ' days', strtotime(date('Y-m-d'))));
-            $data['original_password'] = base64_encode($password);
+            $data['original_password'] = base64_encode($data['password']);
             $data['profile_status'] = 1;
             $data['registration_status'] = 1;
             $data['accuracy'] = (int) $accuracy;
