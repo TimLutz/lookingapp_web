@@ -82,7 +82,7 @@ class LoginController extends Controller
 
             //$response['errors']   = $validator->errors()->first();
             $response['success']   = 0;
-            $response['errors']   = $validator->errors();
+            $response['errors']   = $validator->errors()->first();
             $http_status=422;
 
         }else{
