@@ -104,12 +104,10 @@ class LoginController extends Controller
                   $response['message']      = 'Login Successfull';
                    $user = User::where('email',$request['email'])->first();
 
-                   $data['device_token'] = $request->Input('device_token');
-                   $data['device_type'] = $request->Input('device_type');
-                  /* $data['lat'] = $request->Input('lat');
-                   $data['lng'] = $request->Input('lat');*/
+                   $userdata['device_token'] = $request->Input('device_token');
+                   $userdata['device_type'] = $request->Input('device_type');
                    $response['user_data']      = $user;
-                   $user->update($data);  
+                   $user->update($userdata);  
                    $http_status=200;
                 }
                 else{
