@@ -19,6 +19,7 @@ use Queue;
 use App\Http\Requests\EmployerRequest;
 use Input;
 use Flash;
+use App\Model\TrialModel;
 class RegisterController extends Controller
 {
     /*
@@ -84,88 +85,87 @@ class RegisterController extends Controller
     public function postRegister(Request $request,CommonRepositary $common){
         $data=$request->all();
         $data['email']=strtolower($request->input('email'));
-        if($request->has('phone')){
-            $match=array('role'=>2,'phone'=>$request->input('phone'));
-        }else{
+        if($request->has('email')){
             $match=array('role'=>2,'email'=>$data['email']);
         }
 
             $user=User::where($match)->first();
             if($user) {
-                if($user->approved==2)
-                {
-                    $response['errors']  ='Sorry, your profile has been declined by the Madwall administrator.';
+                    $response['errors']  ='Email already exist.';
                     $response['status']  =0;
                     $http_status=200;    
-                }
             } else{
                 $validator = Validator::make( $data  ,      [
            
-            'first_name'            => 'required|Min:2|max:20|regex:/(^[A-Za-z0-9 ]+$)+/',
-            'last_name'             => 'required|Min:2|max:20|regex:/(^[A-Za-z0-9 ]+$)+/',
-            'email'                 => 're-register|required|email|unique:users,email',
-            'phone'                 => 'required|unique:users,phone|max:10',
-            'password'              => 'required|Min:6|Max:25|confirmed',
+            'screen_name'           => 'required',
+            'email'                 => 'required|email|unique:users,email',
+            'password'              => 'required|confirmed',
             'password_confirmation' => 'required',
-            'country_code'          => 'required',
-            "refference_code"       => 'exists:users,refferal_code'
+            'country'               => 'required',
+            "city"                  => 'required',
+            "device_token"          => 'required',
+            "device_type"           => 'required',
+            "accuracy"              => 'required',
         ],
         [
-            "first_name.required" =>'Please enter your first Name',
-            "last_name.required" =>'Please enter your last Name',
+            "screen_name.required" =>'Please enter your username',
             "email.required" =>'Please enter your Email',
-            "phone.required" =>'Please enter your Mobile Number',
             "password.required" =>'Please enter Password',
-            "first_name.regex" =>'Please enter a valid first name without numbers or special characters',
-            "last_name.regex" =>'Please enter a valid last name without numbers or special characters',
             "email.email" =>'Please enter a valid Email',
-            'phone.max'=>'Please enter a valid mobile number',
             "email.unique" =>'Email already exists',
-            "phone.unique" =>'Mobile Number already exists',
-            'password.Max'=>'Password should be at least 6 characters long containing at least 1 number and 1 alphabet',
-
+            "country"      => 'Country is required',
+            "city"      => 'City is required',
         ]
         );
         if ($validator->fails()) {
             
-            $response['errors']     = $validator->errors()->first();
-            $response['status']     = 0;
+          //  $response['errors']     = $validator->errors()->first();
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
             $http_status=400;
         }else{
             //if user enetered a refferal code at the time of registration
-            if($request->has('refference_code')){
-               $data['reffered_by']=User::where(array('refferal_code'=>$request->input('refference_code')))->value('_id');
             
+            
+            $trial_details = TrialModel::first();
+            $trial_month = 0;
+            $member_type = 0;
+            $is_trial = 0;
+            if ($trial_details) {
+                $trial_month = $trial_details['Trial']['month']; //month change to day as per client request
+                if ($trial_month > 0) {
+                    $member_type = 1;
+                    $is_trial = 1;
+                }
             }
+            $valid_upto = date('Y-m-d', strtotime('+' . $trial_month . ' days', strtotime(date('Y-m-d'))));
+            $data['original_password'] = base64_encode($password);
+            $data['profile_status'] = 1;
+            $data['registration_status'] = 1;
+            $data['accuracy'] = (int) $accuracy;
+            $data['member_type'] = $member_type; //for first 1 month free
+            $data['valid_upto'] = $valid_upto; //for first 1 month free
+            $data['is_trial'] = $is_trial; //for first 1 month free  trial preiod
             
-            $otp=$common->randomGenerator();
+            $data['User']['profiletext_change'] = 1;
+            $data['User']['photo_change'] = 1;
             $data['password']=Hash::make($request->input('password'));
-            $data['refferal_code']=$common->randomGeneratorRefferal();
+            $data['token']=$common->randomGeneratorRefferal();
             $data['password_reset_requested']=false;
-            $data['otp']=$otp;
-            $data['notification']=true;
-            $data['otp_expire']=\Carbon\Carbon::now()->addMinutes(env('OTPEXPIRE'));
-            $data['rating']=5;
+            $data['remember_token']=false;
             $data['role']=2;
-            $data['health_quiz_attempt']=3;
-            $data['user_slot_accepted'] = false;
-            $data['slot_requested_additional']=false; //slot_requested_additional
-            $data['approved']=0; //0->pending,1->approved,2->disapproved
-            $data['status']=false;
-            $data['profile_complete']=1;
-            $data['is_deleted']=false;
+            $data['status']=1;
+            
             $user=new User($data);
             if($user->save()){
-                $this->sendOtpMail($request,$otp);
-                $common->sendText($user->country_code.$user->phone,'Hello! Welcome to MadWall. Here is the code: '.$user->otp.'. Please confirm it in the app. Thanks!');
                 $response['message'] ="Registration done successfully";
-                $response['status']  =1;
+                $response['success']  =1;
                 $response['data']    =$user;
                 $http_status=200;
             }else{
                 $response['errors']="Something went wrong";
                 $response['status']=0;
-                $http_status=200;
+                $http_status=400;
             }
             
         }

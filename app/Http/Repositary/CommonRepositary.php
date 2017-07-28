@@ -41,7 +41,7 @@ class CommonRepositary{
     ====================================================================================================
     */
 
-    public function randomGeneratorRefferal($length=10){
+    public function randomGeneratorRefferal($length=5){
         $str = "";
         $characters = array_merge(range('A','Z'), range('0','9'));
         $max = count($characters) - 1;
@@ -49,7 +49,7 @@ class CommonRepositary{
             $rand = mt_rand(0, $max);
             $str .= $characters[$rand];
         }
-        if(User::where('refferal_code',$str)->exists()){
+        if(User::where('token',$str)->exists()){
             randomGeneratorRefferal();
         }
         return $str;
