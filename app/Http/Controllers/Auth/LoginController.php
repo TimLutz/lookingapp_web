@@ -92,7 +92,6 @@ class LoginController extends Controller
             $credentials['email']=strtolower($credentials['email']);
             
             $credentials['status']=1;
-            print_r($credentials); die;
             try {
                 $credentials = $request->only('email','password','role');
                 $credentials['status']=1;
@@ -103,6 +102,7 @@ class LoginController extends Controller
                   $response = compact('token');
                   $response['success']       = 1;
                   $response['message']      = 'Login Successfull';
+                  print_r($response);
                    $user = User::where('email',$request['email'])->first();
 
                    $data['device_token'] = $request->Input('device_token');
