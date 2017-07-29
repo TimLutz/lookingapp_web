@@ -17,10 +17,10 @@ use App\Jobs\SendOtpEmail;
 class UserController extends Controller
 {
     //
-    public function __construct()
+    /*public function __construct()
     {
-    	//$this->middleware('jwtcustom');
-    }
+    	$this->middleware('jwtcustom');
+    }*/
 
     /*=============================================================================================
     Function for get master hear about us and id proof data
