@@ -1,7 +1,0 @@
-AuthName "madwall.debutinfotech.com statistics"
-AuthType Basic
-AuthUserFile /home/madwall/.stats-htpasswd
-require valid-user
-<Files .stats-htpasswd>
-deny from all
-</Files>

@@ -1,1 +1,0 @@
-<script type="text/javascript">window.parent.CKEDITOR.tools.callFunction({!! json_encode($funcNum) !!}, {!! json_encode($url) !!});</script>
