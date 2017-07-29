@@ -399,4 +399,122 @@ class UserController extends Controller
         }
         return response()->json($response,$http_status);
     }
+
+    /*=====================================
+    Function for create profile
+    =======================================*/
+    public function postUserProfile(Request $request)
+    {
+        die('fcvnmbn');
+      $validator = Validator::make( $data  ,      [
+
+            'start_time'               => 'required|date_format:"d-m-Y H:i:s" ',
+            'end_time'            => 'required|date_format:"d-m-Y H:i:s"',
+            'profile_name'                => 'required|alpha',
+            'location'        => 'required',
+            'identity'         => 'required',
+            'ethnicity'        => 'required', 
+            'position'        => 'required', 
+            'behaviour'        => 'required', 
+            'latitude'        => 'required', 
+            'longitude'        => 'required', 
+            'travel_plans'        => 'required', 
+            'orientation'        => 'required', 
+            'safe_sex'        => 'required', 
+            'HIV_status'        => 'required', 
+            'cock_size'        => 'required', 
+            'cock_type'        => 'required', 
+            'kinks_and_fetishes'        => 'required', 
+            'birthday'        => 'required', 
+            'race'        => 'required|date_format:"d-m-Y H:i:s"', 
+            'height'        => 'required', 
+            'height_cm'        => 'required|numeric',
+            'weight'        => 'required',
+            'Weight_kg'        => 'required',
+            'hair_color'        => 'required',
+            'body_hair'        => 'required',
+            'facial_hair'        => 'required',
+            'eye_color'        => 'required',
+            'body_type'        => 'required',
+            'drugs'        => 'required',
+            'drinking'        => 'required',
+            'smoking'        => 'required',
+            'about_me'        => 'required',
+            'his_identitie'        => 'required',
+            'relationship_status'        => 'required',
+            'where_I_leave'        => 'required',
+
+        ]);
+
+        if ($validator->fails()) {
+
+            //$response['errors']   = $validator->errors()->first();
+            $response['success']   = 0;
+            $response['errors']   = $validator->errors()->first();
+            $http_status=422;
+
+        }else{
+            $clientId=JWTAuth::parseToken()->authenticate()->_id;
+            if($clientId)
+            {
+                $data['start_time'] = $request->start_time;
+                $data['end_time'] = $request->end_time;
+                $data['profile_name'] = $request->profile_name;
+                $data['location'] = $request->location;
+                $data['identity'] = $request->identity;
+                $data['ethnicity'] = $request->ethnicity;
+                $data['position'] = $request->position;
+                $data['behaviour'] = $request->behaviour;
+                $data['latitude'] = $request->latitude;
+                $data['longitude'] = $request->longitude;
+                $data['travel_plans'] = $request->travel_plans;
+                $data['orientation'] = $request->orientation;
+                $data['sale_sex'] = $request->safe_sex;
+                $data['HIV_status'] = $request->HIV_status;
+                $data['cock_type'] = $request->cock_type;
+                $data['cock_size'] = $request->cock_size;
+                $data['kinks_and_fetishes'] = $request->kinks_and_fetishes;
+                $data['birthday'] = $request->birthday;
+                $data['race'] = $request->race;
+                $data['height'] = $request->height;
+                $data['height_cm'] = $request->height_cm;
+                $data['weight'] = $request->weight;
+                $data['Weight_kg'] = $request->Weight_kg;
+                $data['hair_color'] = $request->hair_color;
+                $data['body_hair'] = $request->body_hair;
+                $data['facial_hair'] = $request->facial_hair;
+                $data['eye_color'] = $request->eye_color;
+                $data['body_type'] = $request->body_type;
+                $data['drugs'] = $request->drugs;
+                $data['drinking'] = $request->drinking;
+                $data['smoking'] = $request->smoking;
+                $data['about_me'] = $request->about_me;
+                $data['his_identitie'] = $request->his_identitie;
+                $data['relationship_status'] = $request->relationship_status;
+                $data['where_I_leave'] = $request->where_I_leave;
+                $data['facebook_link'] = $request->facebook_link;
+                $data['twitter_link'] = $request->twitter_link;
+                $data['linkedin_link'] = $request->linkedin_link;
+
+                $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
+                if($chk)
+                {
+                    User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
+                    $chk->update($data);
+
+                }
+                else
+                {
+                    $userdata['Profile']['id'] = $chk['Profile']['id'];
+                    $this->Profile->save($userdata);
+                    if ($chk['Profile']['about_me'] != $this->request->data['about_me']) {
+                        $ret = $this->User->updateAll(array('User.profiletext_change ' => 1, 'User.profile_text_change_date' => "'" . $current_date . "'"), array('User.id ' => $this->request->data['userid']));
+                    }
+                    echo json_encode(array('success' => 1, 'msg' => 'Data has been successfully updated'));
+                    exit;
+                }
+            }
+
+        }
+    }
 }

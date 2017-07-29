@@ -91,6 +91,7 @@ class RegisterController extends Controller
         $validator = Validator::make( $request->all()  ,      [
            
             'screen_name'           => 'required|alpha',
+           // 'screen_name'           => 'required',
             'email'                 => 'required|email|unique:users,email',
             'password'              => 'required|confirmed',
             'password_confirmation' => 'required',
@@ -130,7 +131,7 @@ class RegisterController extends Controller
             }
             
             $data['screen_name'] = $request->screen_name;
-            $data['email'] = $request->email;
+            $data['email'] = strtolower($request->email);
             $data['pasword'] = $request->password;
             $data['country'] = $request->currency;
             $data['city'] = $request->city;
@@ -158,7 +159,10 @@ class RegisterController extends Controller
             $data['long']=$request->long;
             $user=new User($data);
             if($user->save()){
+                /* Save user id into profile table */
                 ProfileModel::create(['user_id'=>$user->id]);
+
+                /* Save user id into partner table */
                 UserpartnerModel::create(['user_id'=>$user->id]);
                 $response['message'] ="Registration done successfully";
                 $response['success']  =1;
