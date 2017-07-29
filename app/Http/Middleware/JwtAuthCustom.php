@@ -21,7 +21,7 @@ class JwtAuthCustom
     try {
         if (! $user = JWTAuth::parseToken()->authenticate()) {
             return response()->json([
-                    'status' => -1,
+                    'status' => 1,
                     'message'    => 'Your session has been expired.',
                     
                 ],404);
@@ -30,7 +30,7 @@ class JwtAuthCustom
         } catch (TokenExpiredException $e) {
 
            return response()->json([
-                    'status' => -1,
+                    'status' => 2,
                     'message'    => 'Your session has been expired.',
                     
                 ],404);
@@ -38,7 +38,7 @@ class JwtAuthCustom
         } catch (TokenInvalidException $e) {
 
             return response()->json([
-                    'status' => -1,
+                    'status' => 3,
                     'message'    => 'Your session has been expired.',
                     
                 ],404);
@@ -46,7 +46,7 @@ class JwtAuthCustom
         } catch (JWTException $e) {
 
             return response()->json([
-                    'status' => -1,
+                    'status' => 4,
                     'message'    => 'Your session has been expired.',
                     
                 ],404);

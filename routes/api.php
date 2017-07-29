@@ -69,4 +69,4 @@ Route::post('/cancel-job', 'Api\JobController@postCancelJob');  // Cancel Job
 Route::post('/view-new-job', 'Api\JobController@postViewNewJobs');  // View New Jobs
 Route::get('/view-job-schedule', 'Api\JobController@getJobSchedule');  // View Job Schedule
 Route::post('/my-earnings', 'Api\JobController@getMyEarnings');  // View Job Schedule
-Route::post('/user-profile', 'Api\UserController@postUserProfile');  // View Job Schedule
+Route::post('/user-profile', 'Api\UserController@postUserProfile');  // update profile
