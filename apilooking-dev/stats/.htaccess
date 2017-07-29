@@ -1,0 +1,7 @@
+AuthName "grubitnow-m1.debutinfotech.com statistics"
+AuthType Basic
+AuthUserFile /home/grubitnow-m1/.stats-htpasswd
+require valid-user
+<Files .stats-htpasswd>
+deny from all
+</Files>
