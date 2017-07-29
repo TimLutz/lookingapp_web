@@ -51,9 +51,9 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        //$this->middleware('guest')->except('logout','getEmployerLogout');
-      //  $this->redirectTo = 'admin/dashboard';
-        //$this->middleware('jwtcustom', ['only' => ['getAgrement']]);
+        $this->middleware('guest')->except('logout','getEmployerLogout');
+        $this->redirectTo = 'admin/dashboard';
+        $this->middleware('jwtcustom', ['only' => ['getAgrement']]);
     }
     /*=============================================================================================
     Function for api login
