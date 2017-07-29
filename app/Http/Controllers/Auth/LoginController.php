@@ -129,7 +129,6 @@ class LoginController extends Controller
                 }
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
-                //return response()->json(['error' => 'could_not_create_token'], 500);
                 $response['success']       = 0;
                 $response['errors']      = 'could_not_create_token';
                 $http_status=400;
