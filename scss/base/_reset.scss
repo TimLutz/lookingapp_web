@@ -1,0 +1,154 @@
+@import '_custom-icons';
+
+html {
+	box-sizing: border-box;
+}
+*, *:before, *:after {
+	box-sizing: inherit;
+}
+
+* { max-height: 1000000px; }
+
+body {
+	color: $base-text-color;
+	background: $base-background-color;
+	font: #{$base-font-size}/#{$base-line-height} $base-font-family;
+	min-width: $base-min-width;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	
+	@include media('<desktop') {
+		@include font(14px);
+	}
+	
+	&.nav-active {
+		@include media('<desktop') {
+			width: 100%;
+			position: fixed;
+			overflow: hidden;
+		}
+	}
+}
+
+a {
+	text-decoration: none;
+	transition: all 0.25s ease;
+}
+
+.btn-default {
+	@include align;
+	color: #00b4ff;
+	font-weight: 900;
+	overflow: hidden;
+	position: relative;
+	padding: 17px 10px;
+	border-radius: 60px;
+	@include font(20px, 30px);
+	border: solid 2px #00b4ff;
+	
+	@include media('<widescreen') {
+		font-size: 16px;
+		padding: 12px 10px;
+	}
+	
+	* {
+		transition: all 0.25s;
+	}
+	
+	i {
+		margin: 0 -4px 0 21px;
+	}
+	
+	.normal {
+		display: block;
+		transition-delay: 0.25s;
+	}
+	
+	.hover {
+		padding: 15px 10px;
+		border-radius: 60px;
+		@include position(0);
+		transition-delay: 0s;
+		@include css3(transform,translate(-100%,0));
+	}
+	
+	&:hover {
+		.normal {
+			transition-delay: 0s;
+			@include css3(transform,translate(-100%,0));
+		}
+		
+		.hover {
+			transition-delay: 0.25s;
+			@include css3(transform,translate(0));
+		}
+	}
+}
+
+// adaptive images
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+// google map fix
+.gm-style img {max-width: none}
+
+[style*= background],
+[style^=background] {
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+}
+
+#wrapper {
+	overflow: hidden;
+	position: relative;
+}
+
+.container {
+	margin: 0 auto;
+	padding: 0 20px;
+	max-width: 1240px;
+	@extend %clearfix;
+}
+
+.row {
+	margin: 0 -20px;
+	@extend %clearfix;
+}
+
+.col-1 { width: 8.333333333333333%; }
+.col-2 { width: 16.66666666666667%; }
+.col-3 { width: 25%; }
+.col-4 { width: 33.33333333333333%; }
+.col-5 { width: 41.66666666666667%; }
+.col-6 { width: 50%; }
+.col-7 { width: 58.33333333333333%; }
+.col-8 { width: 66.66666666666667%; }
+.col-9 { width: 75%; }
+.col-10 { width: 83.33333333333333%; }
+.col-11 { width: 91.66666666666667%; }
+.col-12 { width: 100%; }
+
+
+[class*= col-],
+[class^=col-] {
+	float: left;
+	padding-left: 20px;
+	padding-right: 20px;
+	
+	@include media('<tablet') {
+		width: 100%;
+	}
+}
+
+.pull-left { float: left; }
+.pull-right { float: right; }
+
+.text-center { text-align: center; }
+
+nav ul,
+ul[class] {
+	@extend %listreset;
+}
