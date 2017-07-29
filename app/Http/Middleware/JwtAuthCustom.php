@@ -19,7 +19,6 @@ class JwtAuthCustom
     {
 
     try {
-        echo JWTAuth::parseToken()->authenticate(); die('vbcvnvbmbmbn'); 
         if (! $user = JWTAuth::parseToken()->authenticate()) {
             return response()->json([
                     'status' => -1,

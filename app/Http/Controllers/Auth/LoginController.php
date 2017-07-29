@@ -99,6 +99,7 @@ class LoginController extends Controller
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials,array())) {
                   
+                   $response = compact('token');
                    $user = User::where('email',$request['email'])->first();
                    if($user)
                    {
@@ -109,7 +110,6 @@ class LoginController extends Controller
                        
                        if($user->update($userdata)){
                            $http_status=200;
-                           $response = compact('token');
                            $response['success']       = 1;
                            $response['message']      = 'Login Successfull'; 
                            $response['user_data']      = $user;
