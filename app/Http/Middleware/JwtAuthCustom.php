@@ -19,7 +19,7 @@ class JwtAuthCustom
     {
 
     try {
-
+        echo JWTAuth::parseToken()->authenticate(); die; 
         if (! $user = JWTAuth::parseToken()->authenticate()) {
             return response()->json([
                     'status' => -1,
