@@ -67,6 +67,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('user-profile', 'UserController@postUserProfile');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('profile_picture', 'UserController@postProfilePicture');
+    $app->get('profile_details', 'UserController@getUserProfileDetail');
     
     
     

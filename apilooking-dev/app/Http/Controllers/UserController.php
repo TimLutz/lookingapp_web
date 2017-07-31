@@ -465,5 +465,15 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+    public function getUserProfileDetail(Request $request)
+    {
+    	/*if(JWTAuth::parseToken()->authenticate()->id)
+    	{*/
+	    	$id = $request->member_id;
+	    	$userdata = User::with('ProfileModel')->where(['id'=>$id,'status'=>1])->first();
+	    	print_r($userdata); die;
+    	/*}*/
+    	
+    }
 
 }
