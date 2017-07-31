@@ -396,4 +396,9 @@ return response()->json($response);
         }
         return response()->json($response,$http_status);
     }
+
+    public function postProfilePicture(Request $request)
+    {
+    	 
+    }
 }

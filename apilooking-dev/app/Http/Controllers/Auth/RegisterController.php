@@ -104,10 +104,10 @@ class RegisterController extends Controller
             if($user->save()){
                 
                     /* Save user id into profile table */
-                    ProfileModel::create(['user_id'=>$user->id]);
+                 //   ProfileModel::create(['user_id'=>$user->id]);
 
                     /* Save user id into partner table */
-                    UserpartnerModel::create(['user_id'=>$user->id]);
+                //    UserpartnerModel::create(['user_id'=>$user->id]);
                 
                \DB::commit();    
                 $response['message'] ="Registration done successfully";
