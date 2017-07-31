@@ -29,7 +29,7 @@ class RegisterController extends Controller
         \DB::beginTransaction();  
         $validator = Validator::make( $request->all()  ,      [
            
-            'screen_name'           => 'required|Min:4|Max:16|alpha_num',
+            'screen_name'           => 'required|Min:4|Max:16|alpha_num|unique:users,screen_name',
             'email'                 => 'required|email|unique:users,email',
             'password'              => 'required|Min:8|confirmed',
             'password_confirmation' => 'required',
@@ -46,6 +46,7 @@ class RegisterController extends Controller
             "screen_name.min" =>'Username must not be lessthen 4 character.',
             "screen_name.max" =>'Username should not be greaterthen 16 character.',
             "screen_name.alpha_num" =>'Username name may only contain letters and numbers.',
+            "screen_name.unique"=>"Username already exist.",
             "email.required" =>'Please enter your Email.',
             "password.required" =>'Please enter Password.',
             "email.email" =>'Please enter a valid Email.',
