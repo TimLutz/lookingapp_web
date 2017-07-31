@@ -238,14 +238,16 @@ return response()->json($response);
         }else{
         	
         		
-        		$user=User::where(array('email'=>$request->input('email'),'type'=>1||2))->first();
+        		$user=User::where(array('email'=>$request->input('email')))->first();
         		if(!$user){
-        			return response()->json(array('message'=>"Email entered doesn't match our records, please check your email and try again",'status'=>0));
+        			$response['success'] = 0;
+        			$response['message'] = 'Email entered doesn`t match our records, please check your email and try again';
+        			$http_status = 400;
         		}
         		
         		else{
 					
-        		$name = User::where('email',$request->email)->pluck('name');
+        		$name = User::where('email',$request->email)->pluck('screen_name');
         		$token = hash_hmac('sha256', Str::random(40), $this->hashKey);
         		$email = Input::get('email');
         		$template=EmailTemplate::find(24);
@@ -266,6 +268,7 @@ return response()->json($response);
         		
         		$response['message']	= 'Recovery password link has been sent on your email address';
 				$response['status']		= 1;
+				$http_status = 200;
         		
 			}
         		
@@ -461,4 +464,6 @@ return response()->json($response);
         }
         return response()->json($response,$http_status);
     }
+
+
 }

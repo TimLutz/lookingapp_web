@@ -15,7 +15,7 @@ return [
 
     'debug' => env('APP_DEBUG', false),
     //Website name
-    'website_name' => 'FrontlineApp',
+    'website_name' => 'LookingApp',
 
     /*
     |--------------------------------------------------------------------------

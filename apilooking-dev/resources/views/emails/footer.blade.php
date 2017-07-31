@@ -31,7 +31,7 @@
                                			<td width="5%">&nbsp;</td>
                                     	<td align="left" valign="center">
                                     	<p>Thanks &amp; Regards,<br>
-										<b>The Frontline Team</b>
+										<b>The LookingApp Team</b>
 										</p><p>
 										
                        					 </p></td>

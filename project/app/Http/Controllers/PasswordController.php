@@ -14,6 +14,8 @@ use DB;
 use Mail;
 use Hash;
 
+use App\Http\Requests\ForgetPasswordappRequest;
+
 class PasswordController extends Controller {
 
 
@@ -54,7 +56,7 @@ class PasswordController extends Controller {
 	  * Updated on: 21/8/2015
 	**/
 	
-	public function Resetpassword(Requests\ForgetPasswordappRequest $request)
+	public function Resetpassword(ForgetPasswordappRequest $request)
 	{
 		try
 		{
