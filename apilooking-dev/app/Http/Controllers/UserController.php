@@ -18,7 +18,7 @@ use Hash;
 use Auth;
 use Mail;
 use Image;
-
+use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Lang;
 
@@ -399,6 +399,66 @@ return response()->json($response);
 
     public function postProfilePicture(Request $request)
     {
-    	 
+    	$data = $request->all();
+    	$validator = Validator::make( $data  ,      [
+
+            
+            'profile_pic_type'         => 'required|numeric',
+            'profile_pic'        => 'required',
+            'profie_type' =>  'required'
+        ]);		 
+        if ($validator->fails()) {
+
+            //$response['errors']   = $validator->errors()->first();
+            $response['success']   = 0;
+            $response['errors']   = $validator->errors();
+            $http_status=422;
+
+        }else{
+            $clientId=JWTAuth::parseToken()->authenticate()->id;
+            if($clientId)
+            {
+            	if($data['profile_pic_type'] == '')
+            		$data['profile_pic_type'] = 0;
+
+            	$data['profile_pic_date'] = Carbon::now();
+            	$data['photo_change'] = 1;
+            	$data['registration_status'] = 3;
+            	if($data['profie_type']=='profile')
+            	{
+            		unset($data['profie_type']);
+            		$user = User::where(array('id'=>$clientId))->first();
+            		if($user)
+            		{
+	            		if($user->where(array('id'=>$clientId))->update($data))
+	            		{
+	            			$response['success'] = 1;
+			                $response['message'] = 'profile picture has been successfully uploaded';
+			                $http_status = 200;
+	            		}
+	            		else
+	            		{
+	            			$response['success'] = 0;
+			                $response['message'] = 'error in update';
+			                $http_status = 400;
+	            		}
+            		}
+            		else
+            		{
+            			$response['success'] = 0;
+		                $response['message'] = 'No record found';
+		                $http_status = 400;
+            		}
+            	}
+            }
+            else
+            {
+            	$response['success'] = 0;
+                $response['message'] = 'error in update';
+                $http_status = 400;
+            }
+
+        }
+        return response()->json($response,$http_status);
     }
 }

@@ -62,14 +62,17 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
 	$app->post('changename', 'UserController@changename');
 	$app->post('userimage-upload', 'UserController@uploadimage');
 	
+	
     $app->post('send-mail', 'CronejobController@cronejob');
     $app->post('user-profile', 'UserController@postUserProfile');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
+    $app->post('profile_picture', 'UserController@postProfilePicture');
     
     
     
     //Timeslot routes here
 	$app->post('all-timeslots', 'TimeslotController@alltimeslot');
+	
 
     });
 

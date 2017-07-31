@@ -62,7 +62,7 @@ class AuthController extends Controller {
 
             //$response['errors']   = $validator->errors()->first();
             $response['success']   = 0;
-            $response['errors']   = $validator->errors()->first();
+            $response['errors']   = $validator->errors();
             $http_status=422;
 
         }else{
