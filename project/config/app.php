@@ -152,6 +152,7 @@ return [
         Collective\Html\HtmlServiceProvider::class,
         Laracasts\Flash\FlashServiceProvider::class,
 		App\Providers\ValidationServiceProvider::class,
+        Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,  
     ],
 
     /*
@@ -203,7 +204,8 @@ return [
         'Form' => Collective\Html\FormFacade::class,
 		'Html' => Collective\Html\HtmlFacade::class,
 		'Flash' => \Laracasts\Flash\Flash::class,
-
+        'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
+        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
     ],
 
 ];

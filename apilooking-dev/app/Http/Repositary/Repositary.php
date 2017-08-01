@@ -4,10 +4,14 @@ use App\Models\CoupenVerify;
 use App\Models\User;
 use App\Models\Generalfield;
 use App\Models\GeneralInformation;
-use App\Models\JobSeekers;
-use Validator;
+use App\Models\RestrictionModel;
+use App\Models\ShareAlbumModel;
+use App\Models\UserLooksexModel;
+use App\Models\ViewerModel;
+use App\Models\JobSeekers; 
+use Validator; 
 use DB;
-use Mail;
+use Mail; 
 
 class Repositary
 {
@@ -207,6 +211,70 @@ class Repositary
 
 	
 
+    public function getlimit($membertype=null,$limit=null)
+    {
+    	$match_limit = RestrictionModel::where(['member_type'=>$membertype,'limit_type'=>$limit])->first();
+        if ($match_limit) {
+            $limit = $match_limit->limit;
+        } else {
+            $limit = 0;
+        }
+        //echo $member_type;die;
+        return $limit;
+    }
+
+    public function check_view($id)
+    {
+    	    
+        $views = ViewerModel::where(['viewer_user_id'=>$id,'is_view'=>1])->first();
+        if ($views) {
+            $is_view = 1;
+        } else {
+            $is_view = 0;
+        }
+        return $is_view;
+        
+    }
+
+    public function check_sharealbum($id)
+    {
+        $views = ShareAlbumModel::where(['receiver_id'=>$id,'is_view'=>1])->first();    
+        if ($views) {
+            $is_view = 1;
+        } else {
+            $is_view = 0;
+        }
+        return $is_view;
+    }
+
+    public function count_view($id)
+    {
+        $views = ViewerModel::where(['viewer_user_id'=>$id,'is_view'=>1])->count();
+        return $views;
+    }
+
+
+    public function count_sharealbum($id) {
+        $views = ShareAlbumModel::where(['receiver_id'=>$id,'is_view'=>1])->count();    
+        return $views;
+    }
+
+
+    public function check_profile_active($currentDate=null,$id=null)
+    {
+    	$if_exist_profile = UserLooksexModel::where('user_id',$id)
+    										  ->where('start_time','<=',$currentDate)
+    										  ->where('end_time','>=',$currentDate)
+    										  ->get();
+    	
+        if (count($if_exist_profile) > 0) {
+            $is_profile_active = 1;
+        } else {
+            $is_profile_active = 0;
+        }
+        return $is_profile_active;
+    }
+    
 	
 
 }

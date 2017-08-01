@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+//use App\Models\ChatModel;
 
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract {
 
@@ -18,7 +19,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	 * @var string
 	 */
 	protected $table = 'users';
-
+	//protected $appends = array('distance');
 	/**
 	 * The attributes that are mass assignable.
 	 *
@@ -33,4 +34,25 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	 * @var array
 	 */
 	protected $hidden = ['password'];
+
+
+	public function ChatUsers()
+	{
+		return $this->hasMany('App\Models\ChatModel');
+	}
+
+	public function Profile()
+	{
+		return $this->hasOne('App\Models\ProfileModel','user_id');
+	}
+
+	public function Userpartner()
+	{
+		return $this->hasMany('App\Models\UserpartnerModel','user_id');
+	}
+
+	/*public static function getDistanceAttribute($value)
+	{
+
+	}*/
 }

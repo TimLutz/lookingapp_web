@@ -3,7 +3,10 @@
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\ProfileModel;
+use App\Models\ProfileModel; 
+use App\Models\BlockUserModel; 
+use App\Models\UserLooksexModel; 
+
 use App\Models\EmailTemplate;
 use JWTAuth;
 use Illuminate\Http\Request;
@@ -19,7 +22,6 @@ use Auth;
 use Mail;
 use Image;
 use Carbon\Carbon;
-
 use Illuminate\Support\Facades\Lang;
 
 class UserController extends Controller {
@@ -27,6 +29,7 @@ class UserController extends Controller {
 	protected $hashKey;
 	
 	public function __construct(){
+     // $this->middleware('jwtcustom');
       $this->middleware('jwt.auth', ['except' => ['postLogin','ForgetPassword']]);
     }
     
@@ -436,7 +439,7 @@ return response()->json($response);
 	            		if($user->where(array('id'=>$clientId))->update($data))
 	            		{
 	            			$response['success'] = 1;
-			                $response['message'] = 'profile picture has been successfully uploaded';
+			                $response['message'] = 'Profile picture has been successfully uploaded';
 			                $http_status = 200;
 	            		}
 	            		else
@@ -473,6 +476,189 @@ return response()->json($response);
 	    	$userdata = User::with('ProfileModel')->where(['id'=>$id,'status'=>1])->first();
 	    	print_r($userdata); die;
     	/*}*/
+
+    }
+
+    
+
+    public function postUpdateAfterLogin(Request $request,Repositary $common)
+    {
+    	$clientId = JWTAuth::parseToken()->authenticate()->id; 
+    	if($clientId)
+    	{
+    		$userDetail = User::where(['id'=>$clientId])->first();
+    		if ($userDetail->status == 0) {
+                   $response['success'] = -1;
+                   $response['msg'] = 'inactive user';
+                   $http_status = 400;
+                   return response()->json($response,$http_status);
+            }
+            $valid_upto = $userDetail->valid_upto;
+            $removead_valid_upto = $userDetail->removead_valid_upto;
+            if ($userDetail->member_type == 1) {
+                if (date('Y-m-d') > $valid_upto) {
+                    die('member');
+                    $userDetail->update(['member_type'=>0,'is_trial'=>0]);
+                    //=====Expire loking profile====//
+                    $newTime = date("Y-m-d H:i:s", strtotime(Carbon::now() . " -1 minutes"));
+
+                    //$this->UserLooksex->saveField('end_time', $newTime);
+                    /*$this->UserLooksex->updateAll(
+                            array('UserLooksex.end_time' => "'" . $newTime . "'"), array('UserLooksex.user_id' => $user_id)
+                    );*/
+
+                }
+            }
+            if ($userDetail->removead == 1) {
+                if (date('Y-m-d') > $removead_valid_upto) {
+                    $this->User->updateAll(
+                            array('User.removead' => 0), array('User.id' => $user_id)
+                    );
+                    $userDetail->update(['removead'=>0]);
+                }
+            }
+
+            if ($clientId && $request->lat && $request->long && $request->accuracy) {
+	            $userdetailsupdate  = User::where(['id'=>$clientId,'status'=>1])->first();
+
+	            if ($userdetailsupdate) {
+	                $data = $request->all();
+	                $data['accuracy'] = (int) $data['accuracy'];
+	                /*                 * ****** update field for online ******** */
+	                $userdetailsupdate->update($data) ;
+	            }
+	        }
+
+    	}
+
+    }
+
+    public function getFilterValue(Request $request,Repositary $common)
+    {
+    	$clientId = JWTAuth::parseToken()->authenticate()->id;
+    	$current_date = Carbon::now();
+    	/******Get Unbaned user********/
+    	$unbanId = User::where(['status'=>0])->lists('id')->toArray();
+    	
+    	$block_id = BlockUserModel::where(['user_id'=>$clientId])->lists('blocked_id')->toArray();
+    	
+    	$block_user_id = BlockUserModel::where(['blocked_id'=>$clientId])->lists('user_id')->toArray();
+
+    	$block_user_id = array_merge($block_user_id, $block_id, $unbanId);
+    	
+    	$is_view = 0;
+        $is_share = 0;
+        $is_profile_active = 0;
+        if ($clientId) {
+            //======get limit for free user or paid user==//
+            $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type,'Match');
+            $limit = $limit - 1;
+
+            /*$user = User::where('id','!=',$clientId)
+            $user = $user->get();*/
+            /*             * ******check any one view my profile******** */
+            $is_view = $common->check_view($clientId);
+            /*             * ******End********* */
+            /*             * ******check any one share album with me******** */
+            $is_share = $common->check_sharealbum($clientId);
+            /*             * ******End********* */
+            /*             * ******count total user view my profile******** */
+            $count_view = $common->count_view($clientId);
+            /*             * ******End********* */
+            /*             * ******count total user share album with me******** */
+            $count_sharealbum = $common->count_sharealbum($clientId);
+            $total_view_and_share = $count_view + $count_sharealbum;
+            /*             * ******End********* */
+            /*             * *****check profile active ********* */
+            $is_profile_active = $common->check_profile_active($current_date, $clientId);  
+        
+       		
+	        $user_data = User::with(['ChatUsers','Profile','Userpartner'])
+	        					->where(['registration_status'=>3])
+	        					->whereNotIn('id',$block_user_id)
+	        					->where('id','!=',$clientId);
+	        /*if(isset($request->recently_email))
+	        {
+	        	$user_data = $user_data->where('email',explode(',', $request->recently_email));
+	        }	*/
+
+	        $user_data = $user_data->limit($limit)->get(); 
+	        
+	        
+	        //print_r($user_data);        					
+	        $all_user_data = array();
+	        $total_unread_message = 0;
+            if ($user_data) {
+                //pr($user_data) ;die;
+                foreach ($user_data as $key => $value) {
+                    if(count($value['ChatUsers']))
+                    {
+                    	foreach($value['ChatUsers'] As $k => $val)
+                    	{
+                    		if($val->invite > 0)
+                    		{
+                    			$invite = 1;
+                    		}
+                    		else
+                    		{
+                    			$invite = 0;
+                    		}
+                    		$total_unread_message+=($value->count + $invite);
+                    	}
+                    }
+                }
+                $accuracy_value[] = $value['accuracy'];
+            }
+
+            $accuracy_max_value = (int) max($accuracy_value);
+
+            /*         * ******for give user looksex data******** */
+	        $user_looksexdata = array();
+	        $user_looksex = UserLooksexModel::where('user_id',$clientId)
+	        								  ->where('start_time','<=',$current_date)
+	        								  ->where('end_time','>=',$current_date)
+	        								  ->first();
+
+	        if(count($user_looksex))
+	        {
+	        	$user_looksexdata = $user_looksexdata;
+	        }								  
+	           
+            //***************END***************//
+
+            if($user_data)
+            {
+            	$response['success'] = 1;
+            	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'data' => $user_data];
+            	$http_status = 400;
+            }
+            else
+            {
+            	$response['success'] = 0;
+            	$response['message'] = ['data not found'];
+            	$http_status = 400;
+            }
+        }
+        return response()->json($response,$http_status);
+        /*if (isset($this->request->data['userid']) && $current_date) {
+
+            if ($user_data) {
+                foreach ($user_data as $key => $value) {
+                    //pr($value);die;
+                    if ($value['ChatUser']['invite'] > 0) {
+                        $invite = 1;
+                    } else {
+                        $invite = 0;
+                    }
+                    $total_unread_message+=($value['ChatUser']['count'] + $invite);
+                }
+            }
+         }*/   
+
+		       			   
+		
+
+    	
     	
     }
 
