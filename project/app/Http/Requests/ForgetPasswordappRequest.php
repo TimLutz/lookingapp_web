@@ -26,7 +26,7 @@ class ForgetPasswordappRequest extends Request
         return [
 			//'old_password' => 'required',
             //'password' => 'passwordcustom|confirmed|min:6|max:20',
-			'password' => 'confirmed|min:6|max:20',
+			'password' => 'confirmed|min:8|max:20',
 			'password_confirmation' => 'required',	
 		];
     }

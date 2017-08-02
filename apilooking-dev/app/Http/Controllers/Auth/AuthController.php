@@ -43,40 +43,34 @@ class AuthController extends Controller {
         
         $data=$request->All();
 
-        if($request->has('email')){
-           $data['email']=strtolower($request->input('email')); 
-        }
-        $validator = Validator::make( $data  ,      [
-
+        $validator = Validator::make( $data  ,[
             'email'               => 'required|email|exists:users,email',
             'password'            => 'required',
-            'role'                => 'required',
             'device_token'        => 'required',
             'device_type'         => 'required'
         ],
         [
             'email.exists'=>"We couldn't find you.Please check your credentials.",
-        ]);
+            'password.required'=>'Please enter password.',
+            'device_token.required'=>'Device token is not found.',
+            'device_type.required'=>'Device type is not found.',
+        ]); 
 
         if ($validator->fails()) {
 
-            //$response['errors']   = $validator->errors()->first();
+            
             $response['success']   = 0;
             $response['errors']   = $validator->errors();
             $http_status=422;
 
         }else{
-        // grab credentials from the request
-            
-            $credentials=$request->only('email', 'password');
-            $credentials['email']=strtolower($credentials['email']);
             try {
-                $credentials = $request->only('email','password','role');
+                $credentials = $request->only('email','password');
                 $credentials['status']=1;
+                $credentials['role']=2;
 
                 // verify the credentials and create a token for the user
                 if ($token = JWTAuth::attempt($credentials)) {
-                   $response = compact('token');
                    $user = User::where('email',$request['email'])->first();
                    if($user)
                    {
@@ -86,6 +80,7 @@ class AuthController extends Controller {
                        $userdata['modification_date'] = Carbon::now();
                        
                        if($user->update($userdata)){
+                           $user['token'] = $token;
                            $http_status=200;
                            $response['success']       = 1;
                            $response['message']      = 'Login Successfull'; 
@@ -107,12 +102,13 @@ class AuthController extends Controller {
             } catch (JWTException $e) {
                 // something went wrong whilst attempting to encode the token
                 $response['success']       = 0;
-                $response['errors']      = 'could_not_create_token';
+                $response['message']      = 'could_not_create_token';
                 $http_status=400;
             }
         }
         // all good so return the token
         return response()->json($response,$http_status);
+        
     }
     
     

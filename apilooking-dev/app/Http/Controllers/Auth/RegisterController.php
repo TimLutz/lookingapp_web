@@ -18,6 +18,7 @@ use App\Models\TrialModel;
 use App\Models\ProfileModel;
 use App\Models\UserpartnerModel;
 use DB;
+use Carbon\Carbon;
 class RegisterController extends Controller
 {
     public function __construct()
@@ -33,11 +34,11 @@ class RegisterController extends Controller
             'email'                 => 'required|email|unique:users,email',
             'password'              => 'required|Min:8|confirmed',
             'password_confirmation' => 'required',
-            'country'               => 'required',
-            "city"                  => 'required',
+            'country'               => 'required|Min:8|Max:40',
+            "city"                  => 'required|Min:8|Max:40',
             "device_token"          => 'required',
             "device_type"           => 'required',
-            "accuracy"              => 'required',
+            "accuracy"              => 'required|numeric',
             "lat"              => 'required',
             "long"              => 'required',
         ],
@@ -56,71 +57,67 @@ class RegisterController extends Controller
             "lat.required"      => 'Latitude is required.',
             "long.required"      => 'Longitude is required.',
             'password.min' => 'Please enter minimum 8 character.',
-            'password.confirmed' => 'Password donot matched.'
+            'password.confirmed' => 'Password donot matched.',
+            'country.max'    => 'Country name must be atleast 8 character',
+            'country.min'    => 'Country name should not be greater then 40 character',
+            'city.max'    => 'City name must be atleast 8 character',
+            'city.min'    => 'City name should not be greater then 40 character',
+            'accuracy.numeric'    => 'Accuracy must be number',
         ]
         );
         if ($validator->fails()) {
             $response['errors']     = $validator->errors();
             $response['success']     = 0;
-            $http_status=400;
+            $http_status=422;
         }else{
 
-            $trial_details = TrialModel::first();
-            $trial_month = 0;
-            $member_type = 0;
-            $is_trial = 0;
-            if ($trial_details) {
-                $trial_month = $trial_details['Trial']['month']; //month change to day as per client request
-                if ($trial_month > 0) {
-                    $member_type = 1;
-                    $is_trial = 1;
-                }
-            }
-            $data = $request->all();
-            $data['screen_name'] = $request->screen_name;
-            $data['email'] = strtolower($request->email);
-            $data['password'] = $request->password;
-            $valid_upto = date('Y-m-d', strtotime('+' . $trial_month . ' days', strtotime(date('Y-m-d'))));
-            $data['original_password'] = base64_encode($request->password);
-            $data['profile_status'] = 1;
-            $data['registration_status'] = 1;
-            $data['accuracy'] = (int) $request->accuracy;
-            $data['member_type'] = $member_type; //for first 1 month free
-            $data['valid_upto'] = $valid_upto; //for first 1 month free
-            $data['is_trial'] = $is_trial; //for first 1 month free  trial preiod
-            
-            $data['profiletext_change'] = 1;
-            $data['photo_change'] = 1;
-            $data['password']=Hash::make($request->input('password'));
-            $data['token']=$common->randomGeneratorRefferal();
-            $data['password_reset_requested']=false;
-            $data['remember_token']=false;
-            $data['online_status']=0;
-            $data['role']=2;
-            $data['status']=1;
-            $data['lat']=$request->lat;
-            $data['long']=$request->long;
-            $user=new User($data);
+				$trial_details = TrialModel::first();
+				$trial_month = 0;
+				$member_type = 0;
+				$is_trial = 0;
+				if ($trial_details) {
+					$trial_month = $trial_details['Trial']['month']; //month change to day as per client request
+					if ($trial_month > 0) {
+						$member_type = 1;
+						$is_trial = 1;
+					}
+				}
+				$data = $request->all();
+				//$data['email'] = strtolower($request->email);
+				$data['profile_status'] = 1;
+				$data['registration_status'] = 1;
+				$data['accuracy'] = (int) $request->accuracy;
+				$data['member_type'] = $member_type; //for first 1 month free
+				$data['valid_upto'] = Carbon::now()->addDays(intval($trial_month)); //for first 1 month free
+				$data['is_trial'] = $is_trial; //for first 1 month free  trial preiod
+				$data['profiletext_change'] = 1;
+				$data['photo_change'] = 1;
+				$data['password']=Hash::make($request->password);
+				$data['profile_id']=$common->randomGeneratorRefferal();
+				$data['password_reset_requested']=false;
+				$data['remember_token']=false;
+				$data['online_status']=0;
+				$data['role']=2;
+				$data['status']=1;
+				if($user=User::create($data)){
 
-            if($user->save()){
-                
-                    /* Save user id into profile table */
-                 //   ProfileModel::create(['user_id'=>$user->id]);
+				/* Save user id into profile table */
+				//   ProfileModel::create(['user_id'=>$user->id]);
 
-                    /* Save user id into partner table */
-                //    UserpartnerModel::create(['user_id'=>$user->id]);
-                
-               \DB::commit();    
-                $response['message'] ="Registration done successfully";
-                $response['success']  =1;
-                $response['data']    =$user;
-                $http_status=200;
-            }else{
-                \DB::rollback();
-                $response['errors']="Something went wrong";
-                $response['status']=0;
-                $http_status=400;
-            }
+				/* Save user id into partner table */
+				//    UserpartnerModel::create(['user_id'=>$user->id]);
+
+				\DB::commit();    
+				$response['message'] ="Registration done successfully";
+				$response['success']  =1;
+				$response['data']    =$user;
+				$http_status=200;
+				}else{
+				\DB::rollback();
+				$response['errors']="Something went wrong";
+				$response['status']=0;
+				$http_status=400;
+				}
         }        
         return response()->json($response,$http_status);
     }

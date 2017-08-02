@@ -203,7 +203,7 @@ class Repositary
             $rand = mt_rand(0, $max);
             $str .= $characters[$rand];
         }
-        if(User::where('token',$str)->exists()){
+        if(User::where('profile_id',$str)->exists()){
             randomGeneratorRefferal();
         }
         return $str;
@@ -275,6 +275,33 @@ class Repositary
         return $is_profile_active;
     }
     
+
+    public function distance($lat1=null, $lon1=null, $lat2=null, $lon2=null, $unit=null) {
+        $this->autoRender = false;
+        $theta = $lon1 - $lon2;
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = acos($dist);
+        $dist = rad2deg($dist);
+        $miles = $dist * 60 * 1.1515;
+        $unit = strtoupper($unit);
+        /*         * *** M= Miles ,K=Kilometers, N = Nautical Miles ************* */
+        if ($unit == "K") {
+            if (is_nan($miles) == 1) {
+                $miles = 0;
+            }
+            return round(($miles * 1.609344));
+        } else if ($unit == "N") {
+            if (is_nan($miles) == 1) {
+                $miles = 0;
+            }
+            return round(($miles * 0.8684));
+        } else {
+            if (is_nan($miles) == 1) {
+                $miles = 0;
+            }
+            return round($miles);
+        }
+    }
 	
 
 }

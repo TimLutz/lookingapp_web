@@ -52,9 +52,17 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
 	$app->post('badge-reset', 'NotificationController@updatebadge');
 	$app->post('all-notifications', 'NotificationController@allnotifications');
 	
+	
+	
+	
+	
 	$app->post('auth/login', 'Auth\AuthController@postLogin');
 	$app->post('auth/logout', 'Auth\AuthController@postLogout');
 	$app->get('auth/refreshtoken', 'Auth\AuthController@refreshToken');
+	
+	
+	
+	
 
 	$app->post('forget-password', 'UserController@ForgetPassword');
 	$app->get('profile-data', 'UserController@profiledata');
