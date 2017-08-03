@@ -626,8 +626,7 @@ return response()->json($response);
             $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner'])
                                 ->where(['registration_status'=>3])
                                 ->whereNotIn('id',$block_user_id)
-                                ->where('id','!=',$clientId)
-                                ->select('id','profile_id','screen_name','online_status','profile_pic','accuracy');
+                                ->where('id','!=',$clientId);
 
 	        $user_data = $user_data->limit($limit)->get(); 
 	   
