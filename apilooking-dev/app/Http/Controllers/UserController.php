@@ -29,7 +29,6 @@ class UserController extends Controller {
 	protected $hashKey;
 	
 	public function __construct(){
-     // $this->middleware('jwtcustom');
       $this->middleware('jwt.auth', ['except' => ['postLogin','ForgetPassword']]);
     }
     
@@ -218,121 +217,96 @@ return response()->json($response);
 
 	}
 	
-
-//Function for forget password jobseekers
-	//Input request
-	// return true if validated without error 
-	// craeted_at 11/09/2016
+     /**
+     * Name: ForgetPassword
+     * Purpose: function for user forgot our password
+     * created By: Lovepreet
+     * Created on :- 1 Aug 2017
+     *
+     **/
 
 	public function ForgetPassword(Request $request)
 	{
 		
 		
 		$validator = Validator::make( $request->all()  ,      [
-           
 			'email' => 'required|email|exists:users',
-			
-		]);
+		],
+        [
+            'email.required' => 'Please enter your registered email.',
+            'email.email'    => 'Please enter valid email.',
+            'email.exists'   =>  'Email doesn`t exist in the our record.'  
+        ]);
 		if ($validator->fails()) {
-			
 			$response['errors'] 	= $validator->errors();
-           	
-			$response['status']		= 0;
+			$response['success']		= 422;
         }else{
-        	
-        		
         		$user=User::where(array('email'=>$request->input('email')))->first();
         		if(!$user){
         			$response['success'] = 0;
         			$response['message'] = 'Email entered doesn`t match our records, please check your email and try again';
         			$http_status = 400;
         		}
-        		
         		else{
-					
-        		$name = User::where('email',$request->email)->pluck('screen_name');
-        		$token = hash_hmac('sha256', Str::random(40), $this->hashKey);
-        		$email = Input::get('email');
-        		$template=EmailTemplate::find(24);
-        		 $url = url('../reset-password/'.$token);
-        		$link="<a href='$url'>Click here</a>";
-			$find=array('@company@','@click here@','@email@','@name@');
-			$values=array(env('SITENAME'),$link,$email,$name);
-			 $body=str_replace($find,$values,$template->content);
+            		$name = User::where('email',$request->email)->pluck('screen_name');
+            		$token = hash_hmac('sha256', Str::random(40), $this->hashKey);
+            		$email = Input::get('email');
+            		$template=EmailTemplate::find(24);
+            		 $url = url('../reset-password/'.$token);
+            		$link="<a href='$url'>Click here</a>";
+    			    $find=array('@company@','@click here@','@email@','@name@');
+    			    $values=array(env('SITENAME'),$link,$email,$name);
+    			    $body=str_replace($find,$values,$template->content);
 
-			//Send Mail
-			 Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
-			{
-				$m->to(Input::get('email'))
-					->subject($template->subject);
-			});
-			$user->remember_token = $token;
-			$user->update();
-        		
-        		$response['message']	= 'Recovery password link has been sent on your email address';
-				$response['status']		= 1;
-				$http_status = 200;
-        		
-			}
-        		
-        		
-        		
-        		
-
-        	
+    			//Send Mail
+    			    Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
+        			{
+        				$m->to(Input::get('email'))
+        					->subject($template->subject);
+        			});
+        			$user->remember_token = $token;
+        			$user->update();
+            		$response['message']	= 'Recovery password link has been sent on your email address';
+    				$response['status']		= 1;
+    				$http_status = 200;	
+    			}	
         }
 		return response()->json($response);
 	}
 
-	/*=====================================
-    Function for create profile
-    =======================================*/
+	/**
+     * Name: postUserProfile
+     * Purpose: function for update and create  user basic profile
+     * created By: Lovepreet
+     * Created on :- 1 Aug 2017
+     *
+     **/
     public function postUserProfile(Request $request)
     {
       $data = $request->all();	
       $validator = Validator::make( $data  ,      [
-
-            //'start_time'               => 'required|date_format:"Y-m-d H:i:s" ',
-            //'end_time'            => 'required|date_format:"Y-m-d H:i:s"',
-            //'profile_name'                => 'required|alpha',
-            //'location'        => 'required',
-            'identity'         => 'required',
-            'ethnicity'        => 'required', 
-            //'position'        => 'required', 
-          //  'behaviour'        => 'required', 
-        //    'latitude'        => 'required', 
-      //      'longitude'        => 'required', 
-       //     'travel_plans'        => 'required', 
-       //     'orientation'        => 'required', 
-       //     'safe_sex'        => 'required', 
-      //      'HIV_status'        => 'required', 
-      //      'cock_size'        => 'required', 
-    //        'cock_type'        => 'required', 
-      //      'kinks_and_fetishes'        => 'required', 
-              'birthday'        => 'required|date_format:"Y-m-d"', 
-      //      'race'        => 'required', 
-              'height'        => 'required', 
-       //     'height_cm'        => 'required|numeric',
-              'weight'        => 'required',
-        //    'Weight_kg'        => 'required',
-        //    'hair_color'        => 'required',
-        //    'body_hair'        => 'required',
-        //    'facial_hair'        => 'required',
-        //    'eye_color'        => 'required',
-        //    'body_type'        => 'required',
-        //    'drugs'        => 'required',
-        //    'drinking'        => 'required',
-       //     'smoking'        => 'required',
-        //    'about_me'        => 'required',
-            'his_identitie'        => 'required',
-            'relationship_status'        => 'required',
-         //   'where_I_leave'        => 'required',
-
-        ]);
+             'identity'            => 'required',
+             'ethnicity'           => 'required', 
+             'birthday'            => 'required|date_format:"Y-m-d"', 
+             'height'              => 'required', 
+             'weight'              => 'required',
+             //'about_me'            => 'required|Min:5|Max:500',
+             'his_identitie'       => 'required',
+             'relationship_status' => 'required',
+        ],
+        [
+           'identity.required'            =>  'Please enter your Identity.',
+           'ethnicity.required'           =>  'Please enter your ethnicity.',
+           'birthday.required'            =>  'Please enter birthday.',
+           'birthday.date_format'         =>  'Please enter valid format.',
+           'height.required'              =>  'Please enter height.',
+           'weight.required'              =>  'Please enter weight.',
+           'his_identitie.required'       =>  'Please enter his identity.',
+           'relationship_status.required' =>  'Please enter relationship status.' 
+        ]
+        );
 
         if ($validator->fails()) {
-
-            //$response['errors']   = $validator->errors()->first();
             $response['success']   = 0;
             $response['errors']   = $validator->errors();
             $http_status=422;
@@ -342,24 +316,15 @@ return response()->json($response);
             if($clientId)
             {
             	$data = $request->all();
-            	/*$hight = explode(',', $data['height']);
-            	$weight = explode(',', $data['weight']);*/
-            	/*$data['height'] = $hight[0];
-            	$data['height_cm'] = $hight[1];
-            	$data['weight'] = $weight[0];
-            	$data['Weight_kg'] = $weight[1];*/
             	$is_completed = 0;
             	foreach($data AS $k => $val)
             	{
             		if(trim($val)=='')
-            		{
             			$is_completed = 0;
-            		}
+
             	}
             	$finish = ($is_completed == 0) ? 1 : 0;
-            	//print_r($finish);
                 $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
-                
                 if(empty($chk))
                 {
                 	$data['user_id'] = $clientId; 
@@ -371,13 +336,11 @@ return response()->json($response);
                 }
                 else
                 {
-                	//print_r($data); die;
                 	if(ProfileModel::where(['user_id'=>$clientId])->update($data))
                 	{
 	                	if (isset($data['about_me']) && $chk['Profile']['about_me'] != $data['about_me']) {
 	                        $ret = User::where(['id'=>$clientId])->update(array('profiletext_change' => 1, 'User.profile_text_change_date' => "'" . Carbon::now() . "'"));
 	                    }
-
 	                    $response['success'] = 1;
 	                    $response['message'] = 'Data has been successfully updated';
 	                    $http_status = 200;
@@ -403,19 +366,29 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+     /**
+     * Name: postProfilePicture
+     * Purpose: function for update profile photo
+     * created By: Lovepreet
+     * Created on :- 1 Aug 2017
+     *
+     **/
     public function postProfilePicture(Request $request)
     {
     	$data = $request->all();
     	$validator = Validator::make( $data  ,      [
-
-            
             'profile_pic_type'         => 'required|numeric',
-            'profile_pic'        => 'required',
-            'profie_type' =>  'required'
-        ]);		 
+            'profile_pic'              => 'required',
+            'profie_type'              =>  'required'
+        ],
+        [
+            'profile_pic_type.required'  => 'Please enter profile picture type.',
+            'profile_pic_type.numeric'   => 'Profile pic type must be numeric.',
+            'profile_pic.required'       => 'Please enter image.',
+            'profile_type.required'      => 'Please enter profile type.'  
+        ]
+        );		 
         if ($validator->fails()) {
-
-            //$response['errors']   = $validator->errors()->first();
             $response['success']   = 0;
             $response['errors']   = $validator->errors();
             $http_status=422;
@@ -480,7 +453,13 @@ return response()->json($response);
     }
 
     
-
+    /**
+     * Name: postUpdateAfterLogin
+     * Purpose: function for Lat Long update after user login
+     * created By: Lovepreet
+     * Created on :- 1 Aug 2017
+     *
+     **/
     public function postUpdateAfterLogin(Request $request,Repositary $common)
     {
     	$clientId = JWTAuth::parseToken()->authenticate()->id; 
@@ -533,65 +512,197 @@ return response()->json($response);
 
     }
 
+    /**
+     * Name: getFilterValue
+     * Purpose: function for search the with and without filter
+     * created By: Lovepreet
+     * Created on :- 3 Aug 2017
+     *
+     **/
     public function getFilterValue(Request $request,Repositary $common)
     {
     	//print_r($request->header()); die;
     	$clientId = JWTAuth::parseToken()->authenticate()->id;
     	$current_date = Carbon::now();
-    	
-    	
-    	$is_view = 0;
-        $is_share = 0;
-        $is_profile_active = 0;
+    	$is_view = $is_share = $is_profile_active = $total_unread_message = 0;
         if ($clientId) {
+            $user =new User;
 	    	$unbanId = User::where(['status'=>0])->lists('id')->toArray();
+
 	    	/******Get Unbaned user********/
 	    	$block_id = BlockUserModel::where(['user_id'=>$clientId])->lists('blocked_id')->toArray();
-	    	
-	    	$block_user_id = BlockUserModel::where(['blocked_id'=>$clientId])->lists('user_id')->toArray();
+            /******End********/
 
+            /******Blocked User********/
+	    	$block_user_id = BlockUserModel::where(['blocked_id'=>$clientId])->lists('user_id')->toArray();
+            /******End********/
+
+            /******Blocked User********/
 	    	$block_user_id = array_merge($block_user_id, $block_id, $unbanId);
+            /******End********/
 
             //======get limit for free user or paid user==//
             $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type,'Match');
             $limit = $limit - 1;
 
-            /********check any one view my profile*********/
-            $is_view = $common->check_view($clientId);
-            /*             * ******End********* */
+            /********Search Filters*********/
 
-            /********check any one share album with me*********/
-            $is_share = $common->check_sharealbum($clientId);
-            /*             * ******End********* */
+            /********Search With username and profile Id*********/
+            if($request->Input('search_value'))
+            {
+                $name = $request->search_value;
+                $user = $user->where(function($q) use($name){
+                    $q->orWhere('screen_name','like','%'.$name.'%')
+                      ->orWhere('profile_id','like','%'.$name.'%');
+                }); 
+            }
+            /********End*********/
 
-            /********count total user view my profile*********/
-            $count_view = $common->count_view($clientId);
-            /*             * ******End********* */
+            /********Search By profile pic*********/
+            if($request->Input('profile_pic_type'))
+            {
+                $user = $user->whereIn('profile_pic_type',$request->profile_pic_type); 
+            } 
+            /********End*********/
 
-            /********count total user share album with me*********/
-            $count_sharealbum = $common->count_sharealbum($clientId);
-            $total_view_and_share = $count_view + $count_sharealbum;
-            /*             * ******End********* */
+            if($request->Input('relationship_status'))
+            {
+                $registrationStatus = $request->relationship_status;
+                $user = $user->whereHas('Profile',function($q) use ($registrationStatus){
+                    $q->where('relationship_status',$registrationStatus);
+                });
+            }
 
-            /******check profile active **********/
-            $is_profile_active = $common->check_profile_active($current_date, $clientId);  
-        	/*             * ******End********* */
-       		
-	        $user_data = User::with(['ChatUsers','Profile','Userpartner'])
-	        					->where(['registration_status'=>3])
-	        					->whereNotIn('id',$block_user_id)
-	        					->where('id','!=',$clientId);
-	        /*if(isset($request->recently_email))
-	        {
-	        	$user_data = $user_data->where('email',explode(',', $request->recently_email));
-	        }	*/
+            /********Search by Ethnicity*********/
+            if($request->Input('ethnicity'))
+            {
+                $ethnicity = $request->ethnicity;
+                $user = $user->whereHas('Profile',function($q) use ($ethnicity){
+                    $q->where('ethnicity',$ethnicity);
+                }); 
+            }
+            /********End*********/
+
+            /********Search By age*********/
+            if($request->Input('age_to') && $request->Input('age_from'))
+            {
+                /********Common function to check age*********/
+                $age = $common->getHeightWidthValue($request->age_to,$request->age_from);
+                $age_to = $age['to'];
+                $age_from = $age['from'];
+                $user = $user->whereHas('Profile',function($q) use ($age_to,$age_from){
+                    $q->whereRaw('FLOOR(DATEDIFF (NOW(), birthday)/365) BETWEEN ? AND ?',[$age_to,$age_from]);
+                });
+            }
+            /********End*********/
+
+            /********Search By height*********/
+            if($request->Input('height_cm_to') && $request->Input('height_cm_from'))
+            {
+                /********Common function to check height*********/
+                $height = $common->getHeightWidthValue($request->height_cm_to,$request->height_cm_from);
+                $height_cm_to = $height['to'];
+                $height_cm_from = $height['from'];
+                $user = $user->whereHas('Profile',function($q) use ($height_cm_to,$height_cm_from){
+                    $q->whereBetween('height_cm',[$height_cm_to,$height_cm_from]);
+                });
+            }
+            /********End*********/
+
+            /********Search By weight*********/
+            if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from'))
+            {
+                /********Common function to check weight*********/
+                $weight = $common->getHeightWidthValue($request->Weight_kg_to,$request->Weight_kg_from);
+                $Weight_kg_to = $weight['to'];
+                $Weight_kg_from = $weight['from'];
+                $user = $user->whereHas('Profile',function($q) use ($Weight_kg_to,$Weight_kg_from){
+                    $q->whereBetween('weight_kg',[$Weight_kg_to,$Weight_kg_from]);
+                });
+            }            
+            /********End*********/     
+
+            /******Get result for all User with chat, profile of user********/
+            $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner'])
+                                ->where(['registration_status'=>3])
+                                ->whereNotIn('id',$block_user_id)
+                                ->where('id','!=',$clientId)
+                                ->select('id','profile_id','screen_name','online_status','profile_pic','accuracy');
 
 	        $user_data = $user_data->limit($limit)->get(); 
+	   
+            /** ********check filter for bear bear chaser ********** */
+            if ($request->Input('his_identitie')) {
 
-	        //print_r($user_data);        					
-	        $all_user_data = array();
-	        $total_unread_message = 0;
+                $results = array();
+                $his_identitie_value = explode(',', $request->Input('his_identitie'));
+                if ($user_data) {
+                    foreach ($user_data as $key => $value) {
+                        if(count($value['Profile']))
+                        {
+                            $identity_value = explode(',', $value['Profile']['identity']);
+
+                            $match_identity = array_intersect($his_identitie_value, $identity_value);
+                            
+                            if (count($match_identity) > 0) {
+                                $results[] = $user_data[$key];
+                            }
+                        }
+                    }
+                }
+                unset($user_data);
+                $user_data = array();
+                $user_data = $results;
+            }
+            /*             * *********END************* */
+            
+            /********Search By His idenitities*********/
+            if ($request->Input('his_seeking')) {
+                $results1 = array();
+                $his_seeking_value = explode(',', $request->Input('his_seeking'));
+                if ($his_seeking_value) {
+                    foreach ($user_data as $key => $value) {
+                        if(count($value['Profile']))
+                        {
+                            $identity_value = explode(',', $value['Profile']['his_identitie']);
+                            $match_identity = array_intersect($his_seeking_value, $identity_value);
+                            if (count($match_identity) > 0) {
+                                $results1[] = $user_data[$key];
+                            }
+                        }    
+                    }
+                }
+                unset($user_data);
+                $user_data = array();
+                $user_data = $results1;
+            }
+            /********End*********/
+
+            /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
             if(count($user_data)) {
+
+                /********check any one view my profile*********/
+                $is_view = $common->check_view($clientId);
+                /*             * ******End********* */
+
+                /********check any one share album with me*********/
+                $is_share = $common->check_sharealbum($clientId);
+                /*             * ******End********* */
+
+                /********count total user view my profile*********/
+                $count_view = $common->count_view($clientId);
+                /*             * ******End********* */
+
+                /********count total user share album with me*********/
+                $count_sharealbum = $common->count_sharealbum($clientId);
+                $total_view_and_share = $count_view + $count_sharealbum;
+                /*             * ******End********* */
+
+                /******check profile active **********/
+                $is_profile_active = $common->check_profile_active($current_date, $clientId);  
+                /*             * ******End********* */
+
+                /******** Calculates total no. of unread message ******** */
                 foreach ($user_data as $key => $value) {
                     if(count($value['ChatUsers']))
                     {
@@ -607,15 +718,21 @@ return response()->json($response);
                     }
                 	$accuracy_value[] = $value['accuracy'];
                 }
-                
-	            $accuracy_max_value = (int) max($accuracy_value);
+                /********End******** */
 
+                /********Get Maximum accuracy for the users.******** */
+                if(count($accuracy_value))
+                {
+	               $accuracy_max_value = (int) max($accuracy_value);
+                }
+                /********End******** */
+
+                /********Calculate Distance between login user and another user ******** */
 	            foreach ($user_data as $key => $value) {
 	                $user_data[$key]['distance'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');
 	                $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value->id);
 	            }
-
-	            print_r($user_data); die;
+                /********End******** */
 
 	            /********for give user looksex data******** */
 		        $user_looksexdata = array();
@@ -623,17 +740,15 @@ return response()->json($response);
 		        								  ->where('start_time','<=',$current_date)
 		        								  ->where('end_time','>=',$current_date)
 		        								  ->first();
-
 		        if(count($user_looksex))
 		        {
 		        	$user_looksexdata = $user_looksex;
 		        }		
-		        //***************END***************//						  
+		        //***************END***************//
+
             	$response['success'] = 1;
             	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'data' => $user_data];
-            	$http_status = 400;
-	            
-	            
+            	$http_status = 200;   
             }
             else
             {
@@ -641,6 +756,7 @@ return response()->json($response);
             	$response['message'] = ['data not found'];
             	$http_status = 400;
             }
+            /********End*********/
         }
         return response()->json($response,$http_status);
     }

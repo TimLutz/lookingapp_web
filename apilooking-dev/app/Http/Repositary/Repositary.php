@@ -302,6 +302,21 @@ class Repositary
             return round($miles);
         }
     }
+
+    public function getHeightWidthValue($value1=null,$value2=null)
+    {
+    	# code...
+    	$a1=$value1;
+    	$a2 = $value2;
+	    if ($a1 > $a2) {
+            $a1_change = $a2;
+            $a2_change = $a1;
+            $a1 = $a1_change;
+            $a2 = $a2_change;
+        }
+	    return ['to'=>$a1,'from'=>$a2];            
+    }
+
 	
 
 }

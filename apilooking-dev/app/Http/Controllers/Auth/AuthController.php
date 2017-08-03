@@ -27,18 +27,18 @@ class AuthController extends Controller {
       $this->middleware('jwt.auth', ['except' => ['postLogin','postSocialLogin']]);
     }
 
-    /**
+     /**
+     *
      * Handle a login request to the application.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
-     */
-    
-
-    /*=============================================================================================
-    Function for api login
-    ===============================================================================================
-    */
+     * Name: postLogin
+     * Purpose: function to user login
+     * created By: Lovepreet
+     * Created on :- 1 Aug 2017
+     *
+     **/
     public function postLogin(Request $request){
         
         $data=$request->All();
@@ -57,8 +57,6 @@ class AuthController extends Controller {
         ]); 
 
         if ($validator->fails()) {
-
-            
             $response['success']   = 0;
             $response['errors']   = $validator->errors();
             $http_status=422;

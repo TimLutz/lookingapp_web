@@ -11,14 +11,13 @@ use App\Http\Repositary\Repositary;
 use App\Model\EmailTemplate;
 use Laravel\Lumen\Routing\DispatchesJobs;
 use Queue;
-use App\Http\Requests\EmployerRequest;
 use Input;
-use Flash;
 use App\Models\TrialModel;
 use App\Models\ProfileModel;
 use App\Models\UserpartnerModel;
 use DB;
 use Carbon\Carbon;
+
 class RegisterController extends Controller
 {
     public function __construct()
@@ -26,8 +25,14 @@ class RegisterController extends Controller
         //$this->middleware('guest');
     }
     
+    /**
+    * Name: postRegister
+    * Purpose: function to user registration
+    * created By: Lovepreet
+    * Created on :- 1 Aug 2017
+    **/
     public function postRegister(Request $request,Repositary $common){
-        \DB::beginTransaction();  
+        //\DB::beginTransaction();  
         $validator = Validator::make( $request->all()  ,      [
            
             'screen_name'           => 'required|Min:4|Max:16|alpha_num|unique:users,screen_name',
@@ -39,30 +44,32 @@ class RegisterController extends Controller
             "device_token"          => 'required',
             "device_type"           => 'required',
             "accuracy"              => 'required|numeric',
-            "lat"              => 'required',
-            "long"              => 'required',
+            "lat"                   => 'required',
+            "long"                  => 'required',
+        //    "birthday"              => 'age_restriction'
         ],
         [
-            "screen_name.required" =>'Please enter your username',
-            "screen_name.min" =>'Username must not be lessthen 4 character.',
-            "screen_name.max" =>'Username should not be greaterthen 16 character.',
-            "screen_name.alpha_num" =>'Username name may only contain letters and numbers.',
-            "screen_name.unique"=>"Username already exist.",
-            "email.required" =>'Please enter your Email.',
-            "password.required" =>'Please enter Password.',
-            "email.email" =>'Please enter a valid Email.',
-            "email.unique" =>'Email already exists.',
-            "country.required"      => 'Country is required.',
-            "city.required"      => 'City is required.',
-            "lat.required"      => 'Latitude is required.',
-            "long.required"      => 'Longitude is required.',
-            'password.min' => 'Please enter minimum 8 character.',
-            'password.confirmed' => 'Password donot matched.',
-            'country.max'    => 'Country name must be atleast 8 character',
-            'country.min'    => 'Country name should not be greater then 40 character',
-            'city.max'    => 'City name must be atleast 8 character',
-            'city.min'    => 'City name should not be greater then 40 character',
-            'accuracy.numeric'    => 'Accuracy must be number',
+            "screen_name.required"      =>'Please enter your username',
+            "screen_name.min"           =>'Username must not be lessthen 4 character.',
+            "screen_name.max"           =>'Username should not be greaterthen 16 character.',
+            "screen_name.alpha_num"     =>'Username name may only contain letters and numbers.',
+            "screen_name.unique"        =>"Username already exist.",
+            "email.required"            =>'Please enter your Email.',
+            "password.required"         =>'Please enter Password.',
+            "email.email"               =>'Please enter a valid Email.',
+            "email.unique"              =>'Email already exists.',
+            "country.required"          => 'Country is required.',
+            "city.required"             => 'City is required.',
+            "lat.required"              => 'Latitude is required.',
+            "long.required"             => 'Longitude is required.',
+            'password.min'              => 'Please enter minimum 8 character.',
+            'password.confirmed'        => 'Password donot matched.',
+            'country.max'               => 'Country name must be atleast 8 character',
+            'country.min'               => 'Country name should not be greater then 40 character',
+            'city.max'                  => 'City name must be atleast 8 character',
+            'city.min'                  => 'City name should not be greater then 40 character',
+            'accuracy.numeric'          => 'Accuracy must be number',
+            'birthday.age_restriction'  =>
         ]
         );
         if ($validator->fails()) {
@@ -70,20 +77,19 @@ class RegisterController extends Controller
             $response['success']     = 0;
             $http_status=422;
         }else{
-
 				$trial_details = TrialModel::first();
 				$trial_month = 0;
 				$member_type = 0;
 				$is_trial = 0;
 				if ($trial_details) {
-					$trial_month = $trial_details['Trial']['month']; //month change to day as per client request
-					if ($trial_month > 0) {
+					$trial_month = $trial_details->month; //month change to day as per client request
+					if ($trial_month > 0)
+					{
 						$member_type = 1;
 						$is_trial = 1;
 					}
 				}
 				$data = $request->all();
-				//$data['email'] = strtolower($request->email);
 				$data['profile_status'] = 1;
 				$data['registration_status'] = 1;
 				$data['accuracy'] = (int) $request->accuracy;
@@ -100,23 +106,22 @@ class RegisterController extends Controller
 				$data['role']=2;
 				$data['status']=1;
 				if($user=User::create($data)){
+					/* Save user id into profile table */
+					//   ProfileModel::create(['user_id'=>$user->id]);
 
-				/* Save user id into profile table */
-				//   ProfileModel::create(['user_id'=>$user->id]);
+					/* Save user id into partner table */
+					//    UserpartnerModel::create(['user_id'=>$user->id]);
 
-				/* Save user id into partner table */
-				//    UserpartnerModel::create(['user_id'=>$user->id]);
-
-				\DB::commit();    
-				$response['message'] ="Registration done successfully";
-				$response['success']  =1;
-				$response['data']    =$user;
-				$http_status=200;
-				}else{
-				\DB::rollback();
-				$response['errors']="Something went wrong";
-				$response['status']=0;
-				$http_status=400;
+					//\DB::commit();    
+					$response['message'] ="Registration done successfully";
+					$response['success']  =1;
+					$response['data']    =$user;
+					$http_status=200;
+					}else{
+					//\DB::rollback();
+					$response['message']="Something went wrong";
+					$response['success']=0;
+					$http_status=400;
 				}
         }        
         return response()->json($response,$http_status);

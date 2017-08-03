@@ -122,5 +122,11 @@ class MyValidation extends Validator {
             return true;
     }
     
+
+    public function validateAgeRestriction($attribute, $value, $parameters)
+    {
+        
+    }
+
  
 }
