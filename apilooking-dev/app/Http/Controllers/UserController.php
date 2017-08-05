@@ -4,6 +4,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\ProfileModel; 
+use App\Models\ViewerModel; 
 use App\Models\BlockUserModel; 
 use App\Models\UserLooksexModel; 
 
@@ -780,6 +781,13 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+    /**
+     * Name: getUserProfileDetail
+     * Purpose: function for view profile of member
+     * created By: Lovepreet
+     * Created on :- 5 Aug 2017
+     *
+     **/
     public function getUserProfileDetail(Request $request)
     {
         $clientId = JWTAuth::parseToken()->authenticate()->id;
@@ -789,11 +797,18 @@ return response()->json($response);
             $viewer_id = $request->Input('viewer_user_id');
         }
         $userdata = User::with('Profile')->where(['id'=>$viewer_id,'status'=>1])->first();
-        if($clientId != '' && $clientId != '')
+        if($clientId != '' && $viewer_id != '')
         {
-            print_r($userdata); die;
-        }
-        
+            $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
+            //print_r($viewDetail);die('here');
+            if(count($viewDetail)==0)
+            {
+                $data['user_id'] = $clientId;
+                $data['viewer_user_id'] = $viewer_id;
+                $data['is_view'] = 1;
+                ViewerModel::create($data);
+            }
+        }    
 
     }
 
