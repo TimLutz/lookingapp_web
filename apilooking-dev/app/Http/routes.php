@@ -25,7 +25,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('user-profile', 'UserController@postUserProfile');
     $app->post('profile_picture', 'UserController@postProfilePicture');
     $app->post('find_members', 'UserController@getFilterValue');
-    $app->get('profile_details', 'UserController@getUserProfileDetail');
+    $app->post('profile_details', 'UserController@getUserProfileDetail');
     $app->post('before_filter','UserController@postUpdateAfterLogin');
     
 });
