@@ -376,7 +376,7 @@ return response()->json($response);
     public function postProfilePicture(Request $request)
     {
     	$data = $request->all();
-        print_r($data); die;
+        //print_r($data); die;
         $validator = Validator::make( $data  ,      [
             'profile_pic_type'         => 'required|numeric',
             'profile_pic'              => 'required',
