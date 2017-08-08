@@ -314,55 +314,48 @@ return response()->json($response);
 
         }else{
             $clientId=JWTAuth::parseToken()->authenticate()->id;
-            if($clientId)
+        	$data = $request->all();
+        	$is_completed = 0;
+        	foreach($data AS $k => $val)
+        	{
+        		if(trim($val)=='')
+        			$is_completed = 0;
+
+        	}
+        	$finish = ($is_completed == 0) ? 1 : 0;
+            $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
+            $current_date = Carbon::now();
+            $birthday_date = Carbon::parse($data['birthday']);
+            $data['age']=$current_date->diffInYears($birthday_date);
+            if(empty($chk))
             {
-            	$data = $request->all();
-            	$is_completed = 0;
-            	foreach($data AS $k => $val)
-            	{
-            		if(trim($val)=='')
-            			$is_completed = 0;
-
-            	}
-            	$finish = ($is_completed == 0) ? 1 : 0;
-                $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
-                if(empty($chk))
-                {
-                	$data['user_id'] = $clientId; 
-                    User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
-                    ProfileModel::create($data);
-                    $response['success'] = 1;
-                    $response['message'] = 'Data has been successfully saved';
-                    $http_status = 200;
-                }
-                else
-                {
-                	if(ProfileModel::where(['user_id'=>$clientId])->update($data))
-                	{
-	                	if (isset($data['about_me']) && $chk['Profile']['about_me'] != $data['about_me']) {
-	                        $ret = User::where(['id'=>$clientId])->update(array('profiletext_change' => 1, 'User.profile_text_change_date' => "'" . Carbon::now() . "'"));
-	                    }
-	                    $response['success'] = 1;
-	                    $response['message'] = 'Data has been successfully updated';
-	                    $http_status = 200;
-                		
-                	}
-                	else
-                	{
-
-	                    $response['success'] = 0;
-	                    $response['message'] = 'Data not updated successfully ';
-	                    $http_status = 400;	
-                	}
-                }
+            	$data['user_id'] = $clientId; 
+                User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
+                ProfileModel::create($data);
+                $response['success'] = 1;
+                $response['message'] = 'Data has been successfully saved';
+                $http_status = 200;
             }
             else
             {
-            	$response['success'] = 0;
-                $response['message'] = 'error in update';
-                $http_status = 400;
-            }
+            	if(ProfileModel::where(['user_id'=>$clientId])->update($data))
+            	{
+                	if (isset($data['about_me']) && $chk['Profile']['about_me'] != $data['about_me']) {
+                        $ret = User::where(['id'=>$clientId])->update(array('profiletext_change' => 1, 'User.profile_text_change_date' => "'" . Carbon::now() . "'"));
+                    }
+                    $response['success'] = 1;
+                    $response['message'] = 'Data has been successfully updated';
+                    $http_status = 200;
+            		
+            	}
+            	else
+            	{
 
+                    $response['success'] = 0;
+                    $response['message'] = 'Data not updated successfully ';
+                    $http_status = 400;	
+            	}
+            }
         }
         return response()->json($response,$http_status);
     }
@@ -517,18 +510,13 @@ return response()->json($response);
     	$is_view = $is_share = $is_profile_active = $total_unread_message = 0;
 
         $user =new User;
-        /******Get Unbaned user********/
-    	$unbanId = User::where(['status'=>0])->lists('id')->toArray();
-        /******End********/
-    	$block_id = BlockUserModel::where(['user_id'=>$clientId])->lists('blocked_id')->toArray();
-       
-
+        
         /******Blocked User********/
-    	$block_user_id = BlockUserModel::where(['blocked_id'=>$clientId])->lists('user_id')->toArray();
-        /******End********/
-
-        /******Blocked User********/
-    	$block_user_id = array_merge($block_user_id, $block_id, $unbanId);
+        $block_user_id = BlockUserModel::where(function($q) use ($clientId){
+            $q->orWhere(array('blocked_id'=>$clientId))
+              ->orWhere(array('user_id'=>$clientId))
+              ->select('id');
+        })->get()->toArray();
         /******End********/
 
         //======get limit for free user or paid user==//
@@ -600,10 +588,8 @@ return response()->json($response);
                 {
                     /********Common function to check age*********/
                     $age = $common->getHeightWidthValue($request->age_to,$request->age_from);
-                    $age_to = $age['to'];
-                    $age_from = $age['from'];
-                    $user = $user->whereHas('Profile',function($q) use ($age_to,$age_from){
-                        $q->whereRaw('FLOOR(DATEDIFF (NOW(), birthday)/365) BETWEEN ? AND ?',[$age_to,$age_from]);
+                    $user = $user->whereHas('Profile',function($q) use ($age){
+                        $q->whereBetween('age',[$age['to'],$age['from']]);
                     });
                 }
                 /********End*********/
@@ -613,10 +599,8 @@ return response()->json($response);
                 {
                     /********Common function to check height*********/
                     $height = $common->getHeightWidthValue($request->height_cm_to,$request->height_cm_from);
-                    $height_cm_to = $height['to'];
-                    $height_cm_from = $height['from'];
-                    $user = $user->whereHas('Profile',function($q) use ($height_cm_to,$height_cm_from){
-                        $q->whereBetween('height_cm',[$height_cm_to,$height_cm_from]);
+                    $user = $user->whereHas('Profile',function($q) use ($height){
+                        $q->whereBetween('height_cm',[$height['to'],$height['from']]);
                     });
                 }
                 /********End*********/
@@ -628,8 +612,8 @@ return response()->json($response);
                     $weight = $common->getHeightWidthValue($request->Weight_kg_to,$request->Weight_kg_from);
                     $Weight_kg_to = $weight['to'];
                     $Weight_kg_from = $weight['from'];
-                    $user = $user->whereHas('Profile',function($q) use ($Weight_kg_to,$Weight_kg_from){
-                        $q->whereBetween('weight_kg',[$Weight_kg_to,$Weight_kg_from]);
+                    $user = $user->whereHas('Profile',function($q) use ($Weight){
+                        $q->whereBetween('weight_kg',[$weight['to'],$weight['from']]);
                     });
                 }            
                 /********End*********/     
@@ -640,7 +624,8 @@ return response()->json($response);
         $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner'])
                             ->where(['registration_status'=>3])
                             ->whereNotIn('id',$block_user_id)
-                            ->where('id','!=',$clientId);
+                            ->where('id','!=',$clientId)
+                            ->where('status','!=',0);
 
         $user_data = $user_data->limit($limit)->get(); 
         
@@ -767,7 +752,7 @@ return response()->json($response);
 	        //***************END***************//
 
         	$response['success'] = 1;
-        	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'data' => $user_data];
+        	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
         	$http_status = 200;   
         }
         else
@@ -808,6 +793,15 @@ return response()->json($response);
                 $data['is_view'] = 1;
                 ViewerModel::create($data);
             }
+
+            $profile = User::where(array('id'=>$viewer_id))->get();
+            //print_r($profile); die;
+
+            $sharealbum = $this->ShareAlbum->find('first', array('conditions' => array('ShareAlbum.sender_id' => $user_id, 'ShareAlbum.receiver_id' => $viewer_user_id, 'ShareAlbum.is_received' => 1)));
+                if ($sharealbum) {
+                    $Userdetails['User_Share_Album'] = $sharealbum['ShareAlbum'];
+                }
+
         }    
 
     }

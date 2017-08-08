@@ -39,8 +39,8 @@ class RegisterController extends Controller
             'email'                 => 'required|email|unique:users,email',
             'password'              => 'required|Min:8|confirmed',
             'password_confirmation' => 'required',
-            'country'               => 'required|Min:8|Max:40',
-            "city"                  => 'required|Min:8|Max:40',
+            'country'               => 'required|Min:2|Max:40',
+            "city"                  => 'required|Min:2|Max:40',
             "device_token"          => 'required',
             "device_type"           => 'required',
             "accuracy"              => 'required|numeric',
@@ -64,12 +64,11 @@ class RegisterController extends Controller
             "long.required"             => 'Longitude is required.',
             'password.min'              => 'Please enter minimum 8 character.',
             'password.confirmed'        => 'Password donot matched.',
-            'country.max'               => 'Country name must be atleast 8 character',
-            'country.min'               => 'Country name should not be greater then 40 character',
+            'country.max'               => 'Country name should not be greater then 40 character',
+            'country.min'               => ' Country name must be atleast 8 character',
             'city.max'                  => 'City name must be atleast 8 character',
             'city.min'                  => 'City name should not be greater then 40 character',
-            'accuracy.numeric'          => 'Accuracy must be number',
-            'birthday.age_restriction'  =>
+            'accuracy.numeric'          => 'Accuracy must be number'
         ]
         );
         if ($validator->fails()) {
@@ -105,7 +104,9 @@ class RegisterController extends Controller
 				$data['online_status']=0;
 				$data['role']=2;
 				$data['status']=1;
-				if($user=User::create($data)){
+                
+                
+ 				if($user=User::create($data)){
 					/* Save user id into profile table */
 					//   ProfileModel::create(['user_id'=>$user->id]);
 
