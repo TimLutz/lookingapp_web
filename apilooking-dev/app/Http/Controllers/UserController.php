@@ -577,7 +577,7 @@ return response()->json($response);
 
         if($request->Input('type')=='browse')   
         {
-            if($request->Input('fliter')=='on')
+            if($request->Input('filter')=='on')
             {
                 /********Search By profile pic*********/
                 if($request->Input('profile_pic_type'))
