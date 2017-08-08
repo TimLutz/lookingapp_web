@@ -604,7 +604,7 @@ return response()->json($response);
                 /********End*********/
 
                 /********Search By age*********/
-                if($request->Input('age_to') && $request->Input('age_from'))
+                if($request->Input('age_to') && $request->Input('age_from') && $request->Input('age_from') != 'Not Set' && $request->Input('age_to') != 'Not Set')
                 {
                     /********Common function to check age*********/
                     $user = $user->whereHas('Profile',function($q) use ($request){
@@ -614,7 +614,7 @@ return response()->json($response);
                 /********End*********/
 
                 /********Search By height*********/
-                if($request->Input('height_cm_to') && $request->Input('height_cm_from'))
+                if($request->Input('height_cm_to') && $request->Input('height_cm_from') && $request->Input('height_cm_to') != 'Not Set' && $request->Input('height_cm_from') != 'Not Set')
                 {
                     /********Common function to check height*********/
                     $user = $user->whereHas('Profile',function($q) use ($request){
@@ -624,7 +624,7 @@ return response()->json($response);
                 /********End*********/
 
                 /********Search By weight*********/
-                if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from'))
+                if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from') && $request->Input('weight_cm_to') != 'Not Set' && $request->Input('weight_cm_from') != 'Not Set')
                 {
                     /********Common function to check weight*********/
                     $user = $user->whereHas('Profile',function($q) use ($request){
