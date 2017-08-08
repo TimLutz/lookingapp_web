@@ -294,6 +294,7 @@ return response()->json($response);
              //'about_me'            => 'required|Min:5|Max:500',
              'his_identitie'       => 'required',
              'relationship_status' => 'required',
+             'birthday'            => 'age_restriction' 
         ],
         [
            'identity.required'            =>  'Please enter your Identity.',
@@ -303,7 +304,8 @@ return response()->json($response);
            'height.required'              =>  'Please enter height.',
            'weight.required'              =>  'Please enter weight.',
            'his_identitie.required'       =>  'Please enter his identity.',
-           'relationship_status.required' =>  'Please enter relationship status.' 
+           'relationship_status.required' =>  'Please enter relationship status.',
+           'birthday.age_restriction'     =>  'Age must be greater then 18 years.' 
         ]
         );
 
@@ -324,9 +326,11 @@ return response()->json($response);
         	}
         	$finish = ($is_completed == 0) ? 1 : 0;
             $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
-            $current_date = Carbon::now();
-            $birthday_date = Carbon::parse($data['birthday']);
-            $data['age']=$current_date->diffInYears($birthday_date);
+            if($data['birthday'])
+            {
+                $data['age']=Carbon::now()->diffInYears(Carbon::parse($data['birthday']));
+            }
+            print_r($data); die;
             if(empty($chk))
             {
             	$data['user_id'] = $clientId; 
@@ -505,6 +509,28 @@ return response()->json($response);
     public function getFilterValue(Request $request,Repositary $common)
     {
     	//print_r($request->header()); die;
+        $validator = Validator::make( $request->all(),[
+            'age_to' => 'numeric|custom_height:'.Input::get('age_from'),
+            'height_cm_to' => 'numeric|custom_height:'.Input::get('height_cm_from'),
+            'weight_cm_to' => 'numeric|custom_height:'.Input::get('weight_cm_from'),
+            'age_from' =>'numeric'
+
+        ],
+        [
+            'height_cm_to.custom_height' => 'Please select height to option less then height from option.', 
+            'weight_cm_to.custom_height' => 'Please select weight to option less then weight from option.', 
+            'age_to.custom_height' => 'Please select age to option less then age from option.' 
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else{
+
     	$clientId = JWTAuth::parseToken()->authenticate()->id;
     	$current_date = Carbon::now();
     	$is_view = $is_share = $is_profile_active = $total_unread_message = 0;
@@ -528,28 +554,24 @@ return response()->json($response);
         /********Search With username and profile Id*********/
         if($request->Input('search_value'))
         {
-            $name = $request->search_value;
-            $user = $user->where(function($q) use($name){
-                $q->orWhere('screen_name','like','%'.$name.'%')
-                  ->orWhere('profile_id','like','%'.$name.'%');
+            $user = $user->where(function($q) use($request){
+                $q->orWhere('screen_name','like','%'.$request->search_value.'%')
+                  ->orWhere('profile_id','like','%'.$request->search_value.'%');
             }); 
         }
         /********End*********/
 
         if($request->Input('online_status'))
         {
-            $current = Carbon::now();
-            $oneHour = Carbon::now()->subHours(1);
             //active before one hour
             if($request->online_status == 1)
             {
-                $user = $user->where(array('online_status'=>2))->where('updated_at','<=',$current)->where('updated_at','>=',$oneHour);
+                $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
             }
             //active before more than 1 hour
             else if($request->Input('online_status') == 2)
             {
-                $twentyHour = Carbon::now()->subHours(24); 
-                $user = $user->where(array('online_status'=>2))->where('updated_at','<=',$oneHour)->where('updated_at','>=',$twentyHour);
+                $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
             }
         }
 
@@ -567,18 +589,16 @@ return response()->json($response);
                 /********Search By relationshiptype*********/
                 if($request->Input('relationship_status'))
                 {
-                    $registrationStatus = $request->relationship_status;
-                    $user = $user->whereHas('Profile',function($q) use ($registrationStatus){
-                        $q->where('relationship_status',$registrationStatus);
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->where('relationship_status',$request->registration_status);
                     });
                 }
 
                 /********Search by Ethnicity*********/
                 if($request->Input('ethnicity'))
                 {
-                    $ethnicity = $request->ethnicity;
-                    $user = $user->whereHas('Profile',function($q) use ($ethnicity){
-                        $q->where('ethnicity',$ethnicity);
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->where('ethnicity',$request->ethnicity);
                     }); 
                 }
                 /********End*********/
@@ -587,9 +607,8 @@ return response()->json($response);
                 if($request->Input('age_to') && $request->Input('age_from'))
                 {
                     /********Common function to check age*********/
-                    $age = $common->getHeightWidthValue($request->age_to,$request->age_from);
-                    $user = $user->whereHas('Profile',function($q) use ($age){
-                        $q->whereBetween('age',[$age['to'],$age['from']]);
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->whereBetween('age',[$request->Input('age_to'),$request->Input('age_from')]);
                     });
                 }
                 /********End*********/
@@ -598,9 +617,8 @@ return response()->json($response);
                 if($request->Input('height_cm_to') && $request->Input('height_cm_from'))
                 {
                     /********Common function to check height*********/
-                    $height = $common->getHeightWidthValue($request->height_cm_to,$request->height_cm_from);
-                    $user = $user->whereHas('Profile',function($q) use ($height){
-                        $q->whereBetween('height_cm',[$height['to'],$height['from']]);
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->whereBetween('height_cm',[$request->Input('height_cm_to'),$request->Input('height_cm_from')]);
                     });
                 }
                 /********End*********/
@@ -609,11 +627,8 @@ return response()->json($response);
                 if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from'))
                 {
                     /********Common function to check weight*********/
-                    $weight = $common->getHeightWidthValue($request->Weight_kg_to,$request->Weight_kg_from);
-                    $Weight_kg_to = $weight['to'];
-                    $Weight_kg_from = $weight['from'];
-                    $user = $user->whereHas('Profile',function($q) use ($Weight){
-                        $q->whereBetween('weight_kg',[$weight['to'],$weight['from']]);
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->whereBetween('weight_kg',[$request->Input('Weight_kg_to'),$request->Input('Weight_kg_from')]);
                     });
                 }            
                 /********End*********/     
@@ -762,7 +777,7 @@ return response()->json($response);
         	$http_status = 400;
         }
         /********End*********/
-        
+        }
         return response()->json($response,$http_status);
     }
 

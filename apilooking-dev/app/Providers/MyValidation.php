@@ -6,7 +6,7 @@ use JWTAuth;
 use App\Models\Experience;
 use App\Models\JobSeekers;
 use App\Models\JobApplication;
- 
+use Carbon\Carbon; 
 class MyValidation extends Validator {
  
     public function validateMongoInteger($attribute, $value, $parameters)
@@ -125,8 +125,33 @@ class MyValidation extends Validator {
 
     public function validateAgeRestriction($attribute, $value, $parameters)
     {
-        
+        if($value)
+        {
+            if(Carbon::now()->diffInYears(Carbon::parse($value))<18)
+                return false;
+            else
+                return true;
+        }
+        else
+        {
+            return true;
+        }
     }
+
+    public function validateCustomHeight($attribute,$value, $parameters)
+    {
+        if($parameters[0])
+        {
+            if($value>$parameters[0])
+                return false;
+            else
+                return true;
+            
+        }
+        else
+            return true;
+    }           
+
 
  
 }
