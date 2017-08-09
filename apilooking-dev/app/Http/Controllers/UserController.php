@@ -7,6 +7,8 @@ use App\Models\ProfileModel;
 use App\Models\ViewerModel; 
 use App\Models\BlockUserModel; 
 use App\Models\UserLooksexModel; 
+use App\Models\MatchFilterModel; 
+use App\Models\ShareAlbumModel; 
 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -463,7 +465,6 @@ return response()->json($response);
             $removead_valid_upto = $userDetail->removead_valid_upto;
             if ($userDetail->member_type == 1) {
                 if (date('Y-m-d') > $valid_upto) {
-                    die('member');
                     $userDetail->update(['member_type'=>0,'is_trial'=>0]);
                     //=====Expire loking profile====//
                     $newTime = date("Y-m-d H:i:s", strtotime(Carbon::now() . " -1 minutes"));
@@ -812,7 +813,7 @@ return response()->json($response);
             $profile = User::where(array('id'=>$viewer_id))->get();
             //print_r($profile); die;
 
-            $sharealbum = $this->ShareAlbum->find('first', array('conditions' => array('ShareAlbum.sender_id' => $user_id, 'ShareAlbum.receiver_id' => $viewer_user_id, 'ShareAlbum.is_received' => 1)));
+            $sharealbum = $this->Sha->find('first', array('conditions' => array('ShareAlbum.sender_id' => $user_id, 'ShareAlbum.receiver_id' => $viewer_user_id, 'ShareAlbum.is_received' => 1)));
                 if ($sharealbum) {
                     $Userdetails['User_Share_Album'] = $sharealbum['ShareAlbum'];
                 }
@@ -821,6 +822,60 @@ return response()->json($response);
 
     }
 
-
+    /**
+     * Name: postFilterCache
+     * Purpose: function for save and update the fliter value
+     * created By: Lovepreet
+     * Created on :- 8 Aug 2017
+     *
+     **/
+    public function postFilterCache(Request $request) {
+       
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $data = $request->all();
+        if(!empty($clientId) && !empty($data['type']))
+        {
+            $data['user_id'] = $clientId;
+            $chk = MatchFilterModel::where(array('user_id'=>$clientId,'type'=>$data['type']))->first();
+            if(count($chk))
+            {
+                if($chk->update($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $response['data'] = $data['type'];
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'unable to update';
+                    $http_status = 400;
+                }
+            }
+            else
+            {
+                if(MatchFilterModel::create($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'unable to update';
+                    $http_status = 400;
+                }
+            }
+        }
+        else
+        {
+            $response['success'] = 0;
+            $response['message'] = 'user id  and type  should not blank';
+            $http_status = 400;
+        }
+        return response()->json($response,$http_status);
+    }
 
 }

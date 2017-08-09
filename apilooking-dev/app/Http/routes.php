@@ -27,6 +27,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('find_members', 'UserController@getFilterValue');
     $app->post('profile_details', 'UserController@getUserProfileDetail');
     $app->post('before_filter','UserController@postUpdateAfterLogin');
+    $app->post('save_filter_cache','UserController@postFilterCache');
     
 });
 
