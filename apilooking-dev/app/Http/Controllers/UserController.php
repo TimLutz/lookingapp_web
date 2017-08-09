@@ -534,7 +534,7 @@ return response()->json($response);
 
     	$clientId = JWTAuth::parseToken()->authenticate()->id;
     	$current_date = Carbon::now();
-    	$is_view = $is_share = $is_profile_active = $total_unread_message = 0;
+    	$is_view = $is_share = $is_profile_active = $total_unread_message = $filter_cache = 0;
 
         $user =new User;
         
@@ -697,6 +697,12 @@ return response()->json($response);
                 }
                 /********End*********/
             }
+
+            //***************for filter chache**********//
+            $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
+            if ($if_exist_save_filter) {
+                $filter_cache = $if_exist_save_filter['MatchesFilterValue'];
+            }
         }    
 
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
@@ -768,7 +774,7 @@ return response()->json($response);
 	        //***************END***************//
 
         	$response['success'] = 1;
-        	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
+        	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'filter_cache'=>$filter_cache];
         	$http_status = 200;   
         }
         else
