@@ -317,6 +317,27 @@ class Repositary
 	    return ['to'=>$a1,'from'=>$a2];            
     }
 
+    public function saveIdentites($identite=null,$his_identitie=null,$clientId=null)
+    {
+    	$identity = $his_identity = array();
+    	print_r($identite);
+    	foreach($identite AS $key => $value)
+        {
+            $identity[$key]['user_id'] = $clientId;
+            $identity[$key]['type'] = 'identity';
+            $identity[$key]['name'] = $value;
+        }
+
+        foreach($his_identitie AS $key => $value)
+        {
+            $his_identity[$key]['user_id'] = $clientId;
+            $his_identity[$key]['type'] = 'his_identites';
+            $his_identity[$key]['name'] = $value;
+        }
+
+        return $IdentityData = array_merge($identity,$his_identity); 
+        
+    }
 	
 
 }

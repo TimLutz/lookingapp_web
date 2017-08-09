@@ -9,6 +9,7 @@ use App\Models\BlockUserModel;
 use App\Models\UserLooksexModel; 
 use App\Models\MatchFilterModel; 
 use App\Models\ShareAlbumModel; 
+use App\Models\UserIdentityModel; 
 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -284,7 +285,7 @@ return response()->json($response);
      * Created on :- 1 Aug 2017
      *
      **/
-    public function postUserProfile(Request $request)
+    public function postUserProfile(Request $request,Repositary $common)
     {
       $data = $request->all();	
       $validator = Validator::make( $data  ,      [
@@ -319,7 +320,11 @@ return response()->json($response);
         }else{
             $clientId=JWTAuth::parseToken()->authenticate()->id;
         	$data = $request->all();
-        	$is_completed = 0;
+        	$is_completed = 0;  
+         /*   $identity = $request->identity;
+            $hisIdentity = $request->his_identitie;
+            unset($data['identity']);
+            unset($data['his_identitie']);*/
         	foreach($data AS $k => $val)
         	{
         		if(trim($val)=='')
@@ -328,16 +333,22 @@ return response()->json($response);
         	}
         	$finish = ($is_completed == 0) ? 1 : 0;
             $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
-            if($data['birthday'])
+            if(isset($data['birthday']))
             {
                 $data['age']=Carbon::now()->diffInYears(Carbon::parse($data['birthday']));
             }
             
             if(empty($chk))
             {
+
             	$data['user_id'] = $clientId; 
                 User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
-                ProfileModel::create($data);
+                if(ProfileModel::create($data))
+                {
+                 //   $IdentityData = $common->saveIdentites($identity,$identity->his_identitie,$clientId);
+                    UserIdentityModel::Insert($IdentityData);
+                }
+                
                 $response['success'] = 1;
                 $response['message'] = 'Data has been successfully saved';
                 $http_status = 200;
@@ -346,6 +357,9 @@ return response()->json($response);
             {
             	if(ProfileModel::where(['user_id'=>$clientId])->update($data))
             	{
+                  //  UserIdentityModel::where(array('user_id'=>$clientId))->delete();
+                  //  $IdentityData = $common->saveIdentites($identity,$hisIdentity,$clientId);
+                  //  UserIdentityModel::Insert($IdentityData);
                 	if (isset($data['about_me']) && $chk['Profile']['about_me'] != $data['about_me']) {
                         $ret = User::where(['id'=>$clientId])->update(array('profiletext_change' => 1, 'User.profile_text_change_date' => "'" . Carbon::now() . "'"));
                     }
@@ -534,7 +548,8 @@ return response()->json($response);
 
     	$clientId = JWTAuth::parseToken()->authenticate()->id;
     	$current_date = Carbon::now();
-    	$is_view = $is_share = $is_profile_active = $total_unread_message = $filter_cache = 0;
+    	$is_view = $is_share = $is_profile_active = $total_unread_message =  0;
+        $filter_cache =[];
 
         $user =new User;
         
@@ -634,6 +649,12 @@ return response()->json($response);
                 }            
                 /********End*********/     
             }
+            
+            $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browsee'])->first();
+            
+            if ($if_exist_save_filter) {
+                $filter_cache = $if_exist_save_filter;
+            }
         }    
 
         /******Get result for all User with chat, profile of user********/
@@ -699,10 +720,7 @@ return response()->json($response);
             }
 
             //***************for filter chache**********//
-            $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
-            if ($if_exist_save_filter) {
-                $filter_cache = $if_exist_save_filter['MatchesFilterValue'];
-            }
+
         }    
 
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
