@@ -332,7 +332,7 @@ return response()->json($response);
             {
                 $data['age']=Carbon::now()->diffInYears(Carbon::parse($data['birthday']));
             }
-            print_r($data); die;
+            
             if(empty($chk))
             {
             	$data['user_id'] = $clientId; 
@@ -798,7 +798,7 @@ return response()->json($response);
             $viewer_id = $request->Input('viewer_user_id');
         }
         $userdata = User::with('Profile')->where(['id'=>$viewer_id,'status'=>1])->first();
-        if($clientId != '' && $viewer_id != '')
+        if(!empty($clientId) && !empty($viewer_id))
         {
             $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
             //print_r($viewDetail);die('here');
@@ -809,14 +809,35 @@ return response()->json($response);
                 $data['is_view'] = 1;
                 ViewerModel::create($data);
             }
+            else
+            {
+                $data['user_id'] = $clientId;
+                $data['viewer_user_id'] = $viewer_id;
+                $data['is_view'] = 1;
+                $viewDetail->update($data);
+            }
 
             $profile = User::where(array('id'=>$viewer_id))->get();
             //print_r($profile); die;
+            
+            /************Share album by sender**************/
+            $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_user_id,'is_received'=>1))->first();
+            if(count($sharealbum))
+            {
+                $Userdetails['User_Share_Album'] = $sharealbum;
+            }
+            /******End******/
 
-            $sharealbum = $this->Sha->find('first', array('conditions' => array('ShareAlbum.sender_id' => $user_id, 'ShareAlbum.receiver_id' => $viewer_user_id, 'ShareAlbum.is_received' => 1)));
-                if ($sharealbum) {
-                    $Userdetails['User_Share_Album'] = $sharealbum['ShareAlbum'];
-                }
+            /************Share album by receiver**************/
+            $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_user_id,'receiver_id'=>$user_id,'is_received'=>1))->first();
+            if(count($Viewer_sharealbum))
+            {
+                $Userdetails['Viewer_Share_Album'] = $Viewer_sharealbum;
+
+
+            }
+            /******End******/
+
 
         }    
 
