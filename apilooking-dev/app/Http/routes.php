@@ -20,9 +20,9 @@ $app->get('/', function () use ($app) {
 $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function ($app) {
 	
 	$app->post('auth/login', 'Auth\AuthController@postLogin');
-	$app->post('forget-password', 'UserController@ForgetPassword');
+	$app->post('forget_password', 'UserController@ForgetPassword');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
-    $app->post('user-profile', 'UserController@postUserProfile');
+    $app->post('user_profile', 'UserController@postUserProfile');
     $app->post('profile_picture', 'UserController@postProfilePicture');
     $app->post('find_members', 'UserController@getFilterValue');
     $app->post('profile_details', 'UserController@getUserProfileDetail');
