@@ -320,7 +320,9 @@ class Repositary
     public function saveIdentites($identite=null,$his_identitie=null,$clientId=null)
     {
     	$identity = $his_identity = array();
-    	print_r($identite);
+    	//print_r($identite);
+    	$identite = explode(',', $identite);
+    	$his_identitie = explode(',', $his_identitie);
     	foreach($identite AS $key => $value)
         {
             $identity[$key]['user_id'] = $clientId;

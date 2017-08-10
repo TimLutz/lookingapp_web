@@ -10,6 +10,9 @@ use App\Models\UserLooksexModel;
 use App\Models\MatchFilterModel; 
 use App\Models\ShareAlbumModel; 
 use App\Models\UserIdentityModel; 
+use App\Models\NoteModel; 
+use App\Models\FavouriteModel; 
+use App\Models\BlockChatUserModel; 
 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -321,12 +324,11 @@ return response()->json($response);
             $clientId=JWTAuth::parseToken()->authenticate()->id;
         	$data = $request->all();
         	$is_completed = 0;  
-         /*   $identity = $request->identity;
-            $hisIdentity = $request->his_identitie;
-            unset($data['identity']);
-            unset($data['his_identitie']);*/
+            
+            
         	foreach($data AS $k => $val)
         	{
+
         		if(trim($val)=='')
         			$is_completed = 0;
 
@@ -345,7 +347,7 @@ return response()->json($response);
                 User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
                 if(ProfileModel::create($data))
                 {
-                 //   $IdentityData = $common->saveIdentites($identity,$identity->his_identitie,$clientId);
+                    $IdentityData = $common->saveIdentites($$request->identity,$identity->his_identitie,$clientId);
                     UserIdentityModel::Insert($IdentityData);
                 }
                 
@@ -357,9 +359,9 @@ return response()->json($response);
             {
             	if(ProfileModel::where(['user_id'=>$clientId])->update($data))
             	{
-                  //  UserIdentityModel::where(array('user_id'=>$clientId))->delete();
-                  //  $IdentityData = $common->saveIdentites($identity,$hisIdentity,$clientId);
-                  //  UserIdentityModel::Insert($IdentityData);
+                    UserIdentityModel::where(array('user_id'=>$clientId))->delete();
+                    $IdentityData = $common->saveIdentites($request->identity,$request->his_identitie,$clientId);
+                    UserIdentityModel::Insert($IdentityData);
                 	if (isset($data['about_me']) && $chk['Profile']['about_me'] != $data['about_me']) {
                         $ret = User::where(['id'=>$clientId])->update(array('profiletext_change' => 1, 'User.profile_text_change_date' => "'" . Carbon::now() . "'"));
                     }
@@ -370,7 +372,6 @@ return response()->json($response);
             	}
             	else
             	{
-
                     $response['success'] = 0;
                     $response['message'] = 'Data not updated successfully ';
                     $http_status = 400;	
@@ -525,11 +526,9 @@ return response()->json($response);
     {
     	//print_r($request->header()); die;
         $validator = Validator::make( $request->all(),[
-            'age_to' => 'numeric|custom_height:'.Input::get('age_from'),
-            'height_cm_to' => 'numeric|custom_height:'.Input::get('height_cm_from'),
-            'weight_cm_to' => 'numeric|custom_height:'.Input::get('weight_cm_from'),
-            'age_from' =>'numeric'
-
+            'age_to' => 'custom_height:'.Input::get('age_from'),
+            'height_cm_to' => 'custom_height:'.Input::get('height_cm_from'),
+            'weight_cm_to' => 'custom_height:'.Input::get('weight_cm_from')
         ],
         [
             'height_cm_to.custom_height' => 'Please select height to option less then height from option.', 
@@ -558,7 +557,22 @@ return response()->json($response);
             $q->orWhere(array('blocked_id'=>$clientId))
               ->orWhere(array('user_id'=>$clientId))
               ->select('id');
-        })->get()->toArray();
+        })
+        ->select('id','user_id','blocked_id')
+        ->get();
+
+        foreach($block_user_id As $k =>$value)
+        {
+            if($value['user_id']==$clientId)
+                $block_id[] = $value['blocked_id'];
+
+            if($value['blocked_id'] == $clientId)
+                $block_id[] = $value['user_id'];
+        }
+
+        
+
+
         /******End********/
 
         //======get limit for free user or paid user==//
@@ -577,33 +591,19 @@ return response()->json($response);
         }
         /********End*********/
 
-        if($request->Input('online_status'))
-        {
-            //active before one hour
-            if($request->online_status == 1)
-            {
-                $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
-            }
-            //active before more than 1 hour
-            else if($request->Input('online_status') == 2)
-            {
-                $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
-            }
-        }
-
         if($request->Input('type')=='browse')   
         {
-            if($request->Input('filter')=='on')
-            {
+            /*if($request->Input('filter')=='on')
+            {*/
                 /********Search By profile pic*********/
-                if($request->Input('profile_pic_type'))
+                if($request->Input('profile_pic_type') && $request->Input('profile_pic_type') != 'Not Set')
                 {
                     $user = $user->whereIn('profile_pic_type',$request->profile_pic_type); 
                 } 
                 /********End*********/
 
                 /********Search By relationshiptype*********/
-                if($request->Input('relationship_status'))
+                if($request->Input('relationship_status') $request->Input('relationship_status') != 'Not Set')
                 {
                     $user = $user->whereHas('Profile',function($q) use ($request){
                         $q->where('relationship_status',$request->registration_status);
@@ -611,7 +611,7 @@ return response()->json($response);
                 }
 
                 /********Search by Ethnicity*********/
-                if($request->Input('ethnicity'))
+                if($request->Input('ethnicity') && $request->Input('ethnicity') != 'Not Set')
                 {
                     $user = $user->whereHas('Profile',function($q) use ($request){
                         $q->where('ethnicity',$request->ethnicity);
@@ -648,9 +648,43 @@ return response()->json($response);
                     });
                 }            
                 /********End*********/     
-            }
+
+                /********Search By identities*********/
+                if($request->Input('his_identitie') && $request->Input('his_identitie') != 'Not Set')
+                {
+                    $user = $user->whereHas('UserIdentity',function($q) use ($request){
+                        $q->whereIn('name',explode(',', $request->Input('his_identitie')))
+                          ->where(array('type'=>'identity'));
+                    });
+                }
+                /********End*********/
+
+                /********Search By his itentites*********/
+                if($request->Input('his_seeking') && $request->Input('his_seeking') != 'Not Set')
+                {
+                    $user = $user->whereHas('UserIdentity',function($q) use ($request){
+                        $q->whereIn('name',explode(',', $request->Input('his_seeking')))
+                          ->where(array('type'=>'his_identites'));
+                    });
+                }
+                /********End*********/
+
+                if($request->Input('online_status') && $request->Input('online_status') != 'Not Set')
+                {
+                    //active before one hour
+                    if($request->online_status == 1)
+                    {
+                        $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
+                    }
+                    //active before more than 1 hour
+                    else if($request->Input('online_status') == 2)
+                    {
+                        $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
+                    }
+                }
+            /*}*/
             
-            $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browsee'])->first();
+            $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
             
             if ($if_exist_save_filter) {
                 $filter_cache = $if_exist_save_filter;
@@ -658,70 +692,15 @@ return response()->json($response);
         }    
 
         /******Get result for all User with chat, profile of user********/
-        $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner'])
+        $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                             ->where(['registration_status'=>3])
-                            ->whereNotIn('id',$block_user_id)
+                            ->whereNotIn('id',$block_id)
                             ->where('id','!=',$clientId)
                             ->where('status','!=',0);
 
         $user_data = $user_data->limit($limit)->get(); 
         
-        if($request->Input('type')=='browse')   
-        {
-            if($request->Input('filter')=='on')
-            {
-                //die('cbvcn');
-                /** ********check filter for bear bear chaser ********** */
-                if ($request->Input('his_identitie')) {
-
-                    $results = array();
-                    $his_identitie_value = explode(',', $request->Input('his_identitie'));
-                    if ($user_data) {
-                        foreach ($user_data as $key => $value) {
-                            if(count($value['Profile']))
-                            {
-                                $identity_value = explode(',', $value['Profile']['identity']);
-
-                                $match_identity = array_intersect($his_identitie_value, $identity_value);
-                                
-                                if (count($match_identity) > 0) {
-                                    $results[] = $user_data[$key];
-                                }
-                            }
-                        }
-                    }
-                    unset($user_data);
-                    $user_data = array();
-                    $user_data = $results;
-                }
-                /* **********END************* */
-                
-                /********Search By His idenitities*********/
-                if ($request->Input('his_seeking')) {
-                    $results1 = array();
-                    $his_seeking_value = explode(',', $request->Input('his_seeking'));
-                    if ($his_seeking_value) {
-                        foreach ($user_data as $key => $value) {
-                            if(count($value['Profile']))
-                            {
-                                $identity_value = explode(',', $value['Profile']['his_identitie']);
-                                $match_identity = array_intersect($his_seeking_value, $identity_value);
-                                if (count($match_identity) > 0) {
-                                    $results1[] = $user_data[$key];
-                                }
-                            }    
-                        }
-                    }
-                    unset($user_data);
-                    $user_data = array();
-                    $user_data = $results1;
-                }
-                /********End*********/
-            }
-
-            //***************for filter chache**********//
-
-        }    
+        
 
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
         if(count($user_data)) {
@@ -845,7 +824,7 @@ return response()->json($response);
             //print_r($profile); die;
             
             /************Share album by sender**************/
-            $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_user_id,'is_received'=>1))->first();
+            $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_id,'is_received'=>1))->first();
             if(count($sharealbum))
             {
                 $Userdetails['User_Share_Album'] = $sharealbum;
@@ -853,7 +832,7 @@ return response()->json($response);
             /******End******/
 
             /************Share album by receiver**************/
-            $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_user_id,'receiver_id'=>$user_id,'is_received'=>1))->first();
+            $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_id,'receiver_id'=>$clientId,'is_received'=>1))->first();
             if(count($Viewer_sharealbum))
             {
                 $Userdetails['Viewer_Share_Album'] = $Viewer_sharealbum;
@@ -862,7 +841,51 @@ return response()->json($response);
             }
             /******End******/
 
+             /************* check user  leave any note for user *************/             
+                $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
+                if ($note) {
+                    $Userdetails['Note'] = $note['note'];
+                } else {
+                    $Userdetails['Note'] = '';
+                }
+                /*                 * *************** END ******************* */
 
+            /*                 * ************ check user  alredy favourite the view profile user ************ */
+            
+                $favourite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
+                if ($favourite) {
+                    $Userdetails['Favourite'] = $favourite;
+                }
+                /*                 * *************** END ******************* */  
+
+
+                /** ************ check whose profile user view he already favourite this user or not ************ */
+                $viewer_favourite = FavouriteModel::where(['user_id'=>$viewer_id,'favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
+                if ($viewer_favourite) {
+                    $Userdetails['Viewer_Favourite'] = $viewer_favourite;
+                }
+                /*                 * *************** END ******************* */  
+
+                /*                 * ********** check user  alredy lock chat for the view user ************ */
+                $block_chat = BlockChatUserModel::where(['user_id'=>$clientId,'block_user_id'=>$viewer_id])->first();
+                if ($block_chat) {
+                    $Userdetails['Block_Chat'] = $block_chat;
+                }
+                /*                 * *************** END ******************* */
+
+                /*                 * ********** check user  alredy lock chat for the view user ************ */
+                $block_chat_view = BlockChatUserModel::where(['user_id'=>$viewer_id,'block_user_id'=>$clientId])->first();
+                if ($block_chat_view) {
+                    $Userdetails['Block_Chat'] = $block_chat_view;
+                }
+                /*                 * *************** END ******************* */
+
+                /********* check looking profile is active or not ************/
+                $check_looksex_profile = UserLooksexModel::where(['user_id'=>$viewer_id])->where(function($q){
+                    $q->whereOr('start_time','<=',Carbon::now())
+                      ->whereOr('end_time','>=',Carbon::now());
+                })->first();
+                /***************** END ********************/
         }    
 
     }

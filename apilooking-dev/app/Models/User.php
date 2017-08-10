@@ -51,10 +51,17 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 		return $this->hasMany('App\Models\UserpartnerModel','user_id');
 	}
 
+	public function UserIdentity()
+	{
+		return $this->hasMany('App\Models\UserIdentityModel','user_id');
+	}
+
 	/*public static function getDistanceAttribute()
 	{
 
 	}*/
+
+
 
 	
 
