@@ -600,13 +600,13 @@ return response()->json($response);
             $http_status = 200;
             return response()->json($response,$http_status);*/
             //Log::info('Showing user profile for user: '.$request->all());
-            if(count($data1))
+            /*if(count($data1))
             {
                 $arrKeys = array_keys($data1);
                 $arrValue = array_values($data1);
                 $arrCombine = array_combine($arrKeys, $arrValue);
                 
-            }
+            }*/
 
             /*if($request->Input('filter')=='on')
             {*/
