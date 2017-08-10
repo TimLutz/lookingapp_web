@@ -549,7 +549,7 @@ return response()->json($response);
     	$current_date = Carbon::now();
     	$is_view = $is_share = $is_profile_active = $total_unread_message =  0;
         $filter_cache =[];
-
+        $block_id = [];
         $user =new User;
         
         /******Blocked User********/
