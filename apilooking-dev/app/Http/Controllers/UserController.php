@@ -348,6 +348,7 @@ return response()->json($response);
                 User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
                 if(ProfileModel::create($data))
                 {
+                    die('here');
                     echo $request->Input('identity');
                     echo $request->Input('his_identitie'); die;
                     $IdentityData = $common->saveIdentites($request->identity,$request->his_identitie,$clientId);
