@@ -593,10 +593,10 @@ return response()->json($response);
 
         if($request->Input('type')=='browse')   
         {
-            $response['success'] = 1;
+            /*$response['success'] = 1;
             $response['data'] =  $request->Input('profile_pic_type');
             $http_status = 200;
-            return response()->json($response,$http_status);
+            return response()->json($response,$http_status);*/
             /*if($request->Input('filter')=='on')
             {*/
                 /********Search By profile pic*********/
