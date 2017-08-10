@@ -29,6 +29,7 @@ use Auth;
 use Mail;
 use Image;
 use Carbon\Carbon;
+use Log;
 use Illuminate\Support\Facades\Lang;
 
 class UserController extends Controller {
@@ -525,6 +526,7 @@ return response()->json($response);
     public function getFilterValue(Request $request,Repositary $common)
     {
     	//print_r($request->header()); die;
+         
         $validator = Validator::make( $request->all(),[
             'age_to' => 'custom_height:'.Input::get('age_from'),
             'height_cm_to' => 'custom_height:'.Input::get('height_cm_from'),
@@ -582,6 +584,7 @@ return response()->json($response);
         /********Search Filters*********/
 
         /********Search With username and profile Id*********/
+        Log::info('Showing user profile for user: '.json_encode($request->all()));
         if($request->Input('search_value'))
         {
             $user = $user->where(function($q) use($request){
@@ -597,6 +600,7 @@ return response()->json($response);
             $response['data'] =  $request->Input('profile_pic_type');
             $http_status = 200;
             return response()->json($response,$http_status);*/
+            Log::info('Showing user profile for user: '.json_encode($request->all()));
             /*if($request->Input('filter')=='on')
             {*/
                 /********Search By profile pic*********/
