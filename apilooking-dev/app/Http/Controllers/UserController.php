@@ -603,7 +603,7 @@ return response()->json($response);
                 /********End*********/
 
                 /********Search By relationshiptype*********/
-                if($request->Input('relationship_status') $request->Input('relationship_status') != 'Not Set')
+                if($request->Input('relationship_status') && $request->Input('relationship_status') != 'Not Set')
                 {
                     $user = $user->whereHas('Profile',function($q) use ($request){
                         $q->where('relationship_status',$request->registration_status);
