@@ -552,7 +552,7 @@ return response()->json($response);
     	$is_view = $is_share = $is_profile_active = $total_unread_message =  0;
         $filter_cache =[];
         $block_id = [];
-        $user =new User;
+        $user =User::where('status','!=',0)->where('role',2);
         
         /******Blocked User********/
         $block_user_id = BlockUserModel::where(function($q) use ($clientId){
@@ -711,10 +711,20 @@ return response()->json($response);
                             ->where(['registration_status'=>3])
                             ->whereNotIn('id',$block_id)
                             ->where('id','!=',$clientId)
-                            ->where('status','!=',0);
+                           /* ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"))*/;
+        $user_data = $user_data->limit($limit)
+        /*->orderBy('distance','ASC')*/
+        ->get(); 
 
-        $user_data = $user_data->limit($limit)->get(); 
-        
+        //$query = DB::table('users');                    
+        /*$userdata = DB::table('users')
+                     ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"))
+                     ->orderBy('distance','Asc')
+                     ->get();*/
+         
+
+
+        /*print_r($userdata);*/ 
         
 
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
@@ -768,11 +778,12 @@ return response()->json($response);
 
             /********Calculate Distance between login user and another user ******** */
             foreach ($user_data as $key => $value) {
-                $user_data[$key]['distance'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');
+                $user_data[$key]['distance1'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');
                 $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value->id);
             }
             /********End******** */
-
+            
+            
             /********for give user looksex data******** */
 	        $user_looksexdata = array();
 	        $user_looksex = UserLooksexModel::where('user_id',$clientId)
