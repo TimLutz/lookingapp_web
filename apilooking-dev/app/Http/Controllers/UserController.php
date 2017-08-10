@@ -348,7 +348,7 @@ return response()->json($response);
                 User::where(array('id'=>$clientId))->update(['is_completed'=>$finish, 'registration_status'=>2]);
                 if(ProfileModel::create($data))
                 {
-                    $IdentityData = $common->saveIdentites($$request->identity,$identity->his_identitie,$clientId);
+                    $IdentityData = $common->saveIdentites($request->identity,$request->his_identitie,$clientId);
                     UserIdentityModel::Insert($IdentityData);
                 }
                 
@@ -526,7 +526,7 @@ return response()->json($response);
     public function getFilterValue(Request $request,Repositary $common)
     {
     	//print_r($request->header()); die;
-         
+         Log::info('Showing user profile for user: '.JWTAuth::parseToken()->authenticate()->id);
         $validator = Validator::make( $request->all(),[
             'age_to' => 'custom_height:'.Input::get('age_from'),
             'height_cm_to' => 'custom_height:'.Input::get('height_cm_from'),
@@ -584,7 +584,6 @@ return response()->json($response);
         /********Search Filters*********/
 
         /********Search With username and profile Id*********/
-        Log::info('Showing user profile for user: '.json_encode($request->all()));
         if($request->Input('search_value'))
         {
             $user = $user->where(function($q) use($request){
@@ -596,96 +595,109 @@ return response()->json($response);
 
         if($request->Input('type')=='browse')   
         {
-            Log::info('Showing user profile for user: '.json_encode($request->all()));
-           
-            /********Search By profile pic*********/
-            if($request->Input('profile_pic_type') && $request->Input('profile_pic_type') != 'Not Set')
+            /*$response['success'] = 1;
+            $response['data'] =  $request->Input('profile_pic_type');
+            $http_status = 200;
+            return response()->json($response,$http_status);*/
+            //Log::info('Showing user profile for user: '.$request->all());
+            if(count($data1))
             {
-                $user = $user->whereIn('profile_pic_type',[$request->profile_pic_type]); 
-            } 
-            /********End*********/
-
-            /********Search By relationshiptype*********/
-            if($request->Input('relationship_status') && $request->Input('relationship_status') != 'Not Set')
-            {
-                $user = $user->whereHas('Profile',function($q) use ($request){
-                    $q->where('relationship_status',$request->registration_status);
-                });
+                $arrKeys = array_keys($data1);
+                $arrValue = array_values($data1);
+                $arrCombine = array_combine($arrKeys, $arrValue);
+                
             }
 
-            /********Search by Ethnicity*********/
-            if($request->Input('ethnicity') && $request->Input('ethnicity') != 'Not Set')
-            {
-                $user = $user->whereHas('Profile',function($q) use ($request){
-                    $q->where('ethnicity',$request->ethnicity);
-                }); 
-            }
-            /********End*********/
-
-            /********Search By age*********/
-            if($request->Input('age_to') && $request->Input('age_from') && $request->Input('age_from') != 'Not Set' && $request->Input('age_to') != 'Not Set')
-            {
-                /********Common function to check age*********/
-                $user = $user->whereHas('Profile',function($q) use ($request){
-                    $q->whereBetween('age',[$request->Input('age_to'),$request->Input('age_from')]);
-                });
-            }
-            /********End*********/
-
-            /********Search By height*********/
-            if($request->Input('height_cm_to') && $request->Input('height_cm_from') && $request->Input('height_cm_to') != 'Not Set' && $request->Input('height_cm_from') != 'Not Set')
-            {
-                /********Common function to check height*********/
-                $user = $user->whereHas('Profile',function($q) use ($request){
-                    $q->whereBetween('height_cm',[$request->Input('height_cm_to'),$request->Input('height_cm_from')]);
-                });
-            }
-            /********End*********/
-
-            /********Search By weight*********/
-            if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from') && $request->Input('Weight_kg_to') != 'Not Set' && $request->Input('Weight_kg_from') != 'Not Set')
-            {
-                /********Common function to check weight*********/
-                $user = $user->whereHas('Profile',function($q) use ($request){
-                    $q->whereBetween('weight_kg',[$request->Input('Weight_kg_to'),$request->Input('Weight_kg_from')]);
-                });
-            }            
-            /********End*********/     
-
-            /********Search By identities*********/
-            if($request->Input('his_identitie') && $request->Input('his_identitie') != 'Not Set')
-            {
-                $user = $user->whereHas('UserIdentity',function($q) use ($request){
-                    $q->whereIn('name',explode(',', $request->Input('his_identitie')))
-                      ->where(array('type'=>'identity'));
-                });
-            }
-            /********End*********/
-
-            /********Search By his itentites*********/
-            if($request->Input('his_seeking') && $request->Input('his_seeking') != 'Not Set')
-            {
-                $user = $user->whereHas('UserIdentity',function($q) use ($request){
-                    $q->whereIn('name',explode(',', $request->Input('his_seeking')))
-                      ->where(array('type'=>'his_identites'));
-                });
-            }
-            /********End*********/
-
-            if($request->Input('online_status') && $request->Input('online_status') != 'Not Set')
-            {
-                //active before one hour
-                if($request->online_status == 1)
+            /*if($request->Input('filter')=='on')
+            {*/
+                /********Search By profile pic*********/
+                if($request->Input('profile_pic_type') && $request->Input('profile_pic_type') != 'Not Set')
                 {
-                    $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
-                }
-                //active before more than 1 hour
-                else if($request->Input('online_status') == 2)
+                    $user = $user->whereIn('profile_pic_type',[$request->profile_pic_type]); 
+                } 
+                /********End*********/
+
+                /********Search By relationshiptype*********/
+                if($request->Input('relationship_status') && $request->Input('relationship_status') != 'Not Set')
                 {
-                    $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->where('relationship_status',$request->registration_status);
+                    });
                 }
-            }
-            
+
+                /********Search by Ethnicity*********/
+                if($request->Input('ethnicity') && $request->Input('ethnicity') != 'Not Set')
+                {
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->where('ethnicity',$request->ethnicity);
+                    }); 
+                }
+                /********End*********/
+
+                /********Search By age*********/
+                if($request->Input('age_to') && $request->Input('age_from') && $request->Input('age_from') != 'Not Set' && $request->Input('age_to') != 'Not Set')
+                {
+                    /********Common function to check age*********/
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->whereBetween('age',[$request->Input('age_to'),$request->Input('age_from')]);
+                    });
+                }
+                /********End*********/
+
+                /********Search By height*********/
+                if($request->Input('height_cm_to') && $request->Input('height_cm_from') && $request->Input('height_cm_to') != 'Not Set' && $request->Input('height_cm_from') != 'Not Set')
+                {
+                    /********Common function to check height*********/
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->whereBetween('height_cm',[$request->Input('height_cm_to'),$request->Input('height_cm_from')]);
+                    });
+                }
+                /********End*********/
+
+                /********Search By weight*********/
+                if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from') && $request->Input('Weight_kg_to') != 'Not Set' && $request->Input('Weight_kg_from') != 'Not Set')
+                {
+                    /********Common function to check weight*********/
+                    $user = $user->whereHas('Profile',function($q) use ($request){
+                        $q->whereBetween('weight_kg',[$request->Input('Weight_kg_to'),$request->Input('Weight_kg_from')]);
+                    });
+                }            
+                /********End*********/     
+
+                /********Search By identities*********/
+                if($request->Input('his_identitie') && $request->Input('his_identitie') != 'Not Set')
+                {
+                    $user = $user->whereHas('UserIdentity',function($q) use ($request){
+                        $q->whereIn('name',explode(',', $request->Input('his_identitie')))
+                          ->where(array('type'=>'identity'));
+                    });
+                }
+                /********End*********/
+
+                /********Search By his itentites*********/
+                if($request->Input('his_seeking') && $request->Input('his_seeking') != 'Not Set')
+                {
+                    $user = $user->whereHas('UserIdentity',function($q) use ($request){
+                        $q->whereIn('name',explode(',', $request->Input('his_seeking')))
+                          ->where(array('type'=>'his_identites'));
+                    });
+                }
+                /********End*********/
+
+                if($request->Input('online_status') && $request->Input('online_status') != 'Not Set')
+                {
+                    //active before one hour
+                    if($request->online_status == 1)
+                    {
+                        $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
+                    }
+                    //active before more than 1 hour
+                    else if($request->Input('online_status') == 2)
+                    {
+                        $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
+                    }
+                }
+            /*}*/
             
             $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
             
