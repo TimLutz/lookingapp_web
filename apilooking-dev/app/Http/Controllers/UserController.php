@@ -640,7 +640,7 @@ return response()->json($response);
                 /********End*********/
 
                 /********Search By weight*********/
-                if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from') && $request->Input('weight_cm_to') != 'Not Set' && $request->Input('weight_cm_from') != 'Not Set')
+                if($request->Input('Weight_kg_to') && $request->Input('Weight_kg_from') && $request->Input('Weight_kg_to') != 'Not Set' && $request->Input('Weight_kg_from') != 'Not Set')
                 {
                     /********Common function to check weight*********/
                     $user = $user->whereHas('Profile',function($q) use ($request){
