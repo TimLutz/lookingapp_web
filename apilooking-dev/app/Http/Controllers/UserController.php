@@ -598,7 +598,7 @@ return response()->json($response);
                 /********Search By profile pic*********/
                 if($request->Input('profile_pic_type') && $request->Input('profile_pic_type') != 'Not Set')
                 {
-                    $user = $user->whereIn('profile_pic_type',$request->profile_pic_type); 
+                    $user = $user->whereIn('profile_pic_type',[$request->profile_pic_type]); 
                 } 
                 /********End*********/
 
