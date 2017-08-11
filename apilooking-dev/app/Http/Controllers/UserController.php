@@ -803,12 +803,16 @@ return response()->json($response);
         	$response['success'] = 1;
         	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'filter_cache'=>$filter_cache];
         	$http_status = 200;   
+            $d1 = $response['data'];
+            Log::info('Response: '.json_encode($d1));
         }
         else
         {
         	$response['success'] = 0;
         	$response['message'] = ['data not found'];
         	$http_status = 400;
+            
+            Log::info('Response: '.$response['message']);
         }
         /********End*********/
         }
