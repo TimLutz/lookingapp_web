@@ -24,7 +24,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('user_profile', 'UserController@postUserProfile');
     $app->post('profile_picture', 'UserController@postProfilePicture');
-    $app->get('find_members', 'UserController@getFilterValue');
+    $app->post('find_members', 'UserController@getFilterValue');
     $app->post('profile_details', 'UserController@getUserProfileDetail');
     $app->post('before_filter','UserController@postUpdateAfterLogin');
     $app->post('save_filter_cache','UserController@postFilterCache');

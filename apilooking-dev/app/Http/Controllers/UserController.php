@@ -595,7 +595,7 @@ return response()->json($response);
             }); 
         }
         /********End*********/
-        Log::info('Showing user profile for user: '.$request->all());
+        Log::info('Showing user profile for user: '.json_encode($request->all()));
         if($request->Input('type')=='browse')   
         {
             /*$response['success'] = 1;
