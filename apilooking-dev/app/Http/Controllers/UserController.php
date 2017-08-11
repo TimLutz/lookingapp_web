@@ -16,6 +16,7 @@ use App\Models\BlockChatUserModel;
 use App\Models\ProfileLockModel; 
 use App\Models\ChatModel; 
 use App\Models\UserLookdateModel; 
+use App\Models\UseralbumModel; 
 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -728,6 +729,8 @@ return response()->json($response);
         ->orderBy('distance','ASC')
         ->get(); 
 
+        $user_data1 = $user_data;
+        Log::info('Output: '.json_encode($user_data1->toArray()));
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
         if(count($user_data)) {
 
@@ -819,7 +822,7 @@ return response()->json($response);
      * Created on :- 5 Aug 2017
      *
      **/
-    public function getUserProfileDetail(Request $request)
+    public function getUserProfileDetail(Request $request, Repositary $common)
     {
         $clientId = JWTAuth::parseToken()->authenticate()->id;
         $viewer_id = '';
@@ -853,31 +856,85 @@ return response()->json($response);
             }
 
             $profile = User::with(['Profile','UserIdentity'])->where(array('id'=>$viewer_id))->first();
-            
-            $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_id,'is_received'=>1))->first();
-            if(count($sharealbum))
+            if($profile && $clientId)
             {
-                $Userdetails['User_Share_Album'] = $sharealbum->toArray();
-            }
-            
-            $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_id,'receiver_id'=>$clientId,'is_received'=>1))->first();
-            if(count($Viewer_sharealbum))
-            {
-                $Userdetails['Viewer_Share_Album'] = $Viewer_sharealbum->toArray();
-            }
-            $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
-            if ($note) {
-                $Userdetails['Note'] = $note['note'];
-            } else {
-                $Userdetails['Note'] = '';
-            }
-            
-            $favourite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
-                if ($favourite) {
-                    $Userdetails['Favourite'] = $favourite->toArray();
+                $profile['Profile']['description'] = '';
+                $viewer_lat = $profile['lat'];
+                $viewer_long = $profile['long'];
+                $distance = $common->distance(JWTAuth::parseToken()->authenticate()->lat, JWTAuth::parseToken()->authenticate()->long, $viewer_lat, $viewer_long, 'M');
+                if (is_nan($distance) == 1) {
+                    $distance = 0;
+                }
+
+                $Userdetails['Note'] = array();
+                $Userdetails['User'] = array();
+                $Userdetails['Profile'] = array();
+                $Userdetails['Distance'] = array('miles' => $distance);
+                $Userdetails['Favourite'] = array();
+                $Userdetails['Viewer_Favourite'] = array();
+                $Userdetails['User_Share_Album'] = array(); 
+                $Userdetails['Viewer_Share_Album'] = array();
+                $Userdetails['Match_Persent'] = array();
+                $Userdetails['User_Profile_Lock'] = array();
+                $Userdetails['View_User_Profile_Lock'] = array();
+                $Userdetails['Over_All_Percentage'] = '';
+                $Userdetails['traits'] = '';
+                $Userdetails['interest'] = '';
+                $Userdetails['physicial_appearance'] = '';
+                $Userdetails['sextual_preferences'] = '';
+                $Userdetails['social_habits'] = '';
+                $Userdetails['identity'] = '';
+                $Userdetails['Block_Chat'] = array();
+                $Userdetails['Block_Chat_View_User'] = array();
+                $Userdetails['Looksex_Profile_Active'] = array();
+                $Userdetails['User_Looksex_Profile_Active'] = array();
+                $Userdetails['User_Invitation'] = array();
+                $Userdetails['Viewer_Invitation'] = array();
+                $Userdetails['Lookdate_Profile_Active'] = array();
+                $Userdetails['User_Lookdate_Profile_Active'] = array();
+                $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_id,'is_received'=>1))->first();
+                if(count($sharealbum))
+                {
+                    $Userdetails['User_Share_Album'] = $sharealbum->toArray();
                 }
                 
-            $viewer_favourite = FavouriteModel::where(['user_id'=>$viewer_id,'favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
+                $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_id,'receiver_id'=>$clientId,'is_received'=>1))->first();
+                if(count($Viewer_sharealbum))
+                {
+                    $Userdetails['Viewer_Share_Album'] = $Viewer_sharealbum->toArray();
+
+                    $Profile_pic = array(
+                        array(
+                            'id' => 'profile_pic',
+                            'user_id' => $viewer_id,
+                            'photo_name' => $profile['profile_pic'],
+                            'caption' => '',
+                            'album_type' => $profile['profile_pic_type'],
+                            'creation_date' => $profile['profile_pic_date']
+                    ));
+
+                    $album = UseralbumModel::where(['user_id'=>$viewer_id])->orderBy('album','ASC')->get();
+                    //pr($album);
+                    if ($album) {
+                        $album_picture = $album->toArray();
+                        $Userdetails['Viewer_Share_Album']['album_images'] = array_merge($Profile_pic, $album_picture);
+                    } else {
+                        $Userdetails['Viewer_Share_Album']['album_images'] = $Profile_pic;
+                    }
+                }
+                $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
+                if ($note) {
+                    $Userdetails['Note'] = $note['note'];
+                } else {
+                    $Userdetails['Note'] = '';
+                }
+                
+                $favourite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
+                    if ($favourite) {
+                        $Userdetails['Favourite'] = $favourite->toArray();
+                    }
+                    
+                $viewer_favourite = FavouriteModel::where(['user_id'=>$viewer_id,'favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
                 if ($viewer_favourite) {
                     $Userdetails['Viewer_Favourite'] = $viewer_favourite->toArray();
                 }
@@ -1030,13 +1087,20 @@ return response()->json($response);
 
                 $response['success'] = 1;
                 $response['message'] = 'success';
-                $Userdetails['path'] = PIC_PATH;
-                $Userdetails['login_user_member_type'] = $login_user_member_type;
-                $Userdetails['login_user_removead'] = $login_user_removead;
-                $Userdetails['login_user_is_trial'] = $login_user_is_trial;
-                $Userdetails['chat_history_limit'] = $common->match_limit($login_user_member_type, 'chat_history');
+                $Userdetails['login_user_member_type'] = JWTAuth::parseToken()->authenticate()->member_type;
+                $Userdetails['login_user_removead'] = JWTAuth::parseToken()->authenticate()->removead;
+                $Userdetails['login_user_is_trial'] = JWTAuth::parseToken()->authenticate()->idis_trial;
+                $Userdetails['chat_history_limit'] = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'chat_history');
                 $response['data'] = $Userdetails;
                 $http_status = 200;
+                
+            }
+            else
+            {
+                $response['success'] = 0;
+                $response['message'] = 'user id or viewer user id not valid';
+                $http_status = 400;
+            }
 
         }  
         else
