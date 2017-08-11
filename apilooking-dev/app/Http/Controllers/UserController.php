@@ -534,7 +534,7 @@ return response()->json($response);
         $validator = Validator::make( $request->all(),[
             'age_to' => 'custom_height:'.Input::get('age_from'),
             'height_cm_to' => 'custom_height:'.Input::get('height_cm_from'),
-            'weight_cm_to' => 'custom_height:'.Input::get('weight_cm_from')
+            'Weight_cm_to' => 'custom_height:'.Input::get('Weight_cm_from')
         ],
         [
             'height_cm_to.custom_height' => 'Please select height to option less then height from option.', 
