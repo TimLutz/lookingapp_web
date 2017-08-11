@@ -811,8 +811,8 @@ return response()->json($response);
         	$response['success'] = 0;
         	$response['message'] = ['data not found'];
         	$http_status = 400;
-            
-            Log::info('Response: '.$response['message']);
+
+            Log::info('Response: '.json_encode($response['message']));
         }
         /********End*********/
         }
