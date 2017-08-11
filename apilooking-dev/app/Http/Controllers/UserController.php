@@ -13,6 +13,9 @@ use App\Models\UserIdentityModel;
 use App\Models\NoteModel; 
 use App\Models\FavouriteModel; 
 use App\Models\BlockChatUserModel; 
+use App\Models\ProfileLockModel; 
+use App\Models\ChatModel; 
+use App\Models\UserLookdateModel; 
 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -526,7 +529,7 @@ return response()->json($response);
     public function getFilterValue(Request $request,Repositary $common)
     {
     	//print_r($request->header()); die;
-         Log::info('Showing user profile for user: '.JWTAuth::parseToken()->authenticate()->id);
+         //Log::info('Showing user profile for user: '.JWTAuth::parseToken()->authenticate()->id);
         $validator = Validator::make( $request->all(),[
             'age_to' => 'custom_height:'.Input::get('age_from'),
             'height_cm_to' => 'custom_height:'.Input::get('height_cm_from'),
@@ -592,7 +595,7 @@ return response()->json($response);
             }); 
         }
         /********End*********/
-
+        Log::info('Showing user profile for user: '.$request->all());
         if($request->Input('type')=='browse')   
         {
             /*$response['success'] = 1;
@@ -711,21 +714,10 @@ return response()->json($response);
                             ->where(['registration_status'=>3])
                             ->whereNotIn('id',$block_id)
                             ->where('id','!=',$clientId)
-                           /* ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"))*/;
+                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
         $user_data = $user_data->limit($limit)
-        /*->orderBy('distance','ASC')*/
+        ->orderBy('distance','ASC')
         ->get(); 
-
-        //$query = DB::table('users');                    
-        /*$userdata = DB::table('users')
-                     ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"))
-                     ->orderBy('distance','Asc')
-                     ->get();*/
-         
-
-
-        /*print_r($userdata);*/ 
-        
 
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
         if(count($user_data)) {
@@ -778,7 +770,7 @@ return response()->json($response);
 
             /********Calculate Distance between login user and another user ******** */
             foreach ($user_data as $key => $value) {
-                $user_data[$key]['distance1'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');
+                /*$user_data[$key]['distance1'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');*/
                 $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value->id);
             }
             /********End******** */
@@ -829,31 +821,37 @@ return response()->json($response);
         $userdata = User::with('Profile')->where(['id'=>$viewer_id,'status'=>1])->first();
         if(!empty($clientId) && !empty($viewer_id))
         {
+            $Userdetails=[];
             $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
+            if ($clientId == $viewer_id) {
+                $is_view_profile = 0;
+            } else {
+                // $is_view_profile=1;
+                $is_view_profile = 0; //change later not deliver red dot notification
+            }
             //print_r($viewDetail);die('here');
             if(count($viewDetail)==0)
             {
                 $data['user_id'] = $clientId;
                 $data['viewer_user_id'] = $viewer_id;
-                $data['is_view'] = 1;
+                $data['is_view'] = $is_view_profile;
                 ViewerModel::create($data);
             }
             else
             {
                 $data['user_id'] = $clientId;
                 $data['viewer_user_id'] = $viewer_id;
-                $data['is_view'] = 1;
+                $data['is_view'] = $is_view_profile;
                 $viewDetail->update($data);
             }
 
-            $profile = User::where(array('id'=>$viewer_id))->get();
-            //print_r($profile); die;
+            $profile = User::with(['Profile','UserIdentity'])->where(array('id'=>$viewer_id))->first();
             
             /************Share album by sender**************/
             $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_id,'is_received'=>1))->first();
             if(count($sharealbum))
             {
-                $Userdetails['User_Share_Album'] = $sharealbum;
+                $Userdetails['User_Share_Album'] = $sharealbum->toArray();
             }
             /******End******/
 
@@ -861,57 +859,191 @@ return response()->json($response);
             $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_id,'receiver_id'=>$clientId,'is_received'=>1))->first();
             if(count($Viewer_sharealbum))
             {
-                $Userdetails['Viewer_Share_Album'] = $Viewer_sharealbum;
-
-
+                $Userdetails['Viewer_Share_Album'] = $Viewer_sharealbum->toArray();
             }
             /******End******/
 
              /************* check user  leave any note for user *************/             
-                $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
-                if ($note) {
-                    $Userdetails['Note'] = $note['note'];
-                } else {
-                    $Userdetails['Note'] = '';
-                }
-                /*                 * *************** END ******************* */
+            $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
+            if ($note) {
+                $Userdetails['Note'] = $note['note'];
+            } else {
+                $Userdetails['Note'] = '';
+            }
+            /*                 * *************** END ******************* */
 
             /*                 * ************ check user  alredy favourite the view profile user ************ */
             
-                $favourite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
+            $favourite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
                 if ($favourite) {
-                    $Userdetails['Favourite'] = $favourite;
+                    $Userdetails['Favourite'] = $favourite->toArray();
                 }
                 /*                 * *************** END ******************* */  
 
 
                 /** ************ check whose profile user view he already favourite this user or not ************ */
-                $viewer_favourite = FavouriteModel::where(['user_id'=>$viewer_id,'favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
+            $viewer_favourite = FavouriteModel::where(['user_id'=>$viewer_id,'favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
                 if ($viewer_favourite) {
-                    $Userdetails['Viewer_Favourite'] = $viewer_favourite;
+                    $Userdetails['Viewer_Favourite'] = $viewer_favourite->toArray();
                 }
                 /*                 * *************** END ******************* */  
 
                 /*                 * ********** check user  alredy lock chat for the view user ************ */
                 $block_chat = BlockChatUserModel::where(['user_id'=>$clientId,'block_user_id'=>$viewer_id])->first();
                 if ($block_chat) {
-                    $Userdetails['Block_Chat'] = $block_chat;
+                    $Userdetails['Block_Chat'] = $block_chat->toArray();
                 }
                 /*                 * *************** END ******************* */
 
                 /*                 * ********** check user  alredy lock chat for the view user ************ */
                 $block_chat_view = BlockChatUserModel::where(['user_id'=>$viewer_id,'block_user_id'=>$clientId])->first();
                 if ($block_chat_view) {
-                    $Userdetails['Block_Chat'] = $block_chat_view;
+                    $Userdetails['Block_Chat_View_User'] = $block_chat_view->toArray();
                 }
                 /*                 * *************** END ******************* */
 
                 /********* check looking profile is active or not ************/
                 $check_looksex_profile = UserLooksexModel::where(['user_id'=>$viewer_id])->where(function($q){
-                    $q->whereOr('start_time','<=',Carbon::now())
-                      ->whereOr('end_time','>=',Carbon::now());
+                    $q->where('start_time','<=',Carbon::now())
+                      ->where('end_time','>=',Carbon::now());
                 })->first();
                 /***************** END ********************/
+
+                if (count($check_looksex_profile) > 0) {
+                    $check_looksex_active = 1;
+                } else {
+                    $check_looksex_active = 0;
+                    /*********** inactive invitaion when user look profile expire********/
+                    ChatModel::where(array('user_id'=>$viewer_id))->update(['invite'=>0]);
+
+                    /** *********delete profile lock when viewer lokking profile expire****** */
+                    $delete_lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'is_locked'=>1,'browse'=>'looking'])->first();
+                    if ($delete_lock_profile) {
+                        ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
+                    }
+                    /** **********END************* */
+                }
+                $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
+                /*                 * *************End************ */
+
+                $check_user_looksex_profile = UserLooksexModel::where(['user_id'=>$clientId])->where(function($q){
+                    $q->where('start_time','<=',Carbon::now())
+                      ->where('end_time','>=',Carbon::now());
+                })->first();
+
+                if (count($check_user_looksex_profile) > 0) {
+                    $check_user_looksex_active = 1;
+                } else {
+                    $check_user_looksex_active = 0;
+                    /** ********* inactive invitaion when user look profile expire******* */
+                    ChatModel::where(array('user_id'=>$clientId))->update(['invite'=>0]);
+                    //$this->ChatUser->updateAll(
+                    //array('ChatUser.invite' => 0), array('ChatUser.chat_user_id' => $user_id)
+                    //);
+                    /*                     * *********delete profile lock when user lokking profile expire****** */
+                    
+                     $delete_lock_profile = ProfileLockModel::where(['user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
+                    if ($delete_lock_profile) {
+                        ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
+                    }
+                }
+                $Userdetails['User_Looksex_Profile_Active'] = $check_user_looksex_active;
+                /** *************** END ******************* */
+            
+                if (isset($type) && $type == 'looking_sex') {
+                    /** *********** check user  alredy lock the view profile user ************ */
+                    $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
+
+                    if ($lock_profile) {
+                        $Userdetails['User_Profile_Lock'] = $lock_profile->toArray();
+                    }
+                    /*                     * *************** END ******************* */
+                    /** *********** check view profile user  alredy lock the  user ************ */
+                    $lock_profile_view_user = ProfileLockModel::where(['lock_user_id'=>$clientId,'user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
+                    if ($lock_profile_view_user) {
+                        $Userdetails['View_User_Profile_Lock'] = $lock_profile_view_user->toArray();
+                    }
+                } else {
+                    /** *********** check user  alredy lock the view profile user ************ */
+                    $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$viewer_id,'is_locked'=>1])->where('browse','!=','looking')->first();
+                    
+                    if ($lock_profile) {
+                        $Userdetails['User_Profile_Lock'] = $lock_profile->toArray();
+                    }
+                    /*                     * *************** END ******************* */
+                    /*                     * *********** check view profile user  alredy lock the  user ************ */
+                    $lock_profile_view_user = ProfileLockModel::where(['lock_user_id'=>$clientId,'user_id'=>$viewer_id,'is_locked'=>1])->where('browse','!=','looking')->first();
+                    if ($lock_profile_view_user) {
+                        $Userdetails['View_User_Profile_Lock'] = $lock_profile_view_user->toArray();
+                    }
+                }
+
+                /** ***********for check viewer look date profile active ************ */
+                $UserLookdate = UserLookdateModel::where(['user_id'=>$viewer_id])->get();
+                if (count($UserLookdate) > 0) {
+                    $check_lookdate_active = 1;
+                } else {
+                    $check_lookdate_active = 0;
+                }
+                $Userdetails['Lookdate_Profile_Active'] = $check_lookdate_active;
+                /*                 * *****END************* */
+
+                 /*                 * ***********for check User look date profile active ************ */
+                $UserLookdate = UserLookdateModel::where(['user_id'=>$clientId])->get();
+                if (count($UserLookdate) > 0) {
+                    $check_user_lookdate_active = 1;
+                } else {
+                    $check_user_lookdate_active = 0;
+                }
+                $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
+                /*                 * *****END************* */
+
+                /*                 * ***********for check user send invitaion or not ************ */
+                $chat_invitation = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$viewer_id])->first();
+                if ($chat_invitation) {
+                    $Userdetails['User_Invitation'] = $chat_invitation->toArray();
+                }
+
+                /*************for check viewer user send invitaion or not to the login user ************ */
+                $chat_invitation_viewer = ChatModel::where(['user_id'=>$viewer_id,'chat_user_id'=>$clientId])->first();    
+                if ($chat_invitation_viewer) {
+                    $Userdetails['Viewer_Invitation'] = $chat_invitation_viewer->toArray();
+                }
+                //pr($this->User->getDataSource()->getLog());die;
+                /*                 * ****************END****************** */
+                /*                 * *********** this is for my identities percentage from Profile table************ */
+                //pr($profile);
+                $user_his_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'his_identites'])->get();
+                $identity_percent_permatch = $match_identity = 0;
+                if(count($user_his_identity))
+                {
+                    $identity_percent_permatch = 100 / count($user_his_identity);
+                }
+                $match_identity = 0;
+                
+                $viewer_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'identity'])->get();
+                /*                 * ********** count for identity *************** */
+                $identity = array();
+                $traits = array();
+                $interest = array();
+                $physicial_appearance = array();
+                $sextual_preferences = array();
+                $social_habits = array();
+
+                if($user_his_identity && $viewer_identity)
+                    foreach ($user_his_identity as $key => $value) {
+                        foreach ($viewer_identity as $key1 => $value1) {
+                            if (trim(strtolower($value)) == trim(strtolower($value1))) {
+                                $match_identity++;
+                                $identity[] = trim($value);
+                            }
+                        }
+                    }
+                
+               $identity_percentage = round($identity_percent_permatch * $match_identity);
+                /*                 * *********************END***************** */
+
+
         }    
 
     }

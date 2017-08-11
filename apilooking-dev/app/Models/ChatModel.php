@@ -14,7 +14,7 @@ class ChatModel extends Model
     protected $table='chat_users';
     protected $dates = ['created_at','updated_at'];
     protected $fillable = [
-        'user_id','blocked_id','blook_dt'
+        'user_id','chat_user_id','count','invite','check_invitaion_sent'
     ];
     
     
