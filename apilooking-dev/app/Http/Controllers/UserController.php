@@ -868,7 +868,7 @@ return response()->json($response);
 
                 $Userdetails['Note'] = array();
                 $Userdetails['User'] = array();
-                $Userdetails['Profile'] = array();
+                //$Userdetails['Profile'] = array();
                 $Userdetails['Distance'] = array('miles' => $distance);
                 $Userdetails['Favourite'] = array();
                 $Userdetails['Viewer_Favourite'] = array();
@@ -913,7 +913,7 @@ return response()->json($response);
                             'creation_date' => $profile['profile_pic_date']
                     ));
 
-                    $album = UseralbumModel::where(['user_id'=>$viewer_id])->orderBy('album','ASC')->get();
+                    $album = UseralbumModel::where(['user_id'=>$viewer_id])->orderBy('album_type','ASC')->get();
                     //pr($album);
                     if ($album) {
                         $album_picture = $album->toArray();
@@ -1071,7 +1071,7 @@ return response()->json($response);
                 
                $identity_percentage = round($identity_percent_permatch * $match_identity);
                
-
+                /*************User Itdentity*******************/
                 if(isset($type) && $type = 'looking_date')
                 {
 
@@ -1079,7 +1079,7 @@ return response()->json($response);
                 else if(isset($type) && $type= 'looking_sex')
                 {
 
-                }
+                }  /******End*******/
                 else
                 {
                     $Userdetails['User'] = $profile;
@@ -1169,4 +1169,107 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+
+    /**
+     * Name: add_favourite_screen
+     * Purpose: function for save and update the fliter value
+     * created By: Lovepreet
+     * Created on :- 11 Aug 2017
+     *
+     **/
+    public function postAddFavouriteScreen(Request $request,Repositary $common) {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $data = $request->all();
+        $error = 0;
+        $validator = Validator::make( $request->all(),[
+            'favourite_user_id' => 'required',
+            'browse' => 'required'
+        ],
+        [
+            'viewer_user_id.required' => 'Please provide faviourte user.', 
+            'browse.required' => 'Please provide type of user.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else{
+            if (isset($clientId) && (isset($data['favourite_user_id']) && intval($data['favourite_user_id'])) && $data['browse']) {
+                //======get limit for free user or paid user==//
+                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Favorite');
+                //=======End============//
+               
+                $Favorite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$data['favourite_user_id']])->first();
+
+                    if ($Favorite) {
+                        /** ****** if is_favourite=1 then set is_favourite=2 means unfavourite and if  is_favourite=2 then set is_favourite=1 means favourite*** */
+                       
+                        if ($Favorite['is_favourite'] == 1) {
+                            $is_favourite = 2;
+                        } else {
+                            $is_favourite = 1;
+                        }
+                        /** ******** un favourite **************** */
+                        $data['user_id'] = $clientId;
+                        $data['is_favourite'] = $is_favourite;
+                    } else {
+                        $data['user_id'] = $clientId;
+                        $data['is_favourite'] = 1;
+                    }
+                if ($Favorite['is_favourite'] == 1) {
+                   
+                    $count_favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1,'browse'=>$data['browse']])->count();
+                    if ($count_favourite >= $limit) {
+                        $response['success'] = 0;
+                        $response['message'] = 'You have reached your Favorite limit of ' . number_format($limit) . ' guys. Please remove a Favorite if you would like to add a new one.';
+                        $http_status = 400;
+                        $error = 1;
+                    }
+                }
+
+                if($error==0)
+                {
+                    if($Favorite)
+                    {
+                        if($Favorite->update($data))
+                        {
+                            $response['success'] = 1;
+                            $response['message'] = 'Success';
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'unable to save into database';
+                            $http_status = 200;  
+                        }
+                    }
+                    else
+                    {
+                        if(FavouriteModel::create($data))
+                        {
+                            $response['success'] = 1;
+                            $response['message'] = 'Success';
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'unable to save into database';
+                            $http_status = 400;  
+                        }
+                    }
+                }
+            } else {
+                $response['success'] = 0;
+                $response['message'] = 'user id and favourite user id or browse not found';
+                $http_status = 400;
+            }
+        }
+        return response()->json($response,$http_status);
+    }
 }

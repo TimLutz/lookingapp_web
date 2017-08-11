@@ -56,7 +56,7 @@ return [
     */
 
     //'from' => ['address' => null, 'name' => null],
-    'from' => ['address' => 'debutinfo1@gmail.com', 'name' => 'FrontlineApp'],
+    'from' => ['address' => 'debutinfo1@gmail.com', 'name' => 'LookingApp'],
 
     /*
     |--------------------------------------------------------------------------
