@@ -91,7 +91,6 @@ class RegisterController extends Controller
 				$data = $request->all();
 				$data['profile_status'] = 1;
 				$data['registration_status'] = 1;
-				$data['accuracy'] = (int) $request->accuracy;
 				$data['member_type'] = $member_type; //for first 1 month free
 				$data['valid_upto'] = Carbon::now()->addDays(intval($trial_month)); //for first 1 month free
 				$data['is_trial'] = $is_trial; //for first 1 month free  trial preiod
