@@ -29,6 +29,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('update_location','UserController@postUpdateLocation');
     $app->post('save_filter_cache','UserController@postFilterCache');
     $app->post('add_favourite_screen','UserController@postAddFavouriteScreen');
+    $app->post('sent_invitation','UserController@postSentInvitation');
 });
 
 

@@ -1316,25 +1316,15 @@ return response()->json($response);
 
 
 
-    public function sent_invitation() {
-        $this->autoRender = false;
-        $sender_id = isset($this->request->data['sender_id']) ? $this->request->data['sender_id'] : ''; //this is current user
-        $receiver_id = isset($this->request->data['receiver_id']) ? $this->request->data['receiver_id'] : ''; // who receive message notification
-        $accept = isset($this->request->data['accept']) ? $this->request->data['accept'] : ''; // for accept invitation 1 for accept
-        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
+    public function postSentInvitation(Request $request,Repositary $common) {
         $data = $request->all();
         $clientId = JWTAuth::parseToken()->authenticate()->id;
-
-        $receiver_id = $data['recevier_id'];
-
-        if(!empty($clientId) && !empty($receiver_id))
+        if(!empty($clientId) && !empty($data['recevier_id']))
         {
-            if($data['accept']==1)
+            if(isset($data['accept']) && $data['accept']==1)
             {
-               /* $chat_count_message = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$receiver_id])->first();
-                $chat_count_message1 = ChatModel::where(['user_id'=>$receiver_id,'chat_user_id'=>$clientId])->first();*/
-                $chat_count_message = $common->commonChatUser($clientId,$receiver_id);
-                $chat_count_message1 = $common->commonChatUser($receiver_id,$clientId);
+                $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
+                $chat_count_message1 = $common->commonChatUser($data['recevier_id'],$clientId);
                 if(count($chat_count_message))
                 {
                     $chat_count_message->update(['count'=>($chat_count_message['count']+1),'created_at'=>carbon::now()]);
@@ -1348,8 +1338,28 @@ return response()->json($response);
             }
             else
             {
-
+                $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
+                if(count($chat_count_message))
+                {
+                    $chat_count_message->update(['invite'=>1,'check_invitaion_sent'=>1]);
+                }
+                else
+                {
+                    $chat_users1 = $common->commonChatUser($data['recevier_id'],$clientId);
+                    if(count($chat_users1)==0)
+                    {
+                        $receiverdata['user_id'] = $data['receiver_id'];
+                        $receiverdata['chat_user_id'] = $data['receiver_id'];
+                        ChatModel::create($receiverdata);
+                    }
+                    $data['user_id'] = $clientId;
+                    $data['chat_user_id'] = $data['receiver_id'];
+                    $data['invite'] = 1;
+                    $data['check_invitaion_sent'] = 1;
+                    $data['count'] = 0;
+                }
             }
+
         }
         else
         {
@@ -1357,152 +1367,6 @@ return response()->json($response);
         }
 
         die('cnvnvbn');
-
-        if ($sender_id && $receiver_id) {
-            if ($accept == 1) {
-                $chat_count_message = $this->ChatUser->find('first', array('conditions' => array('ChatUser.user_id' => $sender_id, 'ChatUser.chat_user_id' => $receiver_id)));
-                $chat_count_message1 = $this->ChatUser->find('first', array('conditions' => array('ChatUser.user_id' => $receiver_id, 'ChatUser.chat_user_id' => $sender_id)));
-                if ($chat_count_message) {
-                    $this->ChatUser->updateAll(
-                            array('ChatUser.count' => 'ChatUser.count + 1', 'ChatUser.creation_date' => "'" . $current_date . "'"), array('ChatUser.id' => $chat_count_message['ChatUser']['id']));
-                }
-                if ($chat_count_message1) {
-                    $this->ChatUser->updateAll(
-                            array('ChatUser.invite' => 2,), array('ChatUser.id' => $chat_count_message1['ChatUser']['id']));
-                }
-            }
-            else 
-            {
-                $chat_count_message = $this->ChatUser->find('first', array('conditions' => array('ChatUser.user_id' => $sender_id, 'ChatUser.chat_user_id' => $receiver_id)));
-                if ($chat_count_message) {
-                    $this->ChatUser->updateAll(
-                            array('ChatUser.invite' => 1, 'ChatUser.check_invitaion_sent' => 1), array('ChatUser.id' => $chat_count_message['ChatUser']['id']));
-                    //$unread_message=$chat_count_message['ChatCountMessage']['count'];
-                } 
-                else 
-                {
-                    $chat_users1 = $this->ChatUser->find('all', array('conditions' => array('ChatUser.user_id' => $receiver_id, 'ChatUser.chat_user_id' => $sender_id)));
-
-                    if ($chat_users1) {
-                        
-                    } else {
-                        $user1['ChatUser'] = array(
-                            'user_id' => $receiver_id,
-                            'chat_user_id' => $sender_id,
-                            'creation_date' => $current_date
-                        );
-                        $this->ChatUser->save($user1);
-                    }
-                    
-                    $user['ChatUser'] = array(
-                        'user_id' => $sender_id,
-                        'chat_user_id' => $receiver_id,
-                        'count' => 0,
-                        'invite' => 1,
-                        'check_invitaion_sent' => 1,
-                        'creation_date' => $current_date
-                    );
-                    $this->ChatUser->create();
-                    $this->ChatUser->save($user);
-                }
-            }
-            $username = $this->User->findById($sender_id);
-            
-            $userdetails = $this->User->findById($receiver_id);
-            if ($userdetails) {
-                $device_type = $userdetails['User']['device_type'];
-                $device_token = $userdetails['User']['device_token'];
-                $online_status = $userdetails['User']['online_status'];
-
-                
-                $chatusers = $this->ChatUser->find('all', array('conditions' => array('ChatUser.chat_user_id' => $receiver_id)));
-                $total_unread_message = 0;
-                if ($chatusers) {
-
-                    foreach ($chatusers as $key => $value) {
-                        if ($value['ChatUser']['invite'] > 0) {
-                            $invite = 1;
-                        } else {
-                            $invite = 0;
-                        }
-                        $total_unread_message+=($value['ChatUser']['count'] + $invite);
-                    }
-                }
-               
-                if ($total_unread_message == 0) {
-                    $total_unread_message = '';
-                }
-                
-                if ($device_type == 'android') {
-                    if ($online_status == 1) {
-                        $device_token = array($device_token);
-                        $msg = $username['User']['screen_name'] . ' send invitation for you';
-                        $message = array("msg" => $msg, 'sound' => 'default');
-                        $this->GCM->send_notification($device_token, $message);
-                        //$result = $gcm->send_notification($device_ids, $message);
-                    }
-                } else {
-                    if ($online_status == 1) {
-                        $pemfile = WWW_ROOT . 'files/looking.pem';
-                        $passphrase = 'looking';
-                        if ($accept == 1) {
-                            $msg = $username['User']['screen_name'] . ' accept invitation';
-                            $type = 'accept_invitation';
-                        } else {
-                            $msg = $username['User']['screen_name'] . ' send invitation';
-                            $type = 'sent_invitation';
-                        }
-                       
-                        $ctx = stream_context_create();
-                        stream_context_set_option($ctx, 'ssl', 'local_cert', $pemfile);
-                        stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
-                        // Open a connection to the APNS server
-                        $fp = stream_socket_client(
-                                'ssl://gateway.push.apple.com:2195', $err, $errstr, 60, STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT, $ctx);
-
-                        if (!$fp)
-                            exit("Failed to connect: $err $errstr" . PHP_EOL);
-                        $body['aps'] = array(
-                            'alert' => $msg,
-                            //'count_unread_msg' => $unread_message,
-                            //'message'=>$message,
-                            //'type'=>'chat message',
-                            //'post_tag' => $post_tag,
-                            //'job_id' => $job_id,
-                            //'msg_id' => $msg_id,
-                            //'unread_msg_count' => $msg_unread_count,
-                            // 'msg_sender_id' => $msg_sender_id,
-                            //'msg_sender_name' => $msg_sender_name,
-                            // 'group_id' => $group_id,
-                            //'group_name' => $group_name,
-                            'sound' => 'default'
-                        );
-                        // pr(json_encode($body));
-                        // Encode the payload as JSON
-                        //$payload = json_encode($body);
-                        $payload = '{"aps":{"alert":"' . $msg . '","type":"' . $type . '","sound":"default","badge": ' . (int) $total_unread_message . '}}';
-                        // Build the binary notification
-                        $msg = chr(0) . pack('n', 32) . pack('H*', $device_token) . pack('n', strlen($payload)) . $payload;
-
-                        // Send it to the server
-                        $result = fwrite($fp, $msg, strlen($msg));
-                        //echo $result;
-                        $json = array();
-                        // Close the connection to the server
-                        fclose($fp);
-                    }
-                }
-                $data['success'] = 1;
-                $data['msg'] = 'success';
-            }else {
-                $data['success'] = 2;
-                $data['msg'] = 'user details not found';
-            }
-        } else {
-            $data['success'] = 0;
-            $data['msg'] = 'sender_id and receiver_id  not found';
-        }
-        echo json_encode($data);
     }
 
 

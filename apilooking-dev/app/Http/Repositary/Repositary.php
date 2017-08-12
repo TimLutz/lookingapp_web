@@ -342,7 +342,7 @@ class Repositary
         
     }
 	
-	public function commonChatUser($cId=null,$sId)
+	public function commonChatUser($cId=null,$rId)
 	{
 		return ChatModel::where(['user_id'=>$cId,'chat_user_id'=>$rId])->first();
 	}

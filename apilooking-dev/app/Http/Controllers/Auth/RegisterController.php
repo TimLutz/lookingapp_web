@@ -43,9 +43,9 @@ class RegisterController extends Controller
             "city"                  => 'required|Min:2|Max:40',
             "device_token"          => 'required',
             "device_type"           => 'required',
-            "accuracy"              => 'required|numeric',
-            "lat"                   => 'required',
-            "long"                  => 'required',
+           // "accuracy"              => 'required|numeric',
+           // "lat"                   => 'required',
+           // "long"                  => 'required',
         //    "birthday"              => 'age_restriction'
         ],
         [
