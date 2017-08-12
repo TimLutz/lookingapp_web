@@ -8,6 +8,7 @@ use App\Models\RestrictionModel;
 use App\Models\ShareAlbumModel;
 use App\Models\UserLooksexModel;
 use App\Models\ViewerModel;
+use App\Models\ChatModel;
 use App\Models\JobSeekers; 
 use Validator; 
 use DB;
@@ -341,5 +342,9 @@ class Repositary
         
     }
 	
+	public function commonChatUser($cId=null,$sId)
+	{
+		return ChatModel::where(['user_id'=>$cId,'chat_user_id'=>$rId])->first();
+	}
 
 }

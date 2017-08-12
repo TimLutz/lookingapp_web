@@ -152,6 +152,12 @@ class MyValidation extends Validator {
             return true;
     }           
 
+    public function validateCustomLatitude($attribute,$value, $parameters)
+    {
+        return preg_match('/^(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)$/', $value);  
+    }
+
+    
 
  
 }

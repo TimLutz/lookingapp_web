@@ -469,55 +469,96 @@ return response()->json($response);
      * Created on :- 1 Aug 2017
      *
      **/
-    public function postUpdateAfterLogin(Request $request,Repositary $common)
+    public function postUpdateLocation(Request $request,Repositary $common)
     {
-    	$clientId = JWTAuth::parseToken()->authenticate()->id; 
-    	if($clientId)
-    	{
-    		$userDetail = User::where(['id'=>$clientId])->first();
-    		if ($userDetail->status == 0) {
-                   $response['success'] = -1;
+    	$clientId = JWTAuth::parseToken()->authenticate()->id;
+        $data = $request->all(); 
+    	
+		/*$userDetail = User::where(['id'=>$clientId])->first();
+		if ($userDetail->status == 0) {
+               $response['success'] = 0;
+               $response['msg'] = 'inactive user';
+               $http_status = 400;
+               //return response()->json($response,$http_status);
+        }
+        $valid_upto = $userDetail->valid_upto;
+        $removead_valid_upto = $userDetail->removead_valid_upto;
+        if ($userDetail->member_type == 1) {
+            if (date('Y-m-d') > $valid_upto) {
+                $userDetail->update(['member_type'=>0,'is_trial'=>0]);
+                //=====Expire loking profile====//
+                $newTime = date("Y-m-d H:i:s", strtotime(Carbon::now() . " -1 minutes"));
+            }
+        }
+        if ($userDetail->removead == 1) {
+            if (date('Y-m-d') > $removead_valid_upto) {
+                $this->User->updateAll(
+                        array('User.removead' => 0), array('User.id' => $user_id)
+                );
+                $userDetail->update(['removead'=>0]);
+            }
+        }*/
+
+        $validator = Validator::make( $request->all(),[
+            'lat' => 'required|numeric',
+            'long' => 'required|numeric',
+            'accuracy' => 'required|numeric'
+        ],
+        [
+            'lat.required' => 'Please enter latitude.', 
+            'lat.numeric' => 'Please enter numeric value for latitude.', 
+            'long.numeric' => 'Please enter numeric value for longitude.', 
+            'long.required' => 'Please enter longitude.', 
+            'accuracy.required' => 'Please enter accuracy.', 
+            'accuracy.numeric' => 'Accuracy must be numeric.' 
+        ]
+
+        );
+    
+        if ($validator->fails()) 
+        {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $userdetailsupdate  = User::where(['id'=>$clientId])->first();
+
+            if ($userdetailsupdate) 
+            {
+                if($userdetailsupdate['status']==1)
+                {
+                    $data = $request->all();
+                    $data['accuracy'] = (int) $data['accuracy'];
+                    if($userdetailsupdate->update($data))
+                    {
+                        $response['success'] = 1;
+                        $response['message'] = 'update successfully';
+                        $http_status = 200;
+                    }
+                    else
+                    {
+                        $response['success'] = 1;
+                        $response['message'] = 'Something wrong';
+                        $http_status = 400;
+                    }
+                }
+                else
+                {
+                   $response['success'] = 0;
                    $response['msg'] = 'inactive user';
                    $http_status = 400;
-                   return response()->json($response,$http_status);
-            }
-            $valid_upto = $userDetail->valid_upto;
-            $removead_valid_upto = $userDetail->removead_valid_upto;
-            if ($userDetail->member_type == 1) {
-                if (date('Y-m-d') > $valid_upto) {
-                    $userDetail->update(['member_type'=>0,'is_trial'=>0]);
-                    //=====Expire loking profile====//
-                    $newTime = date("Y-m-d H:i:s", strtotime(Carbon::now() . " -1 minutes"));
-
-                    //$this->UserLooksex->saveField('end_time', $newTime);
-                    /*$this->UserLooksex->updateAll(
-                            array('UserLooksex.end_time' => "'" . $newTime . "'"), array('UserLooksex.user_id' => $user_id)
-                    );*/
-
                 }
             }
-            if ($userDetail->removead == 1) {
-                if (date('Y-m-d') > $removead_valid_upto) {
-                    $this->User->updateAll(
-                            array('User.removead' => 0), array('User.id' => $user_id)
-                    );
-                    $userDetail->update(['removead'=>0]);
-                }
+            else
+            {
+                $response['success'] = 1;
+                $response['message'] = 'No data found.';
+                $http_status = 400;
             }
-
-            if ($clientId && $request->lat && $request->long && $request->accuracy) {
-	            $userdetailsupdate  = User::where(['id'=>$clientId,'status'=>1])->first();
-
-	            if ($userdetailsupdate) {
-	                $data = $request->all();
-	                $data['accuracy'] = (int) $data['accuracy'];
-	                /*                 * ****** update field for online ******** */
-	                $userdetailsupdate->update($data) ;
-	            }
-	        }
-
-    	}
-
+        }
+        return response()->json($response,$http_status);
     }
 
     /**
@@ -532,13 +573,13 @@ return response()->json($response);
     	//print_r($request->header()); die;
          //Log::info('Showing user profile for user: '.JWTAuth::parseToken()->authenticate()->id);
         $validator = Validator::make( $request->all(),[
-            'age_to' => 'custom_height:'.Input::get('age_from'),
-            'height_cm_to' => 'custom_height:'.Input::get('height_cm_from'),
-            'Weight_kg_to' => 'custom_height:'.Input::get('Weight_kg_from')
+            'age_from' => 'custom_height:'.Input::get('age_to'),
+            'height_cm_from' => 'custom_height:'.Input::get('height_cm_to'),
+            'Weight_kg_from' => 'custom_height:'.Input::get('Weight_kg_to')
         ],
         [
-            'height_cm_to.custom_height' => 'Please select height to option less then height from option.', 
-            'Weight_kg_to.custom_height' => 'Please select weight to option less then weight from option.', 
+            'height_cm_to.custom_height' => 'Please select height from option less then height to option.', 
+            'Weight_kg_to.custom_height' => 'Please select weight from option less then weight to option.', 
             'age_to.custom_height' => 'Please select age to option less then age from option.' 
         ]
 
@@ -652,7 +693,7 @@ return response()->json($response);
                 {
                     /********Common function to check age*********/
                     $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->whereBetween('age',[$finalArr['age_to'],$finalArr['age_from']]);
+                        $q->whereBetween('age',[$finalArr['age_from'],$finalArr['age_to']]);
                     });
                 }
                 /********End*********/
@@ -662,7 +703,7 @@ return response()->json($response);
                 {
                     /********Common function to check height*********/
                     $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->whereBetween('height_cm',[$finalArr['height_cm_to'],$finalArr['height_cm_from']]);
+                        $q->whereBetween('height_cm',[$finalArr['height_cm_from'],$finalArr['height_cm_to']]);
                     });
                 }
                 /********End*********/
@@ -672,7 +713,7 @@ return response()->json($response);
                 {
                     /********Common function to check weight*********/
                     $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->whereBetween('Weight_kg',[$finalArr['Weight_kg_to'],$finalArr['Weight_kg_from']]);
+                        $q->whereBetween('Weight_kg',[$finalArr['Weight_kg_from'],$finalArr['Weight_kg_to']]);
                     });
                 }            
                 /********End*********/     
@@ -1281,6 +1322,42 @@ return response()->json($response);
         $receiver_id = isset($this->request->data['receiver_id']) ? $this->request->data['receiver_id'] : ''; // who receive message notification
         $accept = isset($this->request->data['accept']) ? $this->request->data['accept'] : ''; // for accept invitation 1 for accept
         $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
+        $data = $request->all();
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+
+        $receiver_id = $data['recevier_id'];
+
+        if(!empty($clientId) && !empty($receiver_id))
+        {
+            if($data['accept']==1)
+            {
+               /* $chat_count_message = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$receiver_id])->first();
+                $chat_count_message1 = ChatModel::where(['user_id'=>$receiver_id,'chat_user_id'=>$clientId])->first();*/
+                $chat_count_message = $common->commonChatUser($clientId,$receiver_id);
+                $chat_count_message1 = $common->commonChatUser($receiver_id,$clientId);
+                if(count($chat_count_message))
+                {
+                    $chat_count_message->update(['count'=>($chat_count_message['count']+1),'created_at'=>carbon::now()]);
+                }
+
+                if(count($chat_count_message1))
+                {
+                    $chat_count_message1->update(['invite'=>2]);
+                }
+
+            }
+            else
+            {
+
+            }
+        }
+        else
+        {
+
+        }
+
+        die('cnvnvbn');
+
         if ($sender_id && $receiver_id) {
             if ($accept == 1) {
                 $chat_count_message = $this->ChatUser->find('first', array('conditions' => array('ChatUser.user_id' => $sender_id, 'ChatUser.chat_user_id' => $receiver_id)));
