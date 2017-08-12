@@ -616,10 +616,6 @@ return response()->json($response);
             if($value['blocked_id'] == $clientId)
                 $block_id[] = $value['user_id'];
         }
-
-        
-
-
         /******End********/
 
         //======get limit for free user or paid user==//
@@ -649,112 +645,95 @@ return response()->json($response);
         Log::info('Showing user profile for user: '.json_encode($finalArr));
         if(isset($finalArr['type']) && $request->Input('type')=='browse')   
         {
-            /*$response['success'] = 1;
-            $response['data'] =  $request->Input('profile_pic_type');
-            $http_status = 200;
-            return response()->json($response,$http_status);*/
-            //Log::info('Showing user profile for user: '.$request->all());
-            /*if(count($data1))
+            /********Search By profile pic*********/
+            if(isset($finalArr['profile_pic_type']) && $finalArr['profile_pic_type'] != 'Not Set')
             {
-                $arrKeys = array_keys($data1);
-                $arrValue = array_values($data1);
-                $arrCombine = array_combine($arrKeys, $arrValue);
-                
-            }*/
+                $user = $user->whereIn('profile_pic_type',[$finalArr['profile_pic_type']]); 
+            } 
+            /********End*********/
 
-            /*if($request->Input('filter')=='on')
-            {*/
-                /********Search By profile pic*********/
-                if(isset($finalArr['profile_pic_type']) && $finalArr['profile_pic_type'] != 'Not Set')
-                {
-                    $user = $user->whereIn('profile_pic_type',[$finalArr['profile_pic_type']]); 
-                } 
-                /********End*********/
+            /********Search By relationshiptype*********/
+            if(isset($finalArr['relationship_status']) && $finalArr['relationship_status'] != 'Not Set')
+            {
+                $user = $user->whereHas('Profile',function($q) use ($finalArr){
+                    $q->where('relationship_status',$finalArr['relationship_status']);
+                });
+            }
 
-                /********Search By relationshiptype*********/
-                if(isset($finalArr['relationship_status']) && $finalArr['relationship_status'] != 'Not Set')
+            /********Search by Ethnicity*********/
+            if(isset($finalArr['ethnicity']) && $finalArr['ethnicity'] != 'Not Set')
+            {
+                $user = $user->whereHas('Profile',function($q) use ($finalArr){
+                    $q->where('ethnicity',$finalArr['ethnicity']);
+                }); 
+            }
+            /********End*********/
+
+            /********Search By age*********/
+            if(isset($finalArr['age_to']) && isset($finalArr['age_from']) && $finalArr['age_to'] != 'Not Set' && $finalArr['age_from'] != 'Not Set')
+            {
+                /********Common function to check age*********/
+                $user = $user->whereHas('Profile',function($q) use ($finalArr){
+                    $q->whereBetween('age',[$finalArr['age_from'],$finalArr['age_to']]);
+                });
+            }
+            /********End*********/
+
+            /********Search By height*********/
+            if(isset($finalArr['height_cm_to']) && isset($finalArr['height_cm_from']) && $finalArr['height_cm_to'] != 'Not Set' && $finalArr['height_cm_from'] != 'Not Set')
+            {
+                /********Common function to check height*********/
+                $user = $user->whereHas('Profile',function($q) use ($finalArr){
+                    $q->whereBetween('height_cm',[$finalArr['height_cm_from'],$finalArr['height_cm_to']]);
+                });
+            }
+            /********End*********/
+
+            /********Search By weight*********/
+            if(isset($finalArr['Weight_kg_to']) && isset($finalArr['Weight_kg_from']) && $finalArr['Weight_kg_to'] != 'Not Set' && $finalArr['Weight_kg_from'] != 'Not Set')
+            {
+                /********Common function to check weight*********/
+                $user = $user->whereHas('Profile',function($q) use ($finalArr){
+                    $q->whereBetween('Weight_kg',[$finalArr['Weight_kg_from'],$finalArr['Weight_kg_to']]);
+                });
+            }            
+            /********End*********/     
+
+            /********Search By identities*********/
+            if(isset($finalArr['his_identitie']) && $finalArr['his_identitie'] != 'Not Set')
+            {
+                $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
+                    $q->whereIn('name',explode(',', $finalArr['his_identitie']))
+                      ->where(array('type'=>'identity'));
+                });
+            }
+            /********End*********/
+
+            /********Search By his itentites*********/
+            if(isset($finalArr['his_seeking']) && $finalArr['his_seeking'] != 'Not Set')
+            {
+                $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
+                    $q->whereIn('name',explode(',', $finalArr['his_seeking']))
+                      ->where(array('type'=>'his_identites'));
+                });
+            }
+            /********End*********/
+
+            if(isset($finalArr['online']) && $finalArr['online_status'] != 'Not Set')
+            {
+                //active before one hour
+                if($finalArr['online_status'] == 1)
                 {
-                    $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->where('relationship_status',$finalArr['relationship_status']);
-                    });
+                    $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
                 }
-
-                /********Search by Ethnicity*********/
-                if(isset($finalArr['ethnicity']) && $finalArr['ethnicity'] != 'Not Set')
+                //active before more than 1 hour
+                else if($finalArr['online_status'] == 2)
                 {
-                    $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->where('ethnicity',$finalArr['ethnicity']);
-                    }); 
+                    $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
                 }
-                /********End*********/
-
-                /********Search By age*********/
-                if(isset($finalArr['age_to']) && isset($finalArr['age_from']) && $finalArr['age_to'] != 'Not Set' && $finalArr['age_from'] != 'Not Set')
-                {
-                    /********Common function to check age*********/
-                    $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->whereBetween('age',[$finalArr['age_from'],$finalArr['age_to']]);
-                    });
-                }
-                /********End*********/
-
-                /********Search By height*********/
-                if(isset($finalArr['height_cm_to']) && isset($finalArr['height_cm_from']) && $finalArr['height_cm_to'] != 'Not Set' && $finalArr['height_cm_from'] != 'Not Set')
-                {
-                    /********Common function to check height*********/
-                    $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->whereBetween('height_cm',[$finalArr['height_cm_from'],$finalArr['height_cm_to']]);
-                    });
-                }
-                /********End*********/
-
-                /********Search By weight*********/
-                if(isset($finalArr['Weight_kg_to']) && isset($finalArr['Weight_kg_from']) && $finalArr['Weight_kg_to'] != 'Not Set' && $finalArr['Weight_kg_from'] != 'Not Set')
-                {
-                    /********Common function to check weight*********/
-                    $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                        $q->whereBetween('Weight_kg',[$finalArr['Weight_kg_from'],$finalArr['Weight_kg_to']]);
-                    });
-                }            
-                /********End*********/     
-
-                /********Search By identities*********/
-                if(isset($finalArr['his_identitie']) && $finalArr['his_identitie'] != 'Not Set')
-                {
-                    $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-                        $q->whereIn('name',explode(',', $finalArr['his_identitie']))
-                          ->where(array('type'=>'identity'));
-                    });
-                }
-                /********End*********/
-
-                /********Search By his itentites*********/
-                if(isset($finalArr['his_seeking']) && $finalArr['his_seeking'] != 'Not Set')
-                {
-                    $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-                        $q->whereIn('name',explode(',', $finalArr['his_seeking']))
-                          ->where(array('type'=>'his_identites'));
-                    });
-                }
-                /********End*********/
-
-                if(isset($finalArr['online']) && $finalArr['online_status'] != 'Not Set')
-                {
-                    //active before one hour
-                    if($finalArr['online_status'] == 1)
-                    {
-                        $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
-                    }
-                    //active before more than 1 hour
-                    else if($finalArr['online_status'] == 2)
-                    {
-                        $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
-                    }
-                }
-            /*}*/
+            }
             
             $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
-            
             if ($if_exist_save_filter) {
                 $filter_cache = $if_exist_save_filter;
             }
@@ -865,16 +844,27 @@ return response()->json($response);
      **/
     public function getUserProfileDetail(Request $request, Repositary $common)
     {
-        $clientId = JWTAuth::parseToken()->authenticate()->id;
-        $viewer_id = '';
-        if($request->Input('viewer_user_id'))
-        {
-            $viewer_id = $request->Input('viewer_user_id');
+        $validator = Validator::make( $request->all(),[
+            'viewer_user_id' => 'required|numeric'
+        ],
+        [
+            'recevier_id.required' => 'Viewer user id not found.', 
+            'recevier_id.numeric' => 'viewer user id must be numeric.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
         }
-        $userdata = User::with('Profile')->where(['id'=>$viewer_id,'status'=>1])->first();
-        if(!empty($clientId) && !empty($viewer_id))
+        else
         {
-            $Userdetails=[];
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data = $request->all();
+            $viewer_id = $data['viewer_user_id'];
             $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
             if ($clientId == $viewer_id) {
                 $is_view_profile = 0;
@@ -897,7 +887,7 @@ return response()->json($response);
             }
 
             $profile = User::with(['Profile','UserIdentity'])->where(array('id'=>$viewer_id))->first();
-            if($profile && $clientId)
+            if(count($profile))
             {
                 $profile['Profile']['description'] = '';
                 $viewer_lat = $profile['lat'];
@@ -963,6 +953,7 @@ return response()->json($response);
                         $Userdetails['Viewer_Share_Album']['album_images'] = $Profile_pic;
                     }
                 }
+
                 $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
                 if ($note) {
                     $Userdetails['Note'] = $note['note'];
@@ -1142,14 +1133,9 @@ return response()->json($response);
                 $response['message'] = 'user id or viewer user id not valid';
                 $http_status = 400;
             }
+        }    
 
-        }  
-        else
-        {
-            $response['success'] = 0;
-            $response['message'] = 'user id or viewer user id not found';
-            $http_status = 400;
-        }  
+          
 
         return response()->json($response,$http_status);
     }
@@ -1212,7 +1198,7 @@ return response()->json($response);
 
 
     /**
-     * Name: add_favourite_screen
+     * Name: postAddFavouriteScreen
      * Purpose: function for save and update the fliter value
      * created By: Lovepreet
      * Created on :- 11 Aug 2017
@@ -1239,135 +1225,663 @@ return response()->json($response);
             $response['success']     = 0;
             $http_status=422;
         }else{
-            if (isset($clientId) && (isset($data['favourite_user_id']) && intval($data['favourite_user_id'])) && $data['browse']) {
-                //======get limit for free user or paid user==//
-                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Favorite');
-                //=======End============//
-               
-                $Favorite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$data['favourite_user_id']])->first();
+            //======get limit for free user or paid user==//
+            $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Favorite');
+            //=======End============//
+           
+            $Favorite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$data['favourite_user_id']])->first();
 
-                    if ($Favorite) {
-                        /** ****** if is_favourite=1 then set is_favourite=2 means unfavourite and if  is_favourite=2 then set is_favourite=1 means favourite*** */
-                       
-                        if ($Favorite['is_favourite'] == 1) {
-                            $is_favourite = 2;
-                        } else {
-                            $is_favourite = 1;
-                        }
-                        /** ******** un favourite **************** */
-                        $data['user_id'] = $clientId;
-                        $data['is_favourite'] = $is_favourite;
-                    } else {
-                        $data['user_id'] = $clientId;
-                        $data['is_favourite'] = 1;
-                    }
-                if ($Favorite['is_favourite'] == 1) {
+                if ($Favorite) {
+                    /** ****** if is_favourite=1 then set is_favourite=2 means unfavourite and if  is_favourite=2 then set is_favourite=1 means favourite*** */
                    
-                    $count_favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1,'browse'=>$data['browse']])->count();
-                    if ($count_favourite >= $limit) {
-                        $response['success'] = 0;
-                        $response['message'] = 'You have reached your Favorite limit of ' . number_format($limit) . ' guys. Please remove a Favorite if you would like to add a new one.';
-                        $http_status = 400;
-                        $error = 1;
+                    if ($Favorite['is_favourite'] == 1) {
+                        $is_favourite = 2;
+                    } else {
+                        $is_favourite = 1;
                     }
+                    /** ******** un favourite **************** */
+                    $data['user_id'] = $clientId;
+                    $data['is_favourite'] = $is_favourite;
+                } else {
+                    $data['user_id'] = $clientId;
+                    $data['is_favourite'] = 1;
                 }
+            if ($Favorite['is_favourite'] == 1) {
+               
+                $count_favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1,'browse'=>$data['browse']])->count();
+                if ($count_favourite >= $limit) {
+                    $response['success'] = 0;
+                    $response['message'] = 'You have reached your Favorite limit of ' . number_format($limit) . ' guys. Please remove a Favorite if you would like to add a new one.';
+                    $http_status = 400;
+                    $error = 1;
+                }
+            }
 
-                if($error==0)
+            if($error==0)
+            {
+                if($Favorite)
                 {
-                    if($Favorite)
+                    if($Favorite->update($data))
                     {
-                        if($Favorite->update($data))
-                        {
-                            $response['success'] = 1;
-                            $response['message'] = 'Success';
-                            $http_status = 200;
-                        }
-                        else
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'unable to save into database';
-                            $http_status = 200;  
-                        }
+                        $response['success'] = 1;
+                        $response['message'] = 'Success';
+                        $http_status = 200;
                     }
                     else
                     {
-                        if(FavouriteModel::create($data))
-                        {
-                            $response['success'] = 1;
-                            $response['message'] = 'Success';
-                            $http_status = 200;
-                        }
-                        else
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'unable to save into database';
-                            $http_status = 400;  
-                        }
+                        $response['success'] = 0;
+                        $response['message'] = 'unable to save into database';
+                        $http_status = 200;  
                     }
                 }
-            } else {
-                $response['success'] = 0;
-                $response['message'] = 'user id and favourite user id or browse not found';
-                $http_status = 400;
+                else
+                {
+                    if(FavouriteModel::create($data))
+                    {
+                        $response['success'] = 1;
+                        $response['message'] = 'Success';
+                        $http_status = 200;
+                    }
+                    else
+                    {
+                        $response['success'] = 0;
+                        $response['message'] = 'unable to save into database';
+                        $http_status = 400;  
+                    }
+                }
             }
+            
         }
         return response()->json($response,$http_status);
     }
 
 
-
+    /**
+     * Name: postSentInvitation
+     * Purpose: function for sent chat notification
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/   
     public function postSentInvitation(Request $request,Repositary $common) {
         $data = $request->all();
         $clientId = JWTAuth::parseToken()->authenticate()->id;
-        if(!empty($clientId) && !empty($data['recevier_id']))
-        {
-            if(isset($data['accept']) && $data['accept']==1)
-            {
-                $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
-                $chat_count_message1 = $common->commonChatUser($data['recevier_id'],$clientId);
-                if(count($chat_count_message))
-                {
-                    $chat_count_message->update(['count'=>($chat_count_message['count']+1),'created_at'=>carbon::now()]);
-                }
+        $validator = Validator::make( $request->all(),[
+            'recevier_id' => 'required|numeric',
+            'accept' => 'numeric'
+        ],
+        [
+            'recevier_id.required' => 'Recevier user id not found.', 
+            'recevier_id.numeric' => 'Recevier id must must be numeric.', 
+            'accept.numeric' => 'Accept have only numeric value.'
+        ]
 
-                if(count($chat_count_message1))
-                {
-                    $chat_count_message1->update(['invite'=>2]);
-                }
-
-            }
-            else
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else{
+            if(!empty($clientId) && !empty($data['recevier_id']))
             {
-                $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
-                if(count($chat_count_message))
+                if(isset($data['accept']) && $data['accept']==1)
                 {
-                    $chat_count_message->update(['invite'=>1,'check_invitaion_sent'=>1]);
+                    $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
+                    $chat_count_message1 = $common->commonChatUser($data['recevier_id'],$clientId);
+                    if(count($chat_count_message))
+                    {
+                        if($chat_count_message->update(['count'=>($chat_count_message['count']+1),'created_at'=>carbon::now()]))
+                        {
+                            $response['success'] = 1;
+                            $response['message'] = 'success!';
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'Something wrong!';
+                            $http_status = 400;
+                        }
+                    }
+
+                    if(count($chat_count_message1))
+                    {
+                       if($chat_count_message1->update(['invite'=>2]))
+                       {
+                            $response['success'] = 1;
+                            $response['message'] = 'success!';
+                            $http_status = 200;
+                       }
+                       else
+                       {
+                            $response['success'] = 0;
+                            $response['message'] = 'Something Wrong!';
+                            $http_status = 400;
+                       }
+                    }
+
                 }
                 else
                 {
-                    $chat_users1 = $common->commonChatUser($data['recevier_id'],$clientId);
-                    if(count($chat_users1)==0)
+                    $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
+                    if(count($chat_count_message))
                     {
-                        $receiverdata['user_id'] = $data['receiver_id'];
-                        $receiverdata['chat_user_id'] = $data['receiver_id'];
-                        ChatModel::create($receiverdata);
+                        if($chat_count_message['check_invitaion_sent']==1)
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'Already send Invitation to recevier';
+                            $http_status = 400;
+                        }
+                        else
+                        {
+                            if($chat_count_message->update(['invite'=>1,'check_invitaion_sent'=>1]))
+                            {
+                                $response['success'] = 1;
+                                $response['message'] = 'success';
+                                $http_status = 200;
+                            }
+                            else
+                            {
+                                $response['success'] = 1;
+                                $response['message'] = 'Already send Invitation to recevier';
+                                $http_status = 400;   
+                            }
+                        }
                     }
-                    $data['user_id'] = $clientId;
-                    $data['chat_user_id'] = $data['receiver_id'];
-                    $data['invite'] = 1;
-                    $data['check_invitaion_sent'] = 1;
-                    $data['count'] = 0;
+                    else
+                    {
+                        $chat_users1 = $common->commonChatUser($data['recevier_id'],$clientId);
+                        if(count($chat_users1)==0)
+                        {
+                            $receiverdata['user_id'] = $data['receiver_id'];
+                            $receiverdata['chat_user_id'] = $clientId;
+                            ChatModel::create($receiverdata);
+                        }
+                        $data['user_id'] = $clientId;
+                        $data['chat_user_id'] = $data['receiver_id'];
+                        $data['invite'] = 1;
+                        $data['check_invitaion_sent'] = 1;
+                        $data['count'] = 0;
+                    }
+                }
+            }    
+        }
+
+        return response()->json($response,$http_status);
+        
+
+        
+    }
+
+
+    /**
+     * Name: postAddNote
+     * Purpose: function for save and update the Note
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/    
+
+    public function postAddNote(Request $request) {
+
+        $validator = Validator::make( $request->all(),[
+            'note_user_id' => 'required|numeric',
+            'note' => 'required|Min:5|Max:500'
+        ],
+        [
+            'recevier_id.required' => 'Note user id not found.', 
+            'recevier_id.numeric' => 'Note id must must be numeric.', 
+            'note.min' => 'Note must be less then 5 character.',
+            'note.max' => 'Note should be greater then 500 character.',
+            'note.required' => 'Please enter note.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else{
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data = $request->all();
+            $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$data['note_user_id']])->first();
+
+            if($note)
+            {
+                if($note->update($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'Something Wrong!';
+                    $http_status = 400;
+                }
+            }
+            else
+            {
+                if(Note::create($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'Something Wrong!';
+                    $http_status = 400;
                 }
             }
 
         }
-        else
-        {
-
-        }
-
-        die('cnvnvbn');
+        return response()->json($response,$http_status);
     }
 
+
+    public function postLockUnlockProfileDeials(Request $request)
+    {
+        $validator = Validator::make( $request->all(),[
+            'lock_user_id' => 'required|numeric'
+        ],
+        [
+            'lock_user_id.required' => 'Lock user id not found.', 
+            'lock_user_id.numeric' => 'Lock id must must be numeric.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data = $request->all();
+            $browse = '';
+            if(isset($data['browse']))
+            {
+                $browse = $data['browse'];
+            }
+            $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where(function($q){
+                $q->orWhere('browse','looking')
+                 ->orWhere('browse','!=','looking');
+            })
+            ->first();                
+
+            if($lock_profile)
+            {
+                /******* if is_locked=1 then set is_locked=2 means unlock and if  is_locked=2 then set is_locked=1 means lock*** */
+                if ($lock_profile['is_locked'] == 1) {
+                    $is_locked = 2;
+                    $count = 0;
+                } else {
+                    $is_locked = 1;
+                    $count = 1;
+                }
+                /************* lock unlock profile details ************ */
+                $data['user_id'] = $clientId;
+                $data['is_locked'] = $is_locked;
+                $data['count'] = $count;
+                $data['browse'] = $browse;
+                if($lock_profile->update($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'successfully save into database';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'Something Wrong!';
+                    $http_status = 400;
+                }
+            }
+            else
+            {
+                $data['user_id'] = $clientId;
+                $data['is_locked'] = 1;
+                $data['count'] = 1;
+                $data['browse'] = $browse;    
+                if(ProfileLockModel::create($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'successfully save into database';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'Something Wrong!';
+                    $http_status = 400;
+                }
+            }
+        } 
+        return response()->json($response,$http_status);
+    }
+
+
+    public function postBlockUser(Request $request,Repositary $common) {
+        $validator = Validator::make( $request->all(),[
+            'blocked_id' => 'required|numeric'
+        ],
+        [
+            'blocked_id.required' => 'Block user id not found.', 
+            'blocked_id.numeric' => 'Block id must must be numeric.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data = $request->all();
+            $get_model_data = BlockUserModel::where(['user_id'=>$clientId,'blocked_id'=>$data['blocked_id']])->first();
+            if(count($get_model_data)==0)
+            {
+                $data['user_id'] = $clientId;
+                $data['block_dt'] = Carbon::now();
+                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'BlockPerDay');
+                if ($limit > 0) {
+                    $count_block = BlockUserModel::where(['user_id'=>$clientId])->count();
+                    if ($count_block >= $limit) {
+                        $response['success'] = 0;
+                        $response['message'] = 'You have reached your Block limit of ' . number_format($limit) . ' guys. Please remove a Block if you would like to add a new one.';
+                        $http_status = 400;
+                        return response()->json($response,$http);
+                    }
+                }
+
+                ShareAlbumModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['blocked_id']])->update(['is_received'=>2,'is_view'=>0]);
+
+                FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$data['blocked_id']])->update(['is_favourite'=>2]);
+                
+                if (BlockUserModel::create($data)) {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $http_status = 200;
+                } else {
+                    $response['success'] = 0;
+                    $response['message'] = 'failure';
+                    $http_status = 200;
+                }
+            }
+            else
+            {
+                
+                if($get_model_data->delete())
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $http_status = 200;
+                } 
+                else 
+                {
+                    $response['success'] = 0;
+                    $response['msg'] = 'failure';
+                    $http_status = 400;
+                }
+            }    
+
+
+        }    
+        return response()->json($response,$http_status);
+    }
+
+    /*public function share_album(Request $request,Repositary $common) {
+
+        $validator = Validator::make( $request->all(),[
+            'receiver_id' => 'required|numeric'
+        ],
+        [
+            'receiver_id.required' => 'Receiver user id not found.', 
+            'receiver_id.numeric' => 'Receiver id must must be numeric.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data = $request->all();
+            $album = UseralbumModel::where(['user_id'=>$clientId])->get();
+
+            if ($album) {
+                $sharealbum = $this->ShareAlbum->find('first', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.receiver_id' => $receiver_id)));
+
+                $sharealbum = ShareAlbumModel::where(['user_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
+
+                if ($sharealbum) {
+                    if ($sharealbum['is_received'] == 1) {
+                        $is_received = 2;
+                        $is_view = 0;
+                    } else {
+                        $is_received = 1;
+                        $is_view = 1;
+                    }
+
+                    $data['sender_id'] = $clientId;
+                    $data['is_received'] = $is_received;
+                    $data['is_view'] = $is_view;
+
+                    
+                  //  $data['success'] = 2;
+                  //  $data['msg'] = 'already share album';
+                } else {
+                    $is_received = 1;
+                    $data['sender_id'] = $clientId;
+                    $data['is_received'] = $is_received;
+                    $data['is_view'] = 1;
+                }
+                $limit = $common->getlimit($member_type, 'PrivateAlbumSharePerDay');
+                if ($data['is_received'] == 1) {
+                    if ($limit > 0) {
+                        $count_sharealbum_per_day  = ShareAlbumModel::where(['sender_id'=>$clientId,'is_received'=>1])->whereBetween('created_at'=>[carbon::today(),carbon::now()])->count();
+                        
+                        if ($count_sharealbum_per_day >= $limit) {
+                            $reponse['success'] = 1;
+                            $response['message'] = 'You have reached your Album Shares limit of ' . number_format($limit) . ' guys per day.';
+                            $http_status = 400;
+
+                        }
+                    }
+                }
+                if ($this->ShareAlbum->save($user)) 
+                {
+                    $chatusers = ChatModel::where(['chat_user_id'=>$receiver_id])->get();
+                    $total_unread_message = 0;
+                    if ($chatusers) {
+
+                        foreach ($chatusers as $key => $value) {
+                            if ($value['invite'] > 0) {
+                                $invite = 1;
+                            } else {
+                                $invite = 0;
+                            }
+                            $total_unread_message+=($value['count'] + $invite);
+                        }
+                    }
+                    if ($total_unread_message == 0) {
+                        $total_unread_message = '';
+                    }
+                } 
+                else 
+                {
+                    $data['success'] = 3;
+                    $data['msg'] = 'unable to save database';
+                }
+            } 
+        }
+
+
+        $this->autoRender = false;
+        $sender_id = isset($this->request->data['sender_id']) ? $this->request->data['sender_id'] : ''; //this is current user
+        $receiver_id = isset($this->request->data['receiver_id']) ? $this->request->data['receiver_id'] : ''; // who receive album
+        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
+        if ($sender_id && $receiver_id) {
+            //======get member type  free user or paid user==//
+            $login_user_member = $this->User->find('first', array('conditions' => array('User.id' => $sender_id)));
+            $member_type = $login_user_member['User']['member_type'];
+            //=======End============//
+            $album = $this->User_album->find('all', array('conditions' => array('User_album.user_id' => $sender_id)));
+            if ($album) {
+                $sharealbum = $this->ShareAlbum->find('first', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.receiver_id' => $receiver_id)));
+                if ($sharealbum) {
+                    
+                    if ($sharealbum['ShareAlbum']['is_received'] == 1) {
+                        $is_received = 2;
+                        $is_view = 0;
+                    } else {
+                        $is_received = 1;
+                        $is_view = 1;
+                    }
+                    $user['ShareAlbum'] = array(
+                        'id' => $sharealbum['ShareAlbum']['id'],
+                        'sender_id' => $sender_id,
+                        'receiver_id' => $receiver_id,
+                        'is_received' => $is_received,
+                        'is_view' => $is_view,
+                        'creation_date' => $current_date
+                    );
+                    
+                    $data['success'] = 2;
+                    $data['msg'] = 'already share album';
+                } else {
+                    $is_received = 1;
+                    
+                    $user['ShareAlbum'] = array(
+                        //'id' => $sharealbum[0]['ShareAlbum']['id'],
+                        'sender_id' => $sender_id,
+                        'receiver_id' => $receiver_id,
+                        'is_view' => 1,
+                        'is_received' => $is_received,
+                        'creation_date' => $current_date
+                    );
+                }
+                $limit = $this->match_limit($member_type, 'PrivateAlbumSharePerDay');
+                if ($user['ShareAlbum']['is_received'] == 1) {
+                    if ($limit != 0) {
+                        $count_sharealbum_per_day = $this->ShareAlbum->find('count', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.is_received' => 1, 'DATE(ShareAlbum.creation_date)' => date('Y-m-d', strtotime($current_date)))));
+                        
+                        if ($count_sharealbum_per_day >= $limit) {
+                            echo json_encode(array('success' => 3, 'msg' => 'You have reached your Album Shares limit of ' . number_format($limit) . ' guys per day.'));
+                            exit();
+                        }
+                    }
+                }
+                if ($this->ShareAlbum->save($user)) {
+                    
+                    $chatusers = $this->ChatUser->find('all', array('conditions' => array('ChatUser.chat_user_id' => $receiver_id)));
+                    $total_unread_message = 0;
+                    if ($chatusers) {
+
+                        foreach ($chatusers as $key => $value) {
+                            if ($value['ChatUser']['invite'] > 0) {
+                                $invite = 1;
+                            } else {
+                                $invite = 0;
+                            }
+                            $total_unread_message+=($value['ChatUser']['count'] + $invite);
+                        }
+                    }
+                    if ($total_unread_message == 0) {
+                        $total_unread_message = '';
+                    }
+                    
+
+                    $username = $this->User->findById($sender_id);
+                    
+                    $userdetails = $this->User->findById($receiver_id);
+                    if ($userdetails) {
+                        $device_type = $userdetails['User']['device_type'];
+                        $device_token = $userdetails['User']['device_token'];
+                        $online_status = $userdetails['User']['online_status'];
+                        // pr($device_token);
+                        
+                        $count_view = $this->count_view($receiver_id);
+                        
+                        $count_sharealbum = $this->count_sharealbum($receiver_id);
+                        $total_view_and_share = $count_view + $count_sharealbum;
+                       
+                        if ($device_type == 'android') {
+                            if ($is_received == 1 && $online_status == 1) {
+                                $device_token = array($device_token);
+                                $msg = $username['User']['screen_name'] . ' share album with you';
+                                $message = array("msg" => $msg, 'sound' => 'default');
+                                $this->GCM->send_notification($device_token, $message);
+                                //$result = $gcm->send_notification($device_ids, $message);
+                            }
+                        } else {
+                            //echo $is_received;
+                            if ($is_received == 1 && $online_status == 1) {
+                               
+                                $pemfile = WWW_ROOT . 'files/looking.pem';
+                                $passphrase = 'looking';
+                                $msg = $username['User']['screen_name'] . ' share album with you';
+                                $ctx = stream_context_create();
+                                stream_context_set_option($ctx, 'ssl', 'local_cert', $pemfile);
+                                stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
+                                // Open a connection to the APNS server
+                                $fp = stream_socket_client(
+                                        'ssl://gateway.push.apple.com:2195', $err, $errstr, 60, STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT, $ctx);
+
+                                if (!$fp)
+                                    exit("Failed to connect: $err $errstr" . PHP_EOL);
+                                $body['aps'] = array(
+                                    'alert' => $msg,
+                                    'count_unread_msg' => 1,
+                                    //'post_tag' => $post_tag,
+                                    //'job_id' => $job_id,
+                                    //'msg_id' => $msg_id,
+                                    //'unread_msg_count' => $msg_unread_count,
+                                    // 'msg_sender_id' => $msg_sender_id,
+                                    //'msg_sender_name' => $msg_sender_name,
+                                    // 'group_id' => $group_id,
+                                    //'group_name' => $group_name,
+                                    'sound' => 'default'
+                                );
+                                $payload = '{"aps":{"alert":"' . $msg . '","count_unread_msg" : 1,"type" : "share_album","total_view_and_share":"' . (int) $total_view_and_share . '","sound":"default","badge":' . (int) $total_unread_message . '}}';
+                                $msg = chr(0) . pack('n', 32) . pack('H*', $device_token) . pack('n', strlen($payload)) . $payload;
+                                $result = fwrite($fp, $msg, strlen($msg));
+                                $json = array();
+                                fclose($fp);
+                            }
+                        }
+                    }
+                    $data['success'] = 1;
+                    $data['msg'] = 'success';
+                } else {
+                    $data['success'] = 3;
+                    $data['msg'] = 'unable to save database';
+                }
+            } else {
+                $data['success'] = 4;
+                $data['msg'] = 'please add some images';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'sender id or receiver id not found';
+        }
+        echo json_encode($data);
+    }*/
 
 }

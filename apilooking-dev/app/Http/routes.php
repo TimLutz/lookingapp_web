@@ -18,7 +18,6 @@ $app->get('/', function () use ($app) {
 //routes for api
 
 $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function ($app) {
-	
 	$app->post('auth/login', 'Auth\AuthController@postLogin');
 	$app->post('forget_password', 'UserController@ForgetPassword');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
@@ -30,6 +29,9 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('save_filter_cache','UserController@postFilterCache');
     $app->post('add_favourite_screen','UserController@postAddFavouriteScreen');
     $app->post('sent_invitation','UserController@postSentInvitation');
+    $app->post('add_note','UserController@postAddNote');
+    $app->post('lock_unlock_details_profile','UserController@postLockUnlockProfileDeials');
+    $app->post('block_user','UserController@postBlockUser');
 });
 
 
