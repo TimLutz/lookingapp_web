@@ -22,9 +22,9 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
 	$app->post('forget_password', 'UserController@ForgetPassword');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('user_profile', 'UserController@postUserProfile');
-    $app->post('view_profile_details', 'UserController@postProfilePicture');
+    $app->post('profile_picture', 'UserController@postProfilePicture');
     $app->post('find_members', 'UserController@getFilterValue');
-    $app->post('profile_details', 'UserController@getUserProfileDetail');
+    $app->post('view_profile_details', 'UserController@getUserProfileDetail');
     $app->post('update_location','UserController@postUpdateLocation');
     $app->post('save_filter_cache','UserController@postFilterCache');
     $app->post('add_favourite_screen','UserController@postAddFavouriteScreen');
