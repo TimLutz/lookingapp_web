@@ -1104,11 +1104,11 @@ return response()->json($response);
                $identity_percentage = round($identity_percent_permatch * $match_identity);
                
                 /*************User Itdentity*******************/
-                if(isset($type) && $type = 'looking_date')
+                if(isset($type) && $type == 'looking_date')
                 {
 
                 }
-                else if(isset($type) && $type= 'looking_sex')
+                else if(isset($type) && $type== 'looking_sex')
                 {
 
                 }  /******End*******/
@@ -1961,8 +1961,7 @@ return response()->json($response);
             },
             'Useralbum'=>function($q9){
                 $q9->orderBy('album_type','ASC')->get();
-            }
-            ])->where(array('id'=>$viewer_id))->first();
+            }])->where(array('id'=>$viewer_id))->first();
 
 
             $userProfile = User::with(['Favourite'=>function($q1) use ($viewer_id){
@@ -1996,166 +1995,153 @@ return response()->json($response);
                     $q8->where('browse','!=','looking');   
                 }
                 $q8->first();
+            }])->where(array('id'=>$clientId))->first();
+
+            
+            $profile['Profile']['description'] = '';
+            $viewer_lat = $profile['lat'];
+            $viewer_long = $profile['long'];
+            $distance = $common->distance(JWTAuth::parseToken()->authenticate()->lat, JWTAuth::parseToken()->authenticate()->long, $viewer_lat, $viewer_long, 'M');
+            if (is_nan($distance) == 1) {
+                $distance = 0;
             }
-            ])->where(array('id'=>$clientId))->first();
 
-        //    print_r($userProfile); die;
-            if(count($profile))
+            $Userdetails['Distance'] = array('miles' => $distance);
+            $Userdetails['Match_Persent'] = array();
+            $Userdetails['User_Profile_Lock'] = array();
+            $Userdetails['View_User_Profile_Lock'] = array();
+            $Userdetails['Over_All_Percentage'] = '';
+            $Userdetails['traits'] = '';
+            $Userdetails['interest'] = '';
+            $Userdetails['physicial_appearance'] = '';
+            $Userdetails['sextual_preferences'] = '';
+            $Userdetails['social_habits'] = '';
+            $Userdetails['identity'] = '';
+            $Userdetails['Looksex_Profile_Active'] = array();
+            $Userdetails['User_Looksex_Profile_Active'] = array();
+            $Userdetails['Lookdate_Profile_Active'] = array();
+            $Userdetails['User_Lookdate_Profile_Active'] = array();
+
+            if(count($profile['ShareAlbum']))
             {
-                $profile['Profile']['description'] = '';
-                $viewer_lat = $profile['lat'];
-                $viewer_long = $profile['long'];
-                $distance = $common->distance(JWTAuth::parseToken()->authenticate()->lat, JWTAuth::parseToken()->authenticate()->long, $viewer_lat, $viewer_long, 'M');
-                if (is_nan($distance) == 1) {
-                    $distance = 0;
-                }
+                $Profile_pic = array(
+                    array(
+                        'id' => 'profile_pic',
+                        'user_id' => $viewer_id,
+                        'photo_name' => $profile['profile_pic'],
+                        'caption' => '',
+                        'album_type' => $profile['profile_pic_type'],
+                        'creation_date' => $profile['profile_pic_date']
+                ));
 
-                $Userdetails['Distance'] = array('miles' => $distance);
-                $Userdetails['Match_Persent'] = array();
-                $Userdetails['User_Profile_Lock'] = array();
-                $Userdetails['View_User_Profile_Lock'] = array();
-                $Userdetails['Over_All_Percentage'] = '';
-                $Userdetails['traits'] = '';
-                $Userdetails['interest'] = '';
-                $Userdetails['physicial_appearance'] = '';
-                $Userdetails['sextual_preferences'] = '';
-                $Userdetails['social_habits'] = '';
-                $Userdetails['identity'] = '';
-                $Userdetails['Looksex_Profile_Active'] = array();
-                $Userdetails['User_Looksex_Profile_Active'] = array();
-                $Userdetails['Lookdate_Profile_Active'] = array();
-                $Userdetails['User_Lookdate_Profile_Active'] = array();
-
-                if(count($profile['ShareAlbum']))
-                {
-                    $Profile_pic = array(
-                        array(
-                            'id' => 'profile_pic',
-                            'user_id' => $viewer_id,
-                            'photo_name' => $profile['profile_pic'],
-                            'caption' => '',
-                            'album_type' => $profile['profile_pic_type'],
-                            'creation_date' => $profile['profile_pic_date']
-                    ));
-
-                    if ($profile['Useralbum']) {
-                        $album_picture = $profile['Useralbum']->toArray();
-                        $profile['ShareAlbum']['album_images'] = array_merge($Profile_pic, $album_picture);
-
-                    } else {
-                        $profile['ShareAlbum']['album_images'] = $Profile_pic;
-                    }  
-                }
-
-                if(count($profile['UserLooksex']))
-                {
-                    $check_looksex_active = 1;
-                }
-                else
-                {
-                    $check_looksex_active = 0;
-                    ChatModel::where(array('user_id'=>$viewer_id))->update(['invite'=>0]);
-                    $delete_lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'is_locked'=>1,'browse'=>'looking'])->first();
-                    if ($delete_lock_profile) {
-                        ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
-                    }   
-                }
-                $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
-
-
-                if (count($userProfile['UserLooksex']) > 0) {
-                    $check_user_looksex_active = 1;
+                if ($profile['Useralbum']) {
+                    $album_picture = $profile['Useralbum']->toArray();
+                    $profile['ShareAlbum']['album_images'] = array_merge($Profile_pic, $album_picture);
                 } else {
-                    $check_user_looksex_active = 0;
-                
-                    ChatModel::where(array('user_id'=>$clientId))->update(['invite'=>0]);
-                    
-                     $delete_lock_profile = ProfileLockModel::where(['user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
-                    if ($delete_lock_profile) {
-                        ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
-                    }
-                }
-                $Userdetails['User_Looksex_Profile_Active'] = $check_user_looksex_active;
+                    $profile['ShareAlbum']['album_images'] = $Profile_pic;
+                }  
+            }
 
-                if(count($profile['UserLookdate']))
-                {
-                    $check_lookdate_active = 1;
-                }
-                else
-                {
-                    $check_lookdate_active = 0;   
-                }
-                $Userdetails['Lookdate_Profile_Active'] = $check_lookdate_active;
-                if(count($userProfile['UserLookdate']))
-                {
-                    $check_user_lookdate_active = 1;
-                }
-                else
-                {
-                    $check_user_lookdate_active = 0;   
-                }
-                $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
-
-             
-                $identity_percent_permatch = $match_identity = 0;
-                if(count($userProfile['UserIdentity']))
-                {
-                    $identity_percent_permatch = 100 / count($userProfile['UserIdentity']);
-                }
-                $match_identity = 0;
-         
-               
-                $identity = array();
-                $traits = array();
-                $interest = array();
-                $physicial_appearance = array();
-                $sextual_preferences = array();
-                $social_habits = array();
-
-                if(count($userProfile['UserIdentity'])>0 && count($profile['UserIdentity'])>0){
-                    foreach ($userProfile['UserIdentity'] as $key => $value) {
-                        foreach ($profile['UserIdentity'] as $key1 => $value1) {
-                            if (trim(strtolower($value)) == trim(strtolower($value1))) {
-                                $match_identity++;
-                                $identity[] = trim($value);
-                            }
-                        }
-                    }
-                }    
-                
-               $identity_percentage = round($identity_percent_permatch * $match_identity);
-               
-              
-                /*if(isset($type) && $type == 'looking_date')
-                {
-                    die('bcvbcv');
-                }
-                else if(isset($type) && $type== 'looking_sex')
-                {
-                    die('ccvnb');
-                } 
-                else
-                {
-                    die('xbcvnvn');
-                }*/
-                $Userdetails['viewer_profile'] = $profile;
-                $Userdetails['user_profile'] = $userProfile;
-                $response['success'] = 1;
-                $response['message'] = 'success';
-                $Userdetails['login_user_member_type'] = JWTAuth::parseToken()->authenticate()->member_type;
-                $Userdetails['login_user_removead'] = JWTAuth::parseToken()->authenticate()->removead;
-                $Userdetails['login_user_is_trial'] = JWTAuth::parseToken()->authenticate()->idis_trial;
-                $Userdetails['chat_history_limit'] = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'chat_history');
-                $response['data'] = $Userdetails;
-                $http_status = 200;
-                
+            if(count($profile['UserLooksex']))
+            {
+                $check_looksex_active = 1;
             }
             else
             {
-                $response['success'] = 0;
-                $response['message'] = 'user id or viewer user id not valid';
-                $http_status = 400;
+                $check_looksex_active = 0;
+                ChatModel::where(array('user_id'=>$viewer_id))->update(['invite'=>0]);
+                $delete_lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'is_locked'=>1,'browse'=>'looking'])->first();
+                if ($delete_lock_profile) {
+                    ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
+                }   
             }
+            $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
+
+
+            if (count($userProfile['UserLooksex']) > 0) {
+                $check_user_looksex_active = 1;
+            } else {
+                $check_user_looksex_active = 0;
+            
+                ChatModel::where(array('user_id'=>$clientId))->update(['invite'=>0]);
+                
+                 $delete_lock_profile = ProfileLockModel::where(['user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
+                if ($delete_lock_profile) {
+                    ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
+                }
+            }
+            $Userdetails['User_Looksex_Profile_Active'] = $check_user_looksex_active;
+
+            if(count($profile['UserLookdate']))
+            {
+                $check_lookdate_active = 1;
+            }
+            else
+            {
+                $check_lookdate_active = 0;   
+            }
+            $Userdetails['Lookdate_Profile_Active'] = $check_lookdate_active;
+            if(count($userProfile['UserLookdate']))
+            {
+                $check_user_lookdate_active = 1;
+            }
+            else
+            {
+                $check_user_lookdate_active = 0;   
+            }
+            $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
+
+         
+            $identity_percent_permatch = $match_identity = 0;
+            if(count($userProfile['UserIdentity']))
+            {
+                $identity_percent_permatch = 100 / count($userProfile['UserIdentity']);
+            }
+            $match_identity = 0;
+     
+           
+            $identity = array();
+            $traits = array();
+            $interest = array();
+            $physicial_appearance = array();
+            $sextual_preferences = array();
+            $social_habits = array();
+
+            if(count($userProfile['UserIdentity'])>0 && count($profile['UserIdentity'])>0){
+                foreach ($userProfile['UserIdentity'] as $key => $value) {
+                    foreach ($profile['UserIdentity'] as $key1 => $value1) {
+                        if (trim(strtolower($value)) == trim(strtolower($value1))) {
+                            $match_identity++;
+                            $identity[] = trim($value);
+                        }
+                    }
+                }
+            }    
+
+            $identity_percentage = round($identity_percent_permatch * $match_identity);
+            /*************User Itdentity*******************/
+            if($type == 'looking_date')
+            {
+
+            }
+            else if($type== 'looking_sex')
+            {
+
+            }  /******End*******/
+            else
+            {
+                $Userdetails['viewer_profile'] = $profile;
+                $Userdetails['user_profile'] = $userProfile;
+            }
+
+            $response['success'] = 1;
+            $response['message'] = 'success';
+            $Userdetails['login_user_member_type'] = JWTAuth::parseToken()->authenticate()->member_type;
+            $Userdetails['login_user_removead'] = JWTAuth::parseToken()->authenticate()->removead;
+            $Userdetails['login_user_is_trial'] = JWTAuth::parseToken()->authenticate()->idis_trial;
+            $Userdetails['chat_history_limit'] = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'chat_history');
+            $response['data'] = $Userdetails;
+            $http_status = 200;
         }    
 
           
