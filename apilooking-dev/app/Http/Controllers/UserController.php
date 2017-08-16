@@ -1884,4 +1884,284 @@ return response()->json($response);
         echo json_encode($data);
     }*/
 
+    public function getUserProfileDetail1(Request $request, Repositary $common)
+    {
+        $validator = Validator::make( $request->all(),[
+            'viewer_user_id' => 'required|numeric'
+        ],
+        [
+            'recevier_id.required' => 'Viewer user id not found.', 
+            'recevier_id.numeric' => 'viewer user id must be numeric.'
+        ]
+
+        );
+    
+        if ($validator->fails()) {
+            
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }
+        else
+        {
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data = $request->all();
+
+            $type = isset($data['type']) ? $data['type'] : '';
+            $viewer_id = $data['viewer_user_id'];
+            $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
+            if ($clientId == $viewer_id) {
+                $is_view_profile = 0;
+            } else {
+                $is_view_profile = 0; //change later not deliver red dot notification
+            }
+            if(count($viewDetail)==0)
+            {
+                $data['user_id'] = $clientId;
+                $data['viewer_user_id'] = $viewer_id;
+                $data['is_view'] = $is_view_profile;
+                ViewerModel::create($data);
+            }
+            else
+            {
+                $data['user_id'] = $clientId;
+                $data['viewer_user_id'] = $viewer_id;
+                $data['is_view'] = $is_view_profile;
+                $viewDetail->update($data);
+            }
+
+            $profile = User::with(['Profile','Favourite'=>function($q1) use ($clientId){
+                $q1->where(['favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
+            },'BlockChatUser'=>function($q2) use ($clientId){
+                $q2->where(['block_user_id'=>$clientId])->first();
+            },'ShareAlbum'=>function($q4) use ($clientId){
+                $q4->where(['receiver_id'=>$clientId,'is_received'=>1])->get();
+            },
+            'UserLooksex'=>function($q5){
+                $q5->where('start_time','<=',Carbon::now())->where('end_time','>=',Carbon::now())->first();
+            },
+            'UserLookdate',
+            'ChatUsers'=>function($q6) use ($clientId){
+                $q6->where(['chat_user_id'=>$clientId])->first();
+            },
+            'UserIdentity'=>function($q7){
+                $q7->where(['type'=>'identity'])->get();
+            },
+            'ProfileLock'=>function($q8) use ($clientId,$type){
+                $q8->where(['lock_user_id'=>$clientId,'is_locked'=>1]);
+                if($type=='looking_sex')
+                {
+                    $q8->where(['browse'=>'looking']);
+                }
+                else
+                {
+                    $q8->where('browse','!=','looking');   
+                }
+                $q8->first();
+            },
+            'Useralbum'=>function($q9){
+                $q9->orderBy('album_type','ASC')->get();
+            }
+            ])->where(array('id'=>$viewer_id))->first();
+
+
+            $userProfile = User::with(['Favourite'=>function($q1) use ($viewer_id){
+                $q1->where(['favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
+            },'BlockChatUser'=>function($q2) use ($viewer_id){
+                $q2->where(['block_user_id'=>$viewer_id])->first();
+            },'ShareAlbum'=>function($q4) use ($viewer_id){
+                $q4->where(['receiver_id'=>$viewer_id,'is_received'=>1])->get();
+            },
+            'UserLooksex'=>function($q5){
+                $q5->where('start_time','<=',Carbon::now())->where('end_time','>=',Carbon::now())->first();
+            },
+            'UserLookdate',
+            'ChatUsers'=>function($q6) use ($viewer_id){
+                $q6->where(['chat_user_id'=>$viewer_id])->first();
+            },
+            'UserIdentity'=>function($q7){
+                $q7->where(['type'=>'identity'])->get();
+            },
+            'Notes'=>function($q8) use ($viewer_id){
+                $q8->where(['note_user_id'=>$viewer_id])->first();
+            },
+            'ProfileLock'=>function($q8) use ($viewer_id,$type){
+                $q8->where(['lock_user_id'=>$viewer_id,'is_locked'=>1]);
+                if($type=='looking_sex')
+                {
+                    $q8->where(['browse'=>'looking']);
+                }
+                else
+                {
+                    $q8->where('browse','!=','looking');   
+                }
+                $q8->first();
+            }
+            ])->where(array('id'=>$clientId))->first();
+
+        //    print_r($userProfile); die;
+            if(count($profile))
+            {
+                $profile['Profile']['description'] = '';
+                $viewer_lat = $profile['lat'];
+                $viewer_long = $profile['long'];
+                $distance = $common->distance(JWTAuth::parseToken()->authenticate()->lat, JWTAuth::parseToken()->authenticate()->long, $viewer_lat, $viewer_long, 'M');
+                if (is_nan($distance) == 1) {
+                    $distance = 0;
+                }
+
+                $Userdetails['Distance'] = array('miles' => $distance);
+                $Userdetails['Match_Persent'] = array();
+                $Userdetails['User_Profile_Lock'] = array();
+                $Userdetails['View_User_Profile_Lock'] = array();
+                $Userdetails['Over_All_Percentage'] = '';
+                $Userdetails['traits'] = '';
+                $Userdetails['interest'] = '';
+                $Userdetails['physicial_appearance'] = '';
+                $Userdetails['sextual_preferences'] = '';
+                $Userdetails['social_habits'] = '';
+                $Userdetails['identity'] = '';
+                $Userdetails['Looksex_Profile_Active'] = array();
+                $Userdetails['User_Looksex_Profile_Active'] = array();
+                $Userdetails['Lookdate_Profile_Active'] = array();
+                $Userdetails['User_Lookdate_Profile_Active'] = array();
+
+                if(count($profile['ShareAlbum']))
+                {
+                    $Profile_pic = array(
+                        array(
+                            'id' => 'profile_pic',
+                            'user_id' => $viewer_id,
+                            'photo_name' => $profile['profile_pic'],
+                            'caption' => '',
+                            'album_type' => $profile['profile_pic_type'],
+                            'creation_date' => $profile['profile_pic_date']
+                    ));
+
+                    if ($profile['Useralbum']) {
+                        $album_picture = $profile['Useralbum']->toArray();
+                        $profile['ShareAlbum']['album_images'] = array_merge($Profile_pic, $album_picture);
+
+                    } else {
+                        $profile['ShareAlbum']['album_images'] = $Profile_pic;
+                    }  
+                }
+
+                if(count($profile['UserLooksex']))
+                {
+                    $check_looksex_active = 1;
+                }
+                else
+                {
+                    $check_looksex_active = 0;
+                    ChatModel::where(array('user_id'=>$viewer_id))->update(['invite'=>0]);
+                    $delete_lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'is_locked'=>1,'browse'=>'looking'])->first();
+                    if ($delete_lock_profile) {
+                        ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
+                    }   
+                }
+                $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
+
+
+                if (count($userProfile['UserLooksex']) > 0) {
+                    $check_user_looksex_active = 1;
+                } else {
+                    $check_user_looksex_active = 0;
+                
+                    ChatModel::where(array('user_id'=>$clientId))->update(['invite'=>0]);
+                    
+                     $delete_lock_profile = ProfileLockModel::where(['user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
+                    if ($delete_lock_profile) {
+                        ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
+                    }
+                }
+                $Userdetails['User_Looksex_Profile_Active'] = $check_user_looksex_active;
+
+                if(count($profile['UserLookdate']))
+                {
+                    $check_lookdate_active = 1;
+                }
+                else
+                {
+                    $check_lookdate_active = 0;   
+                }
+                $Userdetails['Lookdate_Profile_Active'] = $check_lookdate_active;
+                if(count($userProfile['UserLookdate']))
+                {
+                    $check_user_lookdate_active = 1;
+                }
+                else
+                {
+                    $check_user_lookdate_active = 0;   
+                }
+                $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
+
+             
+                $identity_percent_permatch = $match_identity = 0;
+                if(count($userProfile['UserIdentity']))
+                {
+                    $identity_percent_permatch = 100 / count($userProfile['UserIdentity']);
+                }
+                $match_identity = 0;
+         
+               
+                $identity = array();
+                $traits = array();
+                $interest = array();
+                $physicial_appearance = array();
+                $sextual_preferences = array();
+                $social_habits = array();
+
+                if(count($userProfile['UserIdentity'])>0 && count($profile['UserIdentity'])>0){
+                    foreach ($userProfile['UserIdentity'] as $key => $value) {
+                        foreach ($profile['UserIdentity'] as $key1 => $value1) {
+                            if (trim(strtolower($value)) == trim(strtolower($value1))) {
+                                $match_identity++;
+                                $identity[] = trim($value);
+                            }
+                        }
+                    }
+                }    
+                
+               $identity_percentage = round($identity_percent_permatch * $match_identity);
+               
+              
+                /*if(isset($type) && $type == 'looking_date')
+                {
+                    die('bcvbcv');
+                }
+                else if(isset($type) && $type== 'looking_sex')
+                {
+                    die('ccvnb');
+                } 
+                else
+                {
+                    die('xbcvnvn');
+                }*/
+                $Userdetails['viewer_profile'] = $profile;
+                $Userdetails['user_profile'] = $userProfile;
+                $response['success'] = 1;
+                $response['message'] = 'success';
+                $Userdetails['login_user_member_type'] = JWTAuth::parseToken()->authenticate()->member_type;
+                $Userdetails['login_user_removead'] = JWTAuth::parseToken()->authenticate()->removead;
+                $Userdetails['login_user_is_trial'] = JWTAuth::parseToken()->authenticate()->idis_trial;
+                $Userdetails['chat_history_limit'] = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'chat_history');
+                $response['data'] = $Userdetails;
+                $http_status = 200;
+                
+            }
+            else
+            {
+                $response['success'] = 0;
+                $response['message'] = 'user id or viewer user id not valid';
+                $http_status = 400;
+            }
+        }    
+
+          
+
+        return response()->json($response,$http_status);
+    }
+
+
 }

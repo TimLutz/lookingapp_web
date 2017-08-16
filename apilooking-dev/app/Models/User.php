@@ -38,7 +38,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
 	public function ChatUsers()
 	{
-		return $this->hasMany('App\Models\ChatModel');
+		return $this->hasMany('App\Models\ChatModel','user_id');
 	}
 
 	public function Profile()
@@ -73,4 +73,46 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	{
 		return strtolower($value);
 	}
+
+	public function Notes()
+	{
+		return $this->hasMany('App\Models\NoteModel','user_id');
+	}
+
+	public function Favourite()
+	{
+		return $this->hasMany('App\Models\FavouriteModel','user_id');
+	}
+
+	public function BlockChatUser()
+	{
+		return $this->hasMany('App\Models\BlockChatUserModel','user_id');
+	}
+
+	public function ShareAlbum()
+	{
+		return $this->hasMany('App\Models\ShareAlbumModel','sender_id');
+	}
+
+	public function UserLooksex()
+	{
+		return $this->hasMany('App\Models\UserLooksexModel','user_id');
+	}
+
+	public function UserLookdate()
+	{
+		return $this->hasMany('App\Models\UserLookdateModel','user_id');
+	}
+
+
+	public function ProfileLock()
+	{
+		return $this->hasMany('App\Models\ProfileLockModel','user_id');
+	}
+
+	public function Useralbum()
+	{
+		return $this->hasMany('App\Models\UseralbumModel','user_id');
+	}
+	
 }

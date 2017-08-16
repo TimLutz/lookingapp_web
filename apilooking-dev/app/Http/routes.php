@@ -22,7 +22,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
 	$app->post('forget_password', 'UserController@ForgetPassword');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('user_profile', 'UserController@postUserProfile');
-    $app->post('profile_picture', 'UserController@postProfilePicture');
+    $app->post('view_profile_details', 'UserController@postProfilePicture');
     $app->post('find_members', 'UserController@getFilterValue');
     $app->post('profile_details', 'UserController@getUserProfileDetail');
     $app->post('update_location','UserController@postUpdateLocation');
@@ -32,6 +32,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('add_note','UserController@postAddNote');
     $app->post('lock_unlock_details_profile','UserController@postLockUnlockProfileDeials');
     $app->post('block_user','UserController@postBlockUser');
+    $app->post('profile_details1','UserController@getUserProfileDetail1');
 });
 
 
