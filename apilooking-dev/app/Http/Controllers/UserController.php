@@ -743,7 +743,7 @@ return response()->json($response);
         $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                             ->where(['registration_status'=>3])
                             ->whereNotIn('id',$block_id)
-                            ->where('id','!=',$clientId)
+                           // ->where('id','!=',$clientId)
                             ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
         $user_data = $user_data->limit($limit)
         ->orderBy('distance','ASC')
