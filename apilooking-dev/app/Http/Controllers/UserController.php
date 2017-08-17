@@ -1468,7 +1468,7 @@ return response()->json($response);
             }
             else
             {
-                if(Note::create($data))
+                if(NoteModel::create($data))
                 {
                     $response['success'] = 1;
                     $response['message'] = 'success';
