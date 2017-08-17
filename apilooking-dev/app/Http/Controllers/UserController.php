@@ -899,7 +899,7 @@ return response()->json($response);
 
                 $Userdetails['Note'] = array();
                 $Userdetails['User'] = array();
-                //$Userdetails['Profile'] = array();
+                $Userdetails['Profile'] = array();
                 $Userdetails['Distance'] = array('miles' => $distance);
                 $Userdetails['Favourite'] = array();
                 $Userdetails['Viewer_Favourite'] = array();
@@ -1108,13 +1108,14 @@ return response()->json($response);
                 {
 
                 }
-                else if(isset($type) && $type== 'looking_sex')
+                else if(isset($type) && $type == 'looking_sex')
                 {
 
                 }  /******End*******/
                 else
                 {
                     $Userdetails['User'] = $profile;
+                    $Userdetails['Profile'] = $profile['profile'];
                 }
 
                 $response['success'] = 1;
@@ -2149,5 +2150,91 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+    /**
+     * Name: postAddChatUser
+     * Purpose: function for save and update the Note
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/
+    public function postAddChatUser(Request $request) {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+
+        $validator = Validator::make( $request->all(),[
+            'chat_user_id' => 'required|numeric'
+        ],
+        [
+            'chat_user_id.required' => 'Chat User id not found.',
+            'chat_user_id.numeric' => 'Cjat user id must must be numeric.'
+        ]
+
+        );
+   
+        if ($validator->fails()) {
+           
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $data = $request->all();
+            $chat_users = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$data['chat_user_id']])->get();
+            if(count($chat_users)==0)
+            {
+                $chat_users1 = ChatModel::where(['user_id'=>$data['chat_user_id'],'chat_user_id'=>$clientId])->get();
+
+                if(count($chat_users1)==0)
+                {
+                    $chatUser['user_id'] = $data['chat_user_id'];
+                    $chatUser['chat_user_id'] = $clientId;
+                    ChatModel::create($chatUser);
+                }
+
+                $data['user_id'] = $clientId;
+                if(ChatModel::create($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'Success';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'unable to save into database';
+                    $http_status = 400;
+                }
+            }
+            else
+            {
+                $chat_users1 = ChatModel::where(['user_id'=>$data['chat_user_id'],'chat_user_id'=>$clientId])->get();
+
+                if(count($chat_users1)==0)
+                {
+                    $chatUser['user_id'] = $data['chat_user_id'];
+                    $chatUser['chat_user_id'] = $clientId;
+                    if(ChatModel::create($chatUser))
+                    {
+                        $response['success'] = 1;
+                        $response['message'] = 'Success';
+                        $http_status = 200;
+                    }
+                    else
+                    {
+                        $response['success'] = 0;
+                        $response['message'] = 'unable to save into database';
+                        $http_status = 400;
+                    }
+                }
+                else
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'Already save into databse';
+                    $http_status = 200;
+                }
+               
+            }
+        }
+        return response()->json($response,$http_status);
+    }
 
 }

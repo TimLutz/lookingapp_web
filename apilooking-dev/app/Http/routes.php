@@ -33,6 +33,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('lock_unlock_details_profile','UserController@postLockUnlockProfileDeials');
     $app->post('block_user','UserController@postBlockUser');
     $app->post('profile_details1','UserController@getUserProfileDetail1');
+    $app->post('add_chat_user','UserController@postAddChatUser');
 });
 
 
