@@ -43,7 +43,8 @@ class PasswordController extends Controller {
 		  }
 		  //$userdata = User::where('id','=',$id)->first();
 			
-				return view('admin.auth.resetapipassword',compact('token'));
+				//return view('admin.auth.resetapipassword',compact('token'));
+				return view('auth.resetpasswordapi',compact('token'));
 		
 		
 	}

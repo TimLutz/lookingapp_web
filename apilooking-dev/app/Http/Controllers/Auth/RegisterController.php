@@ -37,7 +37,7 @@ class RegisterController extends Controller
            
             'screen_name'           => 'required|Min:4|Max:16|alpha_num|unique:users,screen_name',
             'email'                 => 'required|email|unique:users,email',
-            'password'              => 'required|Min:8|confirmed',
+            'password'              => 'required|Min:8|Max:16|confirmed',
             'password_confirmation' => 'required',
            // 'country'               => 'required|Min:2|Max:40',
            // "city"                  => 'required|Min:2|Max:40',

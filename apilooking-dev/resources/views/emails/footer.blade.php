@@ -1,13 +1,3 @@
-
-
-
-
-
-
-
-
-
-
 </table>
 
 
@@ -28,15 +18,13 @@
                                 
                                                             
                                 <tr>
-                               			<td width="5%">&nbsp;</td>
-                                    	<td align="left" valign="center">
-                                    	<p>Thanks &amp; Regards,<br>
-										<b>The LookingApp Team</b>
-										</p><p>
-										
-                       					 </p></td>
-                                       
-                                         
+                           			<td width="5%">&nbsp;</td>
+                                	<td align="left" valign="center">
+                                    	<p>Sincerely,</p>
+										<p>Team LookingApp</p>
+                                       <p> support@lookingmobileapp.com</p>
+									   <p></p>
+                                    </td>                  
                     			</tr>
 					</table>
 		<!--END SIGNATURE-->

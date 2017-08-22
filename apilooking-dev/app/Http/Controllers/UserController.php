@@ -17,6 +17,8 @@ use App\Models\ProfileLockModel;
 use App\Models\ChatModel; 
 use App\Models\UserLookdateModel; 
 use App\Models\UseralbumModel; 
+use App\Models\PhraseModel; 
+use App\Models\FlagModel; 
 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -35,6 +37,7 @@ use Image;
 use Carbon\Carbon;
 use Log;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller {
 	
@@ -264,8 +267,8 @@ return response()->json($response);
             		$token = hash_hmac('sha256', Str::random(40), $this->hashKey);
             		$email = Input::get('email');
             		$template=EmailTemplate::find(24);
-            		 $url = url('../reset-password/'.$token);
-            		$link="<a href='$url'>Click here</a>";
+            		$url = url('../reset-password/'.$token);
+            		$link="<a href='$url'>$url</a>";
     			    $find=array('@company@','@click here@','@email@','@name@');
     			    $values=array(env('SITENAME'),$link,$email,$name);
     			    $body=str_replace($find,$values,$template->content);
@@ -656,7 +659,7 @@ return response()->json($response);
             if(isset($finalArr['relationship_status']) && $finalArr['relationship_status'] != 'Not Set')
             {
                 $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                    $q->where('relationship_status',$finalArr['relationship_status']);
+                    $q->whereIn('relationship_status',explode(',', $finalArr['relationship_status']));
                 });
             }
 
@@ -664,7 +667,7 @@ return response()->json($response);
             if(isset($finalArr['ethnicity']) && $finalArr['ethnicity'] != 'Not Set')
             {
                 $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                    $q->where('ethnicity',$finalArr['ethnicity']);
+                    $q->whereIn('ethnicity',explode(',', $finalArr['ethnicity']));
                 }); 
             }
             /********End*********/
@@ -1486,6 +1489,13 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+    /**
+     * Name: postLockUnlockProfileDeials
+     * Purpose: function for Lock and unlock profile
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/   
 
     public function postLockUnlockProfileDeials(Request $request)
     {
@@ -1516,8 +1526,7 @@ return response()->json($response);
             $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where(function($q){
                 $q->orWhere('browse','looking')
                  ->orWhere('browse','!=','looking');
-            })
-            ->first();                
+            })->first();                
 
             if($lock_profile)
             {
@@ -1570,7 +1579,13 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
-
+    /**
+     * Name: postBlockUser
+     * Purpose: function for block user
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/   
     public function postBlockUser(Request $request,Repositary $common) {
         $validator = Validator::make( $request->all(),[
             'blocked_id' => 'required|numeric'
@@ -1643,7 +1658,14 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
-    /*public function share_album(Request $request,Repositary $common) {
+    /**
+     * Name: postShareAlbum
+     * Purpose: function for share function
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/ 
+    public function postShareAlbum(Request $request,Repositary $common) {
 
         $validator = Validator::make( $request->all(),[
             'receiver_id' => 'required|numeric'
@@ -1664,13 +1686,15 @@ return response()->json($response);
         {
             $clientId = JWTAuth::parseToken()->authenticate()->id;
             $data = $request->all();
+            $count = 0;
+            $is_share_count = 1;
+            $is_received = '';
             $album = UseralbumModel::where(['user_id'=>$clientId])->get();
 
             if ($album) {
-                $sharealbum = $this->ShareAlbum->find('first', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.receiver_id' => $receiver_id)));
+                $sharealbum = ShareAlbumModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
 
-                $sharealbum = ShareAlbumModel::where(['user_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
-
+                $data['sender_id'] = $clientId;
                 if ($sharealbum) {
                     if ($sharealbum['is_received'] == 1) {
                         $is_received = 2;
@@ -1679,39 +1703,52 @@ return response()->json($response);
                         $is_received = 1;
                         $is_view = 1;
                     }
-
-                    $data['sender_id'] = $clientId;
-                    $data['is_received'] = $is_received;
                     $data['is_view'] = $is_view;
-
+                    $data['is_received'] = $is_received;
                     
-                  //  $data['success'] = 2;
-                  //  $data['msg'] = 'already share album';
                 } else {
                     $is_received = 1;
-                    $data['sender_id'] = $clientId;
                     $data['is_received'] = $is_received;
                     $data['is_view'] = 1;
                 }
-                $limit = $common->getlimit($member_type, 'PrivateAlbumSharePerDay');
+                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'PrivateAlbumSharePerDay');
+
                 if ($data['is_received'] == 1) {
                     if ($limit > 0) {
-                        $count_sharealbum_per_day  = ShareAlbumModel::where(['sender_id'=>$clientId,'is_received'=>1])->whereBetween('created_at'=>[carbon::today(),carbon::now()])->count();
+                        $count_sharealbum_per_day  = ShareAlbumModel::where(['sender_id'=>$clientId,'is_received'=>1])->whereBetween('created_at',array(carbon::today(),carbon::now()))->count();
                         
                         if ($count_sharealbum_per_day >= $limit) {
-                            $reponse['success'] = 1;
+                            $response['success'] = 1;
                             $response['message'] = 'You have reached your Album Shares limit of ' . number_format($limit) . ' guys per day.';
                             $http_status = 400;
-
+                            $is_share_count = 0;
                         }
                     }
                 }
-                if ($this->ShareAlbum->save($user)) 
+
+                if($is_share_count==1)
                 {
-                    $chatusers = ChatModel::where(['chat_user_id'=>$receiver_id])->get();
+                    if($sharealbum)
+                    {
+                        if($sharealbum->update($data))
+                        {
+                            $count = 1;
+                        }
+                    }
+                    else
+                    {
+                        if(ShareAlbumModel::create($data))
+                        {
+                            $count = 1;
+                        }
+                    }
+                }
+
+                if ($count==1) 
+                {
+                    $chatusers = ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
                     $total_unread_message = 0;
                     if ($chatusers) {
-
                         foreach ($chatusers as $key => $value) {
                             if ($value['invite'] > 0) {
                                 $invite = 1;
@@ -1724,167 +1761,37 @@ return response()->json($response);
                     if ($total_unread_message == 0) {
                         $total_unread_message = '';
                     }
+
+                    //Pending Notification process
+
+                    $response['success'] = 1;
+                    $response['message'] = 'Success';
+                    $http_status = 200;
                 } 
                 else 
                 {
-                    $data['success'] = 3;
-                    $data['msg'] = 'unable to save database';
+                    $response['success'] = 0;
+                    $response['message'] = 'unable to save database';
+                    $http_status = 400;
                 }
             } 
-        }
-
-
-        $this->autoRender = false;
-        $sender_id = isset($this->request->data['sender_id']) ? $this->request->data['sender_id'] : ''; //this is current user
-        $receiver_id = isset($this->request->data['receiver_id']) ? $this->request->data['receiver_id'] : ''; // who receive album
-        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
-        if ($sender_id && $receiver_id) {
-            //======get member type  free user or paid user==//
-            $login_user_member = $this->User->find('first', array('conditions' => array('User.id' => $sender_id)));
-            $member_type = $login_user_member['User']['member_type'];
-            //=======End============//
-            $album = $this->User_album->find('all', array('conditions' => array('User_album.user_id' => $sender_id)));
-            if ($album) {
-                $sharealbum = $this->ShareAlbum->find('first', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.receiver_id' => $receiver_id)));
-                if ($sharealbum) {
-                    
-                    if ($sharealbum['ShareAlbum']['is_received'] == 1) {
-                        $is_received = 2;
-                        $is_view = 0;
-                    } else {
-                        $is_received = 1;
-                        $is_view = 1;
-                    }
-                    $user['ShareAlbum'] = array(
-                        'id' => $sharealbum['ShareAlbum']['id'],
-                        'sender_id' => $sender_id,
-                        'receiver_id' => $receiver_id,
-                        'is_received' => $is_received,
-                        'is_view' => $is_view,
-                        'creation_date' => $current_date
-                    );
-                    
-                    $data['success'] = 2;
-                    $data['msg'] = 'already share album';
-                } else {
-                    $is_received = 1;
-                    
-                    $user['ShareAlbum'] = array(
-                        //'id' => $sharealbum[0]['ShareAlbum']['id'],
-                        'sender_id' => $sender_id,
-                        'receiver_id' => $receiver_id,
-                        'is_view' => 1,
-                        'is_received' => $is_received,
-                        'creation_date' => $current_date
-                    );
-                }
-                $limit = $this->match_limit($member_type, 'PrivateAlbumSharePerDay');
-                if ($user['ShareAlbum']['is_received'] == 1) {
-                    if ($limit != 0) {
-                        $count_sharealbum_per_day = $this->ShareAlbum->find('count', array('conditions' => array('ShareAlbum.sender_id' => $sender_id, 'ShareAlbum.is_received' => 1, 'DATE(ShareAlbum.creation_date)' => date('Y-m-d', strtotime($current_date)))));
-                        
-                        if ($count_sharealbum_per_day >= $limit) {
-                            echo json_encode(array('success' => 3, 'msg' => 'You have reached your Album Shares limit of ' . number_format($limit) . ' guys per day.'));
-                            exit();
-                        }
-                    }
-                }
-                if ($this->ShareAlbum->save($user)) {
-                    
-                    $chatusers = $this->ChatUser->find('all', array('conditions' => array('ChatUser.chat_user_id' => $receiver_id)));
-                    $total_unread_message = 0;
-                    if ($chatusers) {
-
-                        foreach ($chatusers as $key => $value) {
-                            if ($value['ChatUser']['invite'] > 0) {
-                                $invite = 1;
-                            } else {
-                                $invite = 0;
-                            }
-                            $total_unread_message+=($value['ChatUser']['count'] + $invite);
-                        }
-                    }
-                    if ($total_unread_message == 0) {
-                        $total_unread_message = '';
-                    }
-                    
-
-                    $username = $this->User->findById($sender_id);
-                    
-                    $userdetails = $this->User->findById($receiver_id);
-                    if ($userdetails) {
-                        $device_type = $userdetails['User']['device_type'];
-                        $device_token = $userdetails['User']['device_token'];
-                        $online_status = $userdetails['User']['online_status'];
-                        // pr($device_token);
-                        
-                        $count_view = $this->count_view($receiver_id);
-                        
-                        $count_sharealbum = $this->count_sharealbum($receiver_id);
-                        $total_view_and_share = $count_view + $count_sharealbum;
-                       
-                        if ($device_type == 'android') {
-                            if ($is_received == 1 && $online_status == 1) {
-                                $device_token = array($device_token);
-                                $msg = $username['User']['screen_name'] . ' share album with you';
-                                $message = array("msg" => $msg, 'sound' => 'default');
-                                $this->GCM->send_notification($device_token, $message);
-                                //$result = $gcm->send_notification($device_ids, $message);
-                            }
-                        } else {
-                            //echo $is_received;
-                            if ($is_received == 1 && $online_status == 1) {
-                               
-                                $pemfile = WWW_ROOT . 'files/looking.pem';
-                                $passphrase = 'looking';
-                                $msg = $username['User']['screen_name'] . ' share album with you';
-                                $ctx = stream_context_create();
-                                stream_context_set_option($ctx, 'ssl', 'local_cert', $pemfile);
-                                stream_context_set_option($ctx, 'ssl', 'passphrase', $passphrase);
-                                // Open a connection to the APNS server
-                                $fp = stream_socket_client(
-                                        'ssl://gateway.push.apple.com:2195', $err, $errstr, 60, STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT, $ctx);
-
-                                if (!$fp)
-                                    exit("Failed to connect: $err $errstr" . PHP_EOL);
-                                $body['aps'] = array(
-                                    'alert' => $msg,
-                                    'count_unread_msg' => 1,
-                                    //'post_tag' => $post_tag,
-                                    //'job_id' => $job_id,
-                                    //'msg_id' => $msg_id,
-                                    //'unread_msg_count' => $msg_unread_count,
-                                    // 'msg_sender_id' => $msg_sender_id,
-                                    //'msg_sender_name' => $msg_sender_name,
-                                    // 'group_id' => $group_id,
-                                    //'group_name' => $group_name,
-                                    'sound' => 'default'
-                                );
-                                $payload = '{"aps":{"alert":"' . $msg . '","count_unread_msg" : 1,"type" : "share_album","total_view_and_share":"' . (int) $total_view_and_share . '","sound":"default","badge":' . (int) $total_unread_message . '}}';
-                                $msg = chr(0) . pack('n', 32) . pack('H*', $device_token) . pack('n', strlen($payload)) . $payload;
-                                $result = fwrite($fp, $msg, strlen($msg));
-                                $json = array();
-                                fclose($fp);
-                            }
-                        }
-                    }
-                    $data['success'] = 1;
-                    $data['msg'] = 'success';
-                } else {
-                    $data['success'] = 3;
-                    $data['msg'] = 'unable to save database';
-                }
-            } else {
-                $data['success'] = 4;
-                $data['msg'] = 'please add some images';
+            else
+            {
+                $response['success'] = 0;
+                $response['message'] = 'Please add some images';
+                $http_status = 400;
             }
-        } else {
-            $data['success'] = 0;
-            $data['msg'] = 'sender id or receiver id not found';
         }
-        echo json_encode($data);
-    }*/
+        return response()->json($response,$http_status);
+    }
 
+    /**
+     * Name: getUserProfileDetail1
+     * Purpose: function for user profile page
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/
     public function getUserProfileDetail1(Request $request, Repositary $common)
     {
         $validator = Validator::make( $request->all(),[
@@ -2237,4 +2144,231 @@ return response()->json($response);
         return response()->json($response,$http_status);
     }
 
+    /**
+     * Name: postAddPhrases
+     * Purpose: function for save Pharses
+     * created By: Lovepreet
+     * Created on :- 21 Aug 2017
+     *
+     **/
+
+    public function postAddPhrases(Request $request) {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $validator = Validator::make( $request->all(),[
+            'phrases' => 'required'
+        ],
+        [
+            'phrases.required' => 'Please enter atleast one phrase.'
+        ]
+
+        );
+   
+        if ($validator->fails()) {
+           
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $data = $request->all();
+            $arrphrases = explode('~~~', $data['phrases']);
+            foreach ($arrphrases as $key => $value) {
+                $data['user_id'] = $clientId;
+                $data['phrases'] = $value;
+
+                if(PhraseModel::create($data))
+                {
+                    $response['message'] = 'Success';
+                    $response['success'] = 1;
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['message'] = 'unable to save into database';
+                    $response['success'] = 0;
+                    $http_status = 400;
+                }
+            }
+        }   
+        return response()->json($response,$http_status);
+    }
+
+    /**
+     * Name: postViewPhrases
+     * Purpose: function get all phrases
+     * created By: Lovepreet
+     * Created on :- 21 Aug 2017
+     *
+     **/
+
+    public function postViewPhrases() {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+
+        $phrases = PhraseModel::where(['user_id'=>$clientId])->lists('phrases');
+        if($phrases)
+        {
+            $response['message'] = 'Success';
+            $response['success'] = 1;
+            $response['data'] = $phrases;
+            $http_status = 200;
+        }
+        else
+        {
+            $response['message'] = 'no data founde';
+            $response['success'] = 0;
+            $http_status = 400;
+        }
+
+        return response()->json($response,$http_status);
+
+    }
+
+
+    /**
+     * Name: postDeletePhrases
+     * Purpose: delete phrases
+     * created By: Lovepreet
+     * Created on :- 21 Aug 2017
+     *
+     **/
+
+    public function postDeletePhrases(Request $request) {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $validator = Validator::make( $request->all(),[
+            'id' => 'required'
+        ],
+        [
+            'id.required' => 'Phrases id not found.'
+        ]
+
+        );
+   
+        if ($validator->fails()) {
+           
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            try {
+                $data = $request->all();
+                $phrase = PhraseModel::findOrFail($data['id']);
+                if($phrase)
+                {
+                    if($phrase->delete())
+                    {
+                        $response['message'] = 'Success';
+                        $response['success'] = 1;
+                        $http_status = 200;
+                    }
+                    else
+                    {
+                        $response['message'] = 'Unable to delete';
+                        $response['success'] = 0;
+                        $http_status = 400;
+                    }
+                }
+                
+            } catch (ModelNotFoundException $e) {
+                $response['message'] = 'Record not found';
+                $response['success'] = 0;
+                $http_status = 400;
+            }
+        }
+        return response()->json($response,$http_status);
+    }
+
+
+    /**
+     * Name: postUnshareAllAlbumAccess
+     * Purpose: function for Unshare album with other person
+     * created By: Lovepreet
+     * Created on :- 21 Aug 2017
+     *
+     **/
+
+    public function postUnshareAllAlbumAccess() {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $chk = ShareAlbumModel::where(['sender_id'=>$clientId])->first();
+        if($chk)
+        {
+            if(ShareAlbumModel::where(['sender_id'=>$clientId])->update(['is_received'=>2]))
+            {
+                $response['message'] = 'album access has been deleted successfully';
+                $response['success'] = 1;
+                $http_status = 200;
+            }
+            else
+            {
+                $response['message'] = 'Something Wrong!';
+                $response['success'] = 0;
+                $http_status = 400;
+            }
+        }
+        else
+        {
+            $response['message'] = 'No data found in this id';
+            $response['success'] = 0;
+            $http_status = 400;
+        }
+        return response()->json($response,$http_status);
+    }
+
+    /**
+     * Name: postAddFlag
+     * Purpose: function for report the user
+     * created By: Lovepreet
+     * Created on :- 22 Aug 2017
+     *
+     **/
+
+    public function postAddFlag(Request $request) {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $validator = Validator::make( $request->all(),[
+            'receiver_id' => 'required|numeric',
+            'flag' => 'required'
+        ],
+        [
+            'receiver_id.required' => 'Receiver not found.',
+            'receiver_id.numeric'  => 'Receiver not found.',
+            'flag.required' => 'Flag not fount'
+        ]
+
+        );
+   
+        if ($validator->fails()) {
+           
+            $response['errors']     = $validator->errors();
+            $response['success']     = 0;
+            $http_status=422;
+        }else
+        {
+            $data = $request->all();
+
+            $flag_details = FlagModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
+            if(count($flag_details)==0)
+            {
+                $data['sender_id'] = $clientId;
+                if(FlagModel::create($data))
+                {
+                    $response['message'] = 'Success';
+                    $response['success'] = 1;
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['message'] = 'Unable to save into database.';
+                    $response['success'] = 1;
+                    $http_status = 400;   
+                }
+            }
+            else
+            {
+                $response['message'] = 'Already exists flag.';
+                $response['success'] = 0;
+                $http_status = 400;
+            }  
+        }
+        return response()->json($response,$http_status);
+    }
 }

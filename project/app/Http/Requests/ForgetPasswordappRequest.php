@@ -26,7 +26,8 @@ class ForgetPasswordappRequest extends Request
         return [
 			//'old_password' => 'required',
             //'password' => 'passwordcustom|confirmed|min:6|max:20',
-			'password' => 'confirmed|min:8|max:20',
+            'email'=>'required|email',
+			'password' => 'required|confirmed|min:8|max:16',
 			'password_confirmation' => 'required',	
 		];
     }
@@ -35,7 +36,12 @@ class ForgetPasswordappRequest extends Request
       public function messages()
 	{
 		return [
-		//'password.passwordcustom' => 'The Password must contain one number,one alphabet and one special characeter.',
+            'email.required'=>'Please enter your register email',
+            'email.email'=>'Invalid Email',
+            'password.required'=>'Please enter password',
+            'password.confirmed'=>'Password donot matched',
+            'password.Min'=>'Please enter minimum 8 character.',
+            'password.Max'=>'Please enter maximum 16 character.',
 		    'password_confirmation.required' => 'Confirm password field is required',
 		];
 	}

@@ -34,7 +34,15 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('block_user','UserController@postBlockUser');
     $app->post('profile_details1','UserController@getUserProfileDetail1');
     $app->post('add_chat_user','UserController@postAddChatUser');
+    $app->post('add_phrases','UserController@postAddPhrases');
+    $app->post('view_phrases','UserController@postViewPhrases');
+    $app->post('delete_phrases','UserController@postDeletePhrases');
+    $app->post('unshare_all_album_access','UserController@postUnshareAllAlbumAccess');
+    $app->post('share_album','UserController@postShareAlbum');
+    $app->post('add_flag','UserController@postAddFlag');
 });
+
+
 
 
 
