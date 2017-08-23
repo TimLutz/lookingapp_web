@@ -1127,13 +1127,13 @@ return response()->json($response);
                 } else {
                     $check_looksex_active = 0;
                 
-                    ChatModel::where(array('user_id'=>$viewer_id))->update(['invite'=>0]);
+                //    ChatModel::where(array('user_id'=>$viewer_id))->update(['invite'=>0]);
 
                 
-                    $delete_lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'is_locked'=>1,'browse'=>'looking'])->first();
+                    /*$delete_lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'is_locked'=>1,'browse'=>'looking'])->first();
                     if ($delete_lock_profile) {
                         ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
-                    }
+                    }*/
                 
                 }
                 $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
@@ -1149,12 +1149,12 @@ return response()->json($response);
                 } else {
                     $check_user_looksex_active = 0;
                 
-                    ChatModel::where(array('user_id'=>$clientId))->update(['invite'=>0]);
+               //     ChatModel::where(array('user_id'=>$clientId))->update(['invite'=>0]);
                     
-                     $delete_lock_profile = ProfileLockModel::where(['user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
+                     /*$delete_lock_profile = ProfileLockModel::where(['user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
                     if ($delete_lock_profile) {
                         ProfileLockModel::where(['id'=>$delete_lock_profile->id])->delete();
-                    }
+                    }*/
                 }
                 $Userdetails['User_Looksex_Profile_Active'] = $check_user_looksex_active;
                
@@ -1510,7 +1510,7 @@ return response()->json($response);
                 }
             }
             // Pending push notification
-
+            
 
             $response['success'] = 1;
             $response['message'] = 'Success';
