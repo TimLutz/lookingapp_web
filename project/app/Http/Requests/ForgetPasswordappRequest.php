@@ -26,7 +26,7 @@ class ForgetPasswordappRequest extends Request
         return [
 			//'old_password' => 'required',
             //'password' => 'passwordcustom|confirmed|min:6|max:20',
-            'email'=>'required|email',
+            'email'=>'required|email|exists:users',
 			'password' => 'required|confirmed|min:8|max:16',
 			'password_confirmation' => 'required',	
 		];
@@ -43,6 +43,7 @@ class ForgetPasswordappRequest extends Request
             'password.Min'=>'Please enter minimum 8 character.',
             'password.Max'=>'Please enter maximum 16 character.',
 		    'password_confirmation.required' => 'Confirm password field is required',
+            'email.exists'=>'Email doesn`t exist in the our record',
 		];
 	}
 }
