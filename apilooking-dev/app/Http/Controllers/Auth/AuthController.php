@@ -42,7 +42,7 @@ class AuthController extends Controller {
     public function postLogin(Request $request){
         
         $data=$request->All();
-
+// Validation for the messages
         $validator = Validator::make( $data  ,[
             'email'               => 'required|email|exists:users,email',
             'password'            => 'required',

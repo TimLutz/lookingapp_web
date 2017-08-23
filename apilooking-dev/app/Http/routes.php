@@ -16,10 +16,9 @@ $app->get('/', function () use ($app) {
 });
 
 //routes for api
-
-$app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function ($app) {
-	$app->post('auth/login', 'Auth\AuthController@postLogin');
-	$app->post('forget_password', 'UserController@ForgetPassword');
+    $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function ($app) {
+    $app->post('auth/login', 'Auth\AuthController@postLogin');
+    $app->post('forget_password', 'UserController@ForgetPassword');
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('user_profile', 'UserController@postUserProfile');
     $app->post('profile_picture', 'UserController@postProfilePicture');
@@ -40,6 +39,7 @@ $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function 
     $app->post('unshare_all_album_access','UserController@postUnshareAllAlbumAccess');
     $app->post('share_album','UserController@postShareAlbum');
     $app->post('add_flag','UserController@postAddFlag');
+    $app->post('declain_invitation','UserController@postDeclainInvitation');
 });
 
 

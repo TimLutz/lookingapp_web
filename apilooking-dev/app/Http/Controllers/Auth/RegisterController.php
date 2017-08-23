@@ -80,6 +80,7 @@ class RegisterController extends Controller
 				$trial_month = 0;
 				$member_type = 0;
 				$is_trial = 0;
+				
 				if ($trial_details) {
 					$trial_month = $trial_details->month; //month change to day as per client request
 					if ($trial_month > 0)

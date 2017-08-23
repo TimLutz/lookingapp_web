@@ -19,7 +19,6 @@ use App\Models\UserLookdateModel;
 use App\Models\UseralbumModel; 
 use App\Models\PhraseModel; 
 use App\Models\FlagModel; 
-
 use App\Models\EmailTemplate;
 use JWTAuth;
 use Illuminate\Http\Request;
@@ -264,23 +263,27 @@ return response()->json($response);
         		}
         		else{
             		$name = User::where('email',$request->email)->pluck('screen_name');
+            		
             		$token = hash_hmac('sha256', Str::random(40), $this->hashKey);
+            		
             		$email = Input::get('email');
             		$template=EmailTemplate::find(24);
             		$url = url('../reset-password/'.$token);
             		$link="<a href='$url'>$url</a>";
+            		
+            		
     			    $find=array('@company@','@click here@','@email@','@name@');
     			    $values=array(env('SITENAME'),$link,$email,$name);
+    			    
     			    $body=str_replace($find,$values,$template->content);
-
-    			//Send Mail
+						$user->remember_token = $token;
+        			$user->update();
+        			//Send Mail
     			    Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
         			{
         				$m->to(Input::get('email'))
         					->subject($template->subject);
         			});
-        			$user->remember_token = $token;
-        			$user->update();
             		$response['message']	= 'Recovery password link has been sent on your email address';
     				$response['status']		= 1;
     				$http_status = 200;	
@@ -342,7 +345,11 @@ return response()->json($response);
 
         	}
         	$finish = ($is_completed == 0) ? 1 : 0;
+        	
+        	
             $chk = ProfileModel::where(array('user_id'=>$clientId))->first();
+            
+            
             if(isset($data['birthday']))
             {
                 $data['age']=Carbon::now()->diffInYears(Carbon::parse($data['birthday']));
@@ -573,7 +580,7 @@ return response()->json($response);
      **/
     public function getFilterValue(Request $request,Repositary $common)
     {
-    	//print_r($request->header()); die;
+        //print_r($request->header()); die;
          //Log::info('Showing user profile for user: '.JWTAuth::parseToken()->authenticate()->id);
         $validator = Validator::make( $request->all(),[
             'age_from' => 'custom_height:'.Input::get('age_to'),
@@ -595,13 +602,14 @@ return response()->json($response);
             $http_status=422;
         }else{
 
-    	$clientId = JWTAuth::parseToken()->authenticate()->id;
-    	$current_date = Carbon::now();
-    	$is_view = $is_share = $is_profile_active = $total_unread_message =  0;
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $current_date = Carbon::now();
+        $is_view = $is_share = $is_profile_active = $total_unread_message =  0;
         $filter_cache =[];
         $block_id = [];
+        $withoutSearch = 1;
         $user =User::where('status','!=',0)->where('role',2);
-        
+        $user2 =User::where('status','!=',0)->where('role',2);        
         /******Blocked User********/
         $block_user_id = BlockUserModel::where(function($q) use ($clientId){
             $q->orWhere(array('blocked_id'=>$clientId))
@@ -648,6 +656,7 @@ return response()->json($response);
         Log::info('Showing user profile for user: '.json_encode($finalArr));
         if(isset($finalArr['type']) && $request->Input('type')=='browse')   
         {
+            $withoutSearch = 0;
             /********Search By profile pic*********/
             if(isset($finalArr['profile_pic_type']) && $finalArr['profile_pic_type'] != 'Not Set')
             {
@@ -746,13 +755,18 @@ return response()->json($response);
         $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                             ->where(['registration_status'=>3])
                             ->whereNotIn('id',$block_id)
-                           // ->where('id','!=',$clientId)
+                            //->where('id','!=',$clientId)
                             ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
         $user_data = $user_data->limit($limit)
         ->orderBy('distance','ASC')
         ->get(); 
 
-        $user_data1 = $user_data;
+        $UserData = array();  
+        $UserData1 = array();  
+         
+
+        
+
         /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
         if(count($user_data)) {
 
@@ -781,17 +795,17 @@ return response()->json($response);
             foreach ($user_data as $key => $value) {
                 if(count($value['ChatUsers']))
                 {
-                	foreach($value['ChatUsers'] As $k => $val)
-                	{
-                		if($val->invite > 0)
-                			$invite = 1;
-                		else
-                			$invite = 0;
+                    foreach($value['ChatUsers'] As $k => $val)
+                    {
+                        if($val->invite > 0)
+                            $invite = 1;
+                        else
+                            $invite = 0;
 
-                		$total_unread_message+=($value->count + $invite);
-                	}
+                        $total_unread_message+=($value->count + $invite);
+                    }
                 }
-            	$accuracy_value[] = $value['accuracy'];
+                $accuracy_value[] = $value['accuracy'];
             }
             /********End******** */
 
@@ -803,35 +817,141 @@ return response()->json($response);
             /********End******** */
 
             /********Calculate Distance between login user and another user ******** */
-            foreach ($user_data as $key => $value) {
-                /*$user_data[$key]['distance1'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');*/
-                $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value->id);
+         //   print_r($user_data->toArray() ); die;
+            $arrKey = '';
+            if($user_data)
+            {
+                 $arrKey = in_array($clientId, array_column($user_data->toArray(), 'id'));
+             
+                
             }
-            /********End******** */
+            if($arrKey)
+            {
+                $loggedInUser = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+                ->where(['id'=>$clientId])
+                ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"))
+                ->get();
+                //print_r($loggedInUser); die;
+                 foreach ($loggedInUser as $key1 => $value1) {
+                    $UserData[$key1]['id'] = $value1->id;
+                    $UserData[$key1]['screen_name'] = $value1->screen_name;
+                    $UserData[$key1]['profile_id'] = $value1->profile_id;
+                    $UserData[$key1]['email'] = $value1->email;
+                    $UserData[$key1]['profile_status'] = $value1->profile_status;
+                    $UserData[$key1]['online_status'] = $value1->online_status;
+                    $UserData[$key1]['lat'] = $value1->lat;
+                    $UserData[$key1]['long'] = $value1->long;
+                    $UserData[$key1]['profile_pic'] = $value1->profile_pic;
+                    $UserData[$key1]['profile_pic_type'] = $value1->profile_pic_type;
+                    $UserData[$key1]['profile_pic_date'] = $value1->profile_pic_date;
+                    $UserData[$key1]['is_completed'] = $value1->is_completed;
+                    $UserData[$key1]['registration_status'] = $value1->registration_status;
+                    $UserData[$key1]['accuracy'] = $value1->accuracy;
+                    $UserData[$key1]['member_type'] = $value1->member_type;
+                    $UserData[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
+                    $UserData[$key1]['profile'] = $value1->Profile;
+                    $UserData[$key1]['chat_users'] = $value1->ChatUsers;
+                    $UserData[$key1]['userpartner'] = $value1->Userpartner;
+                    $UserData[$key1]['user_identity'] = $value1->UserIdentity;
+                    $UserData[$key1]['distance'] = $value1->UserIdentity;
+                    $UserData[$key1]['country'] = $value1->country;
+                    $UserData[$key1]['city'] = $value1->city;
+                    $UserData[$key1]['status'] = $value1->status;
+                    $UserData[$key1]['device_token'] = $value1->device_token;
+                    $UserData[$key1]['device_type'] = $value1->device_type;
+                    $UserData[$key1]['valid_upto'] = $value1->valid_upto;
+                    $UserData[$key1]['is_trial'] = $value1->is_trial;
+                    $UserData[$key1]['removead'] = $value1->removead;
+                    $UserData[$key1]['valid_upto'] = $value1->valid_upto;
+                    $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                    $UserData[$key1]['profiletext_change'] = $value1->profiletext_change;
+                    $UserData[$key1]['photo_change'] = $value1->photo_change;
+                    $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                    $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                }
+            } 
+
+            foreach ($user_data as $key => $value) {
+               // $user_data[$key]['distance1'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');
+               // $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value->id);
+
+
+                if($value->id!=$clientId)
+                {    
+                    $UserData1[$key]['id'] = $value->id;
+                    $UserData1[$key]['screen_name'] = $value->screen_name;
+                    $UserData1[$key]['profile_id'] = $value->profile_id;
+                    $UserData1[$key]['email'] = $value->email;
+                    $UserData1[$key]['profile_status'] = $value->profile_status;
+                    $UserData1[$key]['online_status'] = $value->online_status;
+                    $UserData1[$key]['lat'] = $value->lat;
+                    $UserData1[$key]['long'] = $value->long;
+                    $UserData1[$key]['profile_pic'] = $value->profile_pic;
+                    $UserData1[$key]['profile_pic_type'] = $value->profile_pic_type;
+                    $UserData1[$key]['profile_pic_date'] = $value->profile_pic_date;
+                    $UserData1[$key]['is_completed'] = $value->is_completed;
+                    $UserData1[$key]['registration_status'] = $value->registration_status;
+                    $UserData1[$key]['accuracy'] = $value->accuracy;
+                    $UserData1[$key]['member_type'] = $value->member_type;
+                    $UserData1[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
+                    $UserData1[$key]['profile'] = $value->Profile;
+                    $UserData1[$key]['chat_users'] = $value->ChatUsers;
+                    $UserData1[$key]['userpartner'] = $value->Userpartner;
+                    $UserData1[$key]['user_identity'] = $value->UserIdentity;
+                    $UserData1[$key]['distance'] = $value->distance;
+                    $UserData1[$key]['country'] = $value->country;
+                    $UserData1[$key]['city'] = $value->city;
+                    $UserData1[$key]['status'] = $value->status;
+                    $UserData1[$key]['device_token'] = $value->device_token;
+                    $UserData1[$key]['device_type'] = $value->device_type;
+                    $UserData1[$key]['valid_upto'] = $value->valid_upto;
+                    $UserData1[$key]['is_trial'] = $value->is_trial;
+                    $UserData1[$key]['removead'] = $value->removead;
+                    $UserData1[$key]['valid_upto'] = $value->valid_upto;
+                    $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                    $UserData1[$key]['profiletext_change'] = $value->profiletext_change;
+                    $UserData1[$key]['photo_change'] = $value->photo_change;
+                    $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                    $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                }
+                
+            }
             
+            /********End******** */
+            //count($UserData1);
+           
+           // print_r($UserData);
+
+            
+            $user_data = array_merge($UserData,$UserData1); 
+
+            //$user_data = array_map("unserialize", array_unique(array_map("serialize", $user_data)));
+           // echo "<pre>";
+           // print_r($user_data);
+           // die();
             
             /********for give user looksex data******** */
-	        $user_looksexdata = array();
-	        $user_looksex = UserLooksexModel::where('user_id',$clientId)
-	        								  ->where('start_time','<=',$current_date)
-	        								  ->where('end_time','>=',$current_date)
-	        								  ->first();
-	        if(count($user_looksex))
-	        {
-	        	$user_looksexdata = $user_looksex;
-	        }		
-	        //***************END***************//
+            $user_looksexdata = array();
+            $user_looksex = UserLooksexModel::where('user_id',$clientId)
+                                              ->where('start_time','<=',$current_date)
+                                              ->where('end_time','>=',$current_date)
+                                              ->first();
+            if(count($user_looksex))
+            {
+                $user_looksexdata = $user_looksex;
+            }       
+            //***************END***************//
 
-        	$response['success'] = 1;
-        	$response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'filter_cache'=>$filter_cache];
-        	$http_status = 200;   
+            $response['success'] = 1;
+            $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'filter_cache'=>$filter_cache];
+            $http_status = 200;   
             $d1 = $response['data'];
         }
         else
         {
-        	$response['success'] = 0;
-        	$response['message'] = ['data not found'];
-        	$http_status = 400;
+            $response['success'] = 0;
+            $response['message'] = ['data not found'];
+            $http_status = 400;
         }
         /********End*********/
         }
@@ -847,7 +967,7 @@ return response()->json($response);
      **/
     public function getUserProfileDetail(Request $request, Repositary $common)
     {
-        $validator = Validator::make( $request->all(),[
+        $validator = Validator::make($request->all(),[
             'viewer_user_id' => 'required|numeric'
         ],
         [
@@ -868,6 +988,8 @@ return response()->json($response);
             $clientId = JWTAuth::parseToken()->authenticate()->id;
             $data = $request->all();
             $viewer_id = $data['viewer_user_id'];
+
+            /*******Add or update view user************/
             $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
             if ($clientId == $viewer_id) {
                 $is_view_profile = 0;
@@ -889,6 +1011,7 @@ return response()->json($response);
                 $viewDetail->update($data);
             }
 
+            /*******Get user profile data************/
             $profile = User::with(['Profile','UserIdentity'])->where(array('id'=>$viewer_id))->first();
             if(count($profile))
             {
@@ -926,12 +1049,15 @@ return response()->json($response);
                 $Userdetails['Viewer_Invitation'] = array();
                 $Userdetails['Lookdate_Profile_Active'] = array();
                 $Userdetails['User_Lookdate_Profile_Active'] = array();
+
+                /*******Sharealbum by sender************/
                 $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_id,'is_received'=>1))->first();
                 if(count($sharealbum))
                 {
                     $Userdetails['User_Share_Album'] = $sharealbum->toArray();
                 }
                 
+                /*******Share album by receiver************/
                 $Viewer_sharealbum = ShareAlbumModel::where(array('sender_id'=>$viewer_id,'receiver_id'=>$clientId,'is_received'=>1))->first();
                 if(count($Viewer_sharealbum))
                 {
@@ -946,7 +1072,7 @@ return response()->json($response);
                             'album_type' => $profile['profile_pic_type'],
                             'creation_date' => $profile['profile_pic_date']
                     ));
-
+                    /*******Get all album by receiver************/
                     $album = UseralbumModel::where(['user_id'=>$viewer_id])->orderBy('album_type','ASC')->get();
                     //pr($album);
                     if ($album) {
@@ -957,6 +1083,7 @@ return response()->json($response);
                     }
                 }
 
+                /*******Get note records send to receiver************/
                 $note = NoteModel::where(['user_id'=>$clientId,'note_user_id'=>$viewer_id])->first();
                 if ($note) {
                     $Userdetails['Note'] = $note['note'];
@@ -964,26 +1091,31 @@ return response()->json($response);
                     $Userdetails['Note'] = '';
                 }
                 
+                /*******Get favourite information to sender************/
                 $favourite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$viewer_id,'is_favourite'=>1])->first();
                     if ($favourite) {
                         $Userdetails['Favourite'] = $favourite->toArray();
                     }
-                    
+                
+                /*******Get favourite information of receiver************/    
                 $viewer_favourite = FavouriteModel::where(['user_id'=>$viewer_id,'favourite_user_id'=>$clientId,'is_favourite'=>1])->first();
                 if ($viewer_favourite) {
                     $Userdetails['Viewer_Favourite'] = $viewer_favourite->toArray();
                 }
                 
+                /*******Get block chat user information of sender************/
                 $block_chat = BlockChatUserModel::where(['user_id'=>$clientId,'block_user_id'=>$viewer_id])->first();
                 if ($block_chat) {
                     $Userdetails['Block_Chat'] = $block_chat->toArray();
                 }
                 
+                /*******Get block chat user information of receiver************/
                 $block_chat_view = BlockChatUserModel::where(['user_id'=>$viewer_id,'block_user_id'=>$clientId])->first();
                 if ($block_chat_view) {
                     $Userdetails['Block_Chat_View_User'] = $block_chat_view->toArray();
                 }
                 
+                /*******Check user sex profile of receiver************/
                 $check_looksex_profile = UserLooksexModel::where(['user_id'=>$viewer_id])->where(function($q){
                     $q->where('start_time','<=',Carbon::now())
                       ->where('end_time','>=',Carbon::now());
@@ -1006,6 +1138,7 @@ return response()->json($response);
                 }
                 $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
                 
+                /*******Check user profile of sender************/
                 $check_user_looksex_profile = UserLooksexModel::where(['user_id'=>$clientId])->where(function($q){
                     $q->where('start_time','<=',Carbon::now())
                       ->where('end_time','>=',Carbon::now());
@@ -1027,30 +1160,35 @@ return response()->json($response);
                
             
                 if (isset($type) && $type == 'looking_sex') {
-               
+                    /*******Get information receiver profile lock or not by sender************/
                     $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
 
                     if ($lock_profile) {
                         $Userdetails['User_Profile_Lock'] = $lock_profile->toArray();
                     }
-               
+                    
+                    /*******Get information receiver profile lock or not by receiver************/
                     $lock_profile_view_user = ProfileLockModel::where(['lock_user_id'=>$clientId,'user_id'=>$viewer_id,'is_locked'=>1,'browse'=>'looking'])->first();
                     if ($lock_profile_view_user) {
                         $Userdetails['View_User_Profile_Lock'] = $lock_profile_view_user->toArray();
                     }
                 } else {
-               
+                    
+                    /*******Get information sender profile lock or not by receiver************/
                     $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$viewer_id,'is_locked'=>1])->where('browse','!=','looking')->first();
                     
                     if ($lock_profile) {
                         $Userdetails['User_Profile_Lock'] = $lock_profile->toArray();
                     }
-                
+                    
+                    /*******Get information receiver profile lock or not by sender************/
                     $lock_profile_view_user = ProfileLockModel::where(['lock_user_id'=>$clientId,'user_id'=>$viewer_id,'is_locked'=>1])->where('browse','!=','looking')->first();
                     if ($lock_profile_view_user) {
                         $Userdetails['View_User_Profile_Lock'] = $lock_profile_view_user->toArray();
                     }
                 }
+
+                /*******Set receiver profile active or not************/
                 $UserLookdate = UserLookdateModel::where(['user_id'=>$viewer_id])->get();
                 if (count($UserLookdate) > 0) {
                     $check_lookdate_active = 1;
@@ -1059,6 +1197,7 @@ return response()->json($response);
                 }
                 $Userdetails['Lookdate_Profile_Active'] = $check_lookdate_active;
                 
+                /*******Set sender profile active or not************/
                 $UserLookdate = UserLookdateModel::where(['user_id'=>$clientId])->get();
                 if (count($UserLookdate) > 0) {
                     $check_user_lookdate_active = 1;
@@ -1067,16 +1206,19 @@ return response()->json($response);
                 }
                 $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
                 
+                /*******Check invitation send to receiver by sender************/
                 $chat_invitation = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$viewer_id])->first();
                 if ($chat_invitation) {
                     $Userdetails['User_Invitation'] = $chat_invitation->toArray();
                 }
 
+                /*******Check invitation send to sender by receiver************/
                 $chat_invitation_viewer = ChatModel::where(['user_id'=>$viewer_id,'chat_user_id'=>$clientId])->first();    
                 if ($chat_invitation_viewer) {
                     $Userdetails['Viewer_Invitation'] = $chat_invitation_viewer->toArray();
                 }
-             
+                
+                /*******Check user identities of sender************/
                 $user_his_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'his_identites'])->get();
                 $identity_percent_permatch = $match_identity = 0;
                 if(count($user_his_identity))
@@ -1085,6 +1227,7 @@ return response()->json($response);
                 }
                 $match_identity = 0;
                 
+                /*******Check user identities of receiver************/
                 $viewer_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'identity'])->get();
                
                 $identity = array();
@@ -1311,12 +1454,12 @@ return response()->json($response);
         $data = $request->all();
         $clientId = JWTAuth::parseToken()->authenticate()->id;
         $validator = Validator::make( $request->all(),[
-            'recevier_id' => 'required|numeric',
+            'receiver_id' => 'required|numeric',
             'accept' => 'numeric'
         ],
         [
-            'recevier_id.required' => 'Recevier user id not found.', 
-            'recevier_id.numeric' => 'Recevier id must must be numeric.', 
+            'receiver_id.required' => 'Recevier user id not found.', 
+            'receiver_id.numeric' => 'Recevier id must must be numeric.', 
             'accept.numeric' => 'Accept have only numeric value.'
         ]
 
@@ -1328,95 +1471,54 @@ return response()->json($response);
             $response['success']     = 0;
             $http_status=422;
         }else{
-            if(!empty($clientId) && !empty($data['recevier_id']))
+            $data = $request->all();
+            $chat_count_message = $common->commonChatUser($clientId,$data['receiver_id']);
+            $chat_count_message1 = $common->commonChatUser($data['receiver_id'],$clientId);
+            if(isset($data['accept']) && $data['accept']==1)
             {
-                if(isset($data['accept']) && $data['accept']==1)
+                if(count($chat_count_message))
                 {
-                    $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
-                    $chat_count_message1 = $common->commonChatUser($data['recevier_id'],$clientId);
-                    if(count($chat_count_message))
-                    {
-                        if($chat_count_message->update(['count'=>($chat_count_message['count']+1),'created_at'=>carbon::now()]))
-                        {
-                            $response['success'] = 1;
-                            $response['message'] = 'success!';
-                            $http_status = 200;
-                        }
-                        else
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'Something wrong!';
-                            $http_status = 400;
-                        }
-                    }
+                    $chat_count_message->update(['count'=>($chat_count_message['count']+1),'created_at'=>carbon::now()]);
+                }
 
-                    if(count($chat_count_message1))
-                    {
-                       if($chat_count_message1->update(['invite'=>2]))
-                       {
-                            $response['success'] = 1;
-                            $response['message'] = 'success!';
-                            $http_status = 200;
-                       }
-                       else
-                       {
-                            $response['success'] = 0;
-                            $response['message'] = 'Something Wrong!';
-                            $http_status = 400;
-                       }
-                    }
+                if(count($chat_count_message1))
+                {
+                   $chat_count_message1->update(['invite'=>2]);
+                }
 
+            }
+            else
+            {
+                if(count($chat_count_message))
+                {
+                    $chat_count_message->update(['invite'=>1,'check_invitaion_sent'=>1]);
                 }
                 else
                 {
-                    $chat_count_message = $common->commonChatUser($clientId,$data['recevier_id']);
-                    if(count($chat_count_message))
+                    if(count($chat_count_message1)==0)
                     {
-                        if($chat_count_message['check_invitaion_sent']==1)
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'Already send Invitation to recevier';
-                            $http_status = 400;
-                        }
-                        else
-                        {
-                            if($chat_count_message->update(['invite'=>1,'check_invitaion_sent'=>1]))
-                            {
-                                $response['success'] = 1;
-                                $response['message'] = 'success';
-                                $http_status = 200;
-                            }
-                            else
-                            {
-                                $response['success'] = 1;
-                                $response['message'] = 'Already send Invitation to recevier';
-                                $http_status = 400;   
-                            }
-                        }
+                        $receiverdata['user_id'] = $data['receiver_id'];
+                        $receiverdata['chat_user_id'] = $clientId;
+                        ChatModel::create($receiverdata);
                     }
-                    else
-                    {
-                        $chat_users1 = $common->commonChatUser($data['recevier_id'],$clientId);
-                        if(count($chat_users1)==0)
-                        {
-                            $receiverdata['user_id'] = $data['receiver_id'];
-                            $receiverdata['chat_user_id'] = $clientId;
-                            ChatModel::create($receiverdata);
-                        }
-                        $data['user_id'] = $clientId;
-                        $data['chat_user_id'] = $data['receiver_id'];
-                        $data['invite'] = 1;
-                        $data['check_invitaion_sent'] = 1;
-                        $data['count'] = 0;
-                    }
+                    $data['user_id'] = $clientId;
+                    $data['chat_user_id'] = $data['receiver_id'];
+                    $data['invite'] = 1;
+                    $data['check_invitaion_sent'] = 1;
+                    $data['count'] = 0;
+                    ChatModel::create($data);
                 }
-            }    
+            }
+            // Pending push notification
+
+
+            $response['success'] = 1;
+            $response['message'] = 'Success';
+            $http_status = 200;
+
+              
         }
-
         return response()->json($response,$http_status);
-        
-
-        
     }
 
 
@@ -1510,7 +1612,6 @@ return response()->json($response);
         );
     
         if ($validator->fails()) {
-            
             $response['errors']     = $validator->errors();
             $response['success']     = 0;
             $http_status=422;
@@ -1523,58 +1624,74 @@ return response()->json($response);
             {
                 $browse = $data['browse'];
             }
-            $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where(function($q){
-                $q->orWhere('browse','looking')
-                 ->orWhere('browse','!=','looking');
-            })->first();                
-
-            if($lock_profile)
+            
+            if ($browse == 'looking') 
             {
-                /******* if is_locked=1 then set is_locked=2 means unlock and if  is_locked=2 then set is_locked=1 means lock*** */
-                if ($lock_profile['is_locked'] == 1) {
-                    $is_locked = 2;
-                    $count = 0;
-                } else {
-                    $is_locked = 1;
-                    $count = 1;
-                }
-                /************* lock unlock profile details ************ */
-                $data['user_id'] = $clientId;
-                $data['is_locked'] = $is_locked;
-                $data['count'] = $count;
-                $data['browse'] = $browse;
-                if($lock_profile->update($data))
+                $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where('browse','looking')->first();
+                if($lock_profile)
                 {
-                    $response['success'] = 1;
-                    $response['message'] = 'successfully save into database';
-                    $http_status = 200;
+                    if ($lock_profile['is_locked'] == 1) {
+
+                        $is_locked = 2;
+                        $count = 0;
+                    } else {
+                        $is_locked = 1;
+                        $count = 1;
+                    }
+                    /************* lock unlock profile details ************ */
+                    $data['user_id'] = $clientId;
+                    $data['is_locked'] = $is_locked;
+                    $data['count'] = $count;
+                    $data['id'] = $lock_profile->id;
                 }
                 else
                 {
-                    $response['success'] = 0;
-                    $response['message'] = 'Something Wrong!';
-                    $http_status = 400;
+                    $data['user_id'] = $clientId;
+                    $data['is_locked'] = 1;
+                    $data['count'] = 1;
+                    $data['id'] = ''; 
                 }
             }
             else
             {
-                $data['user_id'] = $clientId;
-                $data['is_locked'] = 1;
-                $data['count'] = 1;
-                $data['browse'] = $browse;    
-                if(ProfileLockModel::create($data))
+                $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where('browse','!=','looking')->first();
+                if($lock_profile)
                 {
-                    $response['success'] = 1;
-                    $response['message'] = 'successfully save into database';
-                    $http_status = 200;
+                    if ($lock_profile['is_locked'] == 1) {
+                        $is_locked = 2;
+                        $count = 0;
+                    } else {
+                        $is_locked = 1;
+                        $count = 1;
+                    }
+                    /************* lock unlock profile details ************ */
+                    $data['user_id'] = $clientId;
+                    $data['is_locked'] = $is_locked;
+                    $data['count'] = $count;
+                    $data['id'] = $lock_profile->id;
                 }
                 else
                 {
-                    $response['success'] = 0;
-                    $response['message'] = 'Something Wrong!';
-                    $http_status = 400;
+                    $data['user_id'] = $clientId;
+                    $data['is_locked'] = 1;
+                    $data['count'] = 1;
+                    $data['id'] = '';
                 }
             }
+
+            if(ProfileLockModel::updateOrCreate(['id'=>$data['id']],$data))  
+            {
+                $response['success'] = 1;
+                $response['message'] = 'successfully save into database';
+                $http_status = 200;   
+            }
+            else
+            {
+                $response['success'] = 0;
+                $response['message'] = 'Something Wrong!';
+                $http_status = 400;
+            }
+
         } 
         return response()->json($response,$http_status);
     }
@@ -1606,6 +1723,7 @@ return response()->json($response);
         {
             $clientId = JWTAuth::parseToken()->authenticate()->id;
             $data = $request->all();
+            /*******Get block user data************/
             $get_model_data = BlockUserModel::where(['user_id'=>$clientId,'blocked_id'=>$data['blocked_id']])->first();
             if(count($get_model_data)==0)
             {
@@ -1613,6 +1731,7 @@ return response()->json($response);
                 $data['block_dt'] = Carbon::now();
                 $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'BlockPerDay');
                 if ($limit > 0) {
+                    /*******Count block user if user reach from the maximum limit then send message to info************/
                     $count_block = BlockUserModel::where(['user_id'=>$clientId])->count();
                     if ($count_block >= $limit) {
                         $response['success'] = 0;
@@ -1621,9 +1740,10 @@ return response()->json($response);
                         return response()->json($response,$http);
                     }
                 }
-
+                /*******To remove the sharealbum with receiver************/
                 ShareAlbumModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['blocked_id']])->update(['is_received'=>2,'is_view'=>0]);
 
+                /*******To remove the favourite receiver select by sender************/
                 FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$data['blocked_id']])->update(['is_favourite'=>2]);
                 
                 if (BlockUserModel::create($data)) {
@@ -1689,9 +1809,11 @@ return response()->json($response);
             $count = 0;
             $is_share_count = 1;
             $is_received = '';
+            /*******Get album of logged in user************/
             $album = UseralbumModel::where(['user_id'=>$clientId])->get();
 
             if ($album) {
+                /*******Get sharealbum information to the user************/
                 $sharealbum = ShareAlbumModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
 
                 $data['sender_id'] = $clientId;
@@ -1711,10 +1833,12 @@ return response()->json($response);
                     $data['is_received'] = $is_received;
                     $data['is_view'] = 1;
                 }
+                /*******Check the limit of sharalbum************/
                 $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'PrivateAlbumSharePerDay');
 
                 if ($data['is_received'] == 1) {
                     if ($limit > 0) {
+                        /*******Count how many album share with receiver************/
                         $count_sharealbum_per_day  = ShareAlbumModel::where(['sender_id'=>$clientId,'is_received'=>1])->whereBetween('created_at',array(carbon::today(),carbon::now()))->count();
                         
                         if ($count_sharealbum_per_day >= $limit) {
@@ -2358,7 +2482,7 @@ return response()->json($response);
                 else
                 {
                     $response['message'] = 'Unable to save into database.';
-                    $response['success'] = 1;
+                    $response['success'] = 0;
                     $http_status = 400;   
                 }
             }
@@ -2371,4 +2495,162 @@ return response()->json($response);
         }
         return response()->json($response,$http_status);
     }
+
+    /**
+     * Name: postDeclainInvitation
+     * Purpose: function for Decline the invitation
+     * created By: Lovepreet
+     * Created on :- 23 Aug 2017
+     *
+     **/
+    public function postDeclainInvitation(Request $request) {
+        try {
+                 $validator = Validator::make( $request->all(),[
+                'receiver_id' => 'required|numeric'
+                ],
+                [
+                    'receiver_id.required' => 'Receiver not found.',
+                    'receiver_id.numeric'  => 'Receiver not found.'
+                ]
+
+                );
+           
+                if ($validator->fails()) {
+                   
+                    $response['errors']     = $validator->errors();
+                    $response['success']     = 0;
+                    $http_status=422;
+                }else
+                {
+                    $clientId = JWTAuth::parseToken()->authenticate()->id;
+                    $data = $request->all();
+                
+                    $chat_count_message = ChatModel::where(['user_id'=>$data['receiver_id'],'chat_user_id'=>$clientId])->first();
+                    if($chat_count_message)
+                    {
+                        if($chat_count_message->update(['invite'=>0]))
+                        {
+                            $response['message'] = 'Success';
+                            $response['success'] = 1;
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['message'] = 'Some thing wrong.';
+                            $response['success'] = 0;
+                            $http_status = 400; 
+                        }
+                    }
+                    else
+                    {
+                        $response['message'] = 'No found data.';
+                        $response['success'] = 0;
+                        $http_status = 400;  
+                    }
+                }
+        } catch (Exception $e) {
+            $response['message'] = $e->getMessage();
+            $response['success'] = 0;
+            $http_status = 400;  
+        }
+        return response()->json($response,$http_status);        
+    }
+
+
+    /**
+     * Name: postDeclainInvitation
+     * Purpose: function for Decline the invitation
+     * created By: Lovepreet
+     * Created on :- 23 Aug 2017
+     *
+     **/
+
+    public function postChatMessagePushNotification(Request $request) {
+        try 
+        {
+                $validator = Validator::make( $request->all(),[
+                'receiver_id' => 'required|numeric'
+                ],
+                [
+                    'receiver_id.required' => 'Receiver not found.',
+                    'receiver_id.numeric'  => 'Receiver not found.'
+                ]
+
+                );
+           
+                if ($validator->fails()) {
+                   
+                    $response['errors']     = $validator->errors();
+                    $response['success']     = 0;
+                    $http_status=422;
+                }else
+                {
+                    $clientId = JWTAuth::parseToken()->authenticate()->id;
+                    $data = $request->all();
+                    $chat_count_message = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$data['receiver_id']])->first();
+                    if ($chat_count_message) {
+                        $chat_count_message->update(['count'=>$chat_count_message+1,'created_at'=>carbon::now()]);
+                        
+                    }
+                    
+                    $chat_count_message1 = ChatModel::where(['user_id'=>$data['receiver_id'],'chat_user_id'=>$clientId])->first();
+
+                    if ($chat_count_message1) {
+                        
+                        $this->ChatUser->updateAll(
+                                array('ChatUser.creation_date' => "'" . $current_date . "'"), array('ChatUser.id' => $chat_count_message1['ChatUser']['id']));
+
+                        $chat_count_message1->update(['created_at'=>carbon::now()]);
+                        
+                    }
+
+                    /*             * ***********total count message ************ */
+                    $chatusers = $ChatModel::where(['chat_user_id'=>$data->receiver_id])->get();
+                    $total_unread_message = 0;
+                    $UserData = array();
+                    if ($chatusers) {
+
+                        foreach ($chatusers as $key => $value) {
+                            if ($value['ChatUser']['invite'] > 0) {
+                                $invite = 1;
+                            } else {
+                                $invite = 0;
+                            }
+                            $total_unread_message+=($value['ChatUser']['count'] + $invite);
+                        }
+                    }
+                    
+
+                    if ($total_unread_message == 0) {
+                        $total_unread_message = '';
+                    }
+                    
+                    $is_active_look_date = UserLookdateModel::where(['user'=>$clientId])->first();
+                    
+                    if ($is_active_look_date) {
+                        $is_active_lookdate_profile = 1;
+                    } else {
+                        $is_active_lookdate_profile = 0;
+                    }
+                    
+                    //Pending push notification
+
+                    $response['message'] = 'Success';
+                    $response['success'] = 1;
+                    $http_status = 200;
+
+                }        
+        }
+        catch (Exception $e) 
+        {
+            $response['message'] = $e->getMessage();
+            $response['success'] = 0;
+            $http_status = 400;      
+        }    
+        return response()->json($response,$http_status);
+    }
+
+
+
+
 }

@@ -346,5 +346,10 @@ class Repositary
 	{
 		return ChatModel::where(['user_id'=>$cId,'chat_user_id'=>$rId])->first();
 	}
+/*
+	public function sentNotification($data)
+	{
+		# code...
+	}*/
 
 }
