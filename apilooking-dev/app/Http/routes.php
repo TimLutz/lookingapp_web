@@ -40,6 +40,7 @@ $app->get('/', function () use ($app) {
     $app->post('share_album','UserController@postShareAlbum');
     $app->post('add_flag','UserController@postAddFlag');
     $app->post('declain_invitation','UserController@postDeclainInvitation');
+    $app->get('terms','UserController@getTermsAndCondition');
 });
 
 

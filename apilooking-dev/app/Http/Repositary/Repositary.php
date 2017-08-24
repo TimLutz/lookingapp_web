@@ -16,130 +16,10 @@ use Mail;
 
 class Repositary
 {
-	public function getcompleteaddress($lat,$long)
-		{
-			
-			
-			try{
-			$url='https://maps.googleapis.com/maps/api/geocode/json?latlng='.$lat.','.$long.'&key=AIzaSyD6W2r1BrzJ-3wE5OZlKcuIfr949bu6FqU';
-			$result=json_decode(file_get_contents($url));
-
-			foreach($result->results[0]->address_components as $key1=>$value1)
-			{
-				foreach($value1 as $key2=>$value2)
-				{
-					
-					
-					if(in_array('administrative_area_level_2',$value1->types))
-					{
-						$result_arr['city']=$value1->long_name;
-					}
-					if(in_array('administrative_area_level_1',$value1->types))
-					{
-						$result_arr['state']=$value1->long_name;
-					}
-					if(in_array('country',$value1->types))
-					{
-						$result_arr['country']=$value1->long_name;
-					}
-					if(in_array('postal_code',$value1->types))
-					{
-						$result_arr['postal_code']=$value1->long_name;
-					}
-				}
-			}
-			return $result_arr;
-
-		}catch(\Exception $e){
-			die($e->getMessage()); 
-		}
-	}
-	public function getcurrency($country)
-	{
-		return CoupenVerify::select('coupon_currency')->where('coupon_country',$country)->pluck('coupon_currency');
-		
-		
-	}
-	public function referalGenerator()
-	{
-		
-		
-		$validate['personal_referral_code']=mt_rand(100000,999999);
-		
-		$validator = Validator::make( $validate  ,      [
-            'personal_referral_code' 							=> 'required|unique:users',
-			        
-        ]);
-		if($validator->errors()->first('personal_referral_code') ) 
-		{
-			$this->referalGenerator();
-		}
-		else{
-			return $validate['personal_referral_code'];
-		}
-		
-	}
-	public function orederReferenceGenerator()
-	{
-		
-		
-		$validate['sale_random_reference_number']=mt_rand(100000000,999999999);
-		
-		$validator = Validator::make( $validate  ,      [
-            'sale_random_reference_number' 							=> 'required|unique:orders',
-			        
-        ]);
-		if($validator->errors()->first('sale_random_reference_number') ) 
-		{
-			$this->orederReferenceGenerator();
-		}
-		else{
-			return $validate['sale_random_reference_number'];
-		}
-		
-	}
-
-
-	public function curlExec($url,$method,$dataset)
-	{
-		$secret_key = "cqzjzFAw-MVgAprGgfC-";
-
-		
-		$config=array('access_token'	=> 'ZxfMBLSFxFxJwCcYd455',
-						'timestamp'		=> date('Y-m-d H:i:s'),
-						'company_id'	=>  '10149'
-					);
-
-		$final=array_merge($dataset,$config);
-
-		$signature = hash_hmac("sha1", http_build_query($final), $secret_key);
-		$final["signature"] = $signature;
-		
-		$content=json_encode($final);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
-		curl_setopt($ch, CURLOPT_HTTPHEADER,
-		   array('Content-Type:application/json',
-		       'Content-Length: ' . strlen($content))
-		);
-
-		$json_response = curl_exec($ch);
-		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if ($status != 200) {
-		   die("Error: call to URL $url failed with status $status, response $json_response, curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch));
-		}
-
-		curl_close($ch);
-		return $response = json_decode($json_response, true);
-		
-
-
-	}
-// Static function for sending email throughout the application
+	/*==================================================================================================
+    Function for sendMail 
+    ====================================================================================================
+    */
 
 	static function sendMail($email,$data=array(),$template,$subject){
 		return Mail::send($template, $data, function($m) use($data,$email,$subject){
@@ -148,48 +28,6 @@ class Repositary
             });
 	}
 
-// Static function for getting the updated profile of a jobseeker	
-
-	static function updateCvPercentageCalculated($user_id)
-	{
-		
-		$cv_percentage=Jobseekers::where('user_id',$user_id)->first();
-		$cv_percentage->cv_percentage=floatval(floatval($cv_percentage->general_cv_percentage+$cv_percentage->skills_percentage+$cv_percentage->language_percentage+$cv_percentage->proffesional_experience+$cv_percentage->personal_experience_percentage)/3);
-		
-
-		if($cv_percentage->save())
-		{
-			$cv_data['total_percentage']=$cv_percentage->cv_percentage;
-			$cv_data['general_cv_percentage']=$cv_percentage->general_cv_percentage;
-			$cv_data['language_percentage']=$cv_percentage->language_percentage;
-			$cv_data['proffesional_experience']=$cv_percentage->proffesional_experience;
-			$cv_data['personal_experience_percentage']=$cv_percentage->personal_experience_percentage;
-			$cv_data['skills_percentage']=$cv_percentage->skills_percentage;
-			return $cv_data;
-		}
-		
-	}
-
-	//function for returning diffrence beetween two dates 
-
-	static function getageDiffrence($start,$end)
-	{
-		return	$length = $start->diffInMonths($end);
-		
-		//print_r($start); die('herecc');
-	}
-//function for the conversion opf months into 
-
-	static function getQuotientAndRemainder($divisor, $dividend) {
-	    $quotient = (int)($divisor / $dividend);
-	    $remainder = $divisor % $dividend;
-	   	if($remainder>=6)
-	   	{
-	   		$quotient++;
-	   	}
-	   	return $quotient;
-	    
-	}
 
 	/*==================================================================================================
     Function for genarating random otp for a user 
@@ -210,7 +48,11 @@ class Repositary
         return $str;
     }
 
-	
+	/*==================================================================================================
+    Function for get limit
+    ====================================================================================================
+    */
+
 
     public function getlimit($membertype=null,$limit=null)
     {
@@ -223,6 +65,11 @@ class Repositary
         //echo $member_type;die;
         return $limit;
     }
+
+    /*==================================================================================================
+    Function for check view user 
+    ====================================================================================================
+    */
 
     public function check_view($id)
     {
@@ -237,6 +84,11 @@ class Repositary
         
     }
 
+    /*==================================================================================================
+    Function for sharealbum to user 
+    ====================================================================================================
+    */
+
     public function check_sharealbum($id)
     {
         $views = ShareAlbumModel::where(['receiver_id'=>$id,'is_view'=>1])->first();    
@@ -248,18 +100,31 @@ class Repositary
         return $is_view;
     }
 
+    /*==================================================================================================
+    Function for count user view
+    ====================================================================================================
+    */
+
     public function count_view($id)
     {
         $views = ViewerModel::where(['viewer_user_id'=>$id,'is_view'=>1])->count();
         return $views;
     }
 
+    /*==================================================================================================
+    Function for count sharealbum 
+    ====================================================================================================
+    */
 
     public function count_sharealbum($id) {
         $views = ShareAlbumModel::where(['receiver_id'=>$id,'is_view'=>1])->count();    
         return $views;
     }
 
+    /*==================================================================================================
+    Function for check active profile
+    ====================================================================================================
+    */
 
     public function check_profile_active($currentDate=null,$id=null)
     {
@@ -276,6 +141,10 @@ class Repositary
         return $is_profile_active;
     }
     
+    /*==================================================================================================
+    Function for get distance
+    ====================================================================================================
+    */
 
     public function distance($lat1=null, $lon1=null, $lat2=null, $lon2=null, $unit=null) {
         $this->autoRender = false;
@@ -304,6 +173,11 @@ class Repositary
         }
     }
 
+    /*==================================================================================================
+    Function for exchange height weight
+    ====================================================================================================
+    */
+
     public function getHeightWidthValue($value1=null,$value2=null)
     {
     	# code...
@@ -317,6 +191,11 @@ class Repositary
         }
 	    return ['to'=>$a1,'from'=>$a2];            
     }
+
+    /*==================================================================================================
+    Function for save identities
+    ====================================================================================================
+    */
 
     public function saveIdentites($identite=null,$his_identitie=null,$clientId=null)
     {
@@ -342,6 +221,11 @@ class Repositary
         
     }
 	
+	/*==================================================================================================
+    Function for chat user
+    ====================================================================================================
+    */
+
 	public function commonChatUser($cId=null,$rId)
 	{
 		return ChatModel::where(['user_id'=>$cId,'chat_user_id'=>$rId])->first();

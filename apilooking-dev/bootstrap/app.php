@@ -119,4 +119,7 @@ $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../app/Http/routes.php';
 });
 
+$app->configure('customregister');
+$app->configure('customcommon');
+
 return $app;
