@@ -64,7 +64,7 @@ class RegisterController extends Controller
                 $http_status=422;
             }else{
                     /******One month for the trial period************/
-                    $trial_details = TrialModel::value('date');
+                    $trial_details = TrialModel::value('days');
                     $trial_month = $member_type = $is_trial = 0;
                     
                     if ($trial_details) {
