@@ -20,14 +20,14 @@ Dashboard
 						</div>
 						<div class="details">
 							<div class="number">
-								{{$tasks}}
+								{{ $users }}
 							</div>
 							<div class="desc">
-								Total Tasks
+								Users
 							</div>
 						</div>
-						<a class="more" href="{{ url(getenv('adminurl').'/tasks') }}">
-						View more <i class="m-icon-swapright m-icon-white"></i>
+						<a class="more" href="{{ url(getenv('adminurl').'/users') }}">
+						More Info<i class="m-icon-swapright m-icon-white"></i>
 						</a>
 					</div>
 				</a>
@@ -42,10 +42,10 @@ Dashboard
 						</div>
 						<div class="details">
 							<div class="number">
-								{{ $houseowners }}
+								{{$banuser}}
 							</div>
 							<div class="desc">
-								Total House Owners
+								 Banned user
 							</div>
 						</div>
 						<a class="more" href="{{ url(getenv('adminurl').'/users') }}">
@@ -62,10 +62,10 @@ Dashboard
 						</div>
 						<div class="details">
 							<div class="number">
-								 {{ $realtors }}
+								 
 							</div>
 							<div class="desc">
-								Total Realtors
+								 Reports
 							</div>
 						</div>
 						<a class="more" href="{{ url(getenv('adminurl').'/users') }}">
@@ -83,10 +83,10 @@ Dashboard
 						</div>
 						<div class="details">
 							<div class="number">
-								{{ $properties }}
+								{{$photos}}
 							</div>
 							<div class="desc">
-								Total Property
+								 Photos
 							</div>
 						</div>
 						<a class="more" href="{{ url(getenv('adminurl').'/properties') }}">
@@ -104,10 +104,10 @@ Dashboard
 						</div>
 						<div class="details">
 							<div class="number">
-								{{ $both }}
+								{{$profiletext}}
 							</div>
 							<div class="desc">
-								Total Both
+								 Profile Text
 							</div>
 						</div>
 						<a class="more" href="{{ url(getenv('adminurl').'/users') }}">

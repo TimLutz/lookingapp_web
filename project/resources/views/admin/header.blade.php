@@ -5,7 +5,7 @@
 <?php 
 	//$data = CommonRepository::getNotifications(); 
 	$common = new CommonRepository();
-	$notifications = Notificationadmin::where('status','=',1)->orderBy('id','desc')->get();
+//	$notifications = Notificationadmin::where('status','=',1)->orderBy('id','desc')->get();
 ?>
 
 <!DOCTYPE html>
@@ -121,36 +121,39 @@ License: You must have a valid license purchased only from themeforest(the above
 				 
 				<!-- BEGIN NOTIFICATION DROPDOWN -->
 				<!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
+				<?php 
+				/*
+				?>	
 				<li class="dropdown dropdown-extended dropdown-notification notificationappend" id="header_notification_bar">
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
 					<i class="icon-bell"></i>
-					<?php $count = count($notifications); ?>
+					<?php 
+					//$count = count($notifications); ?>
 					<span class="badge badge-default">
-					{{$count}} </span>
+					 </span>
 					</a>
 					<ul class="dropdown-menu">
 						<li class="external">
 							
-							<h3><span class="bold">{{$count}} pending</span> notifications</h3>
+							<h3><span class="bold"> pending</span> notifications</h3>
 <!--
 							<a href="extra_profile.html">view all</a>
 -->
 						</li>
 						<li>
 							<ul class="dropdown-menu-list scroller" style="height: 250px;" data-handle-color="#637283">
-								
 								@foreach($notifications as $notification)
 								<?php 
 								
 								
-								$converttime = $common->converttimezone($notification->created_at);
+							//	$converttime = $common->converttimezone($notification->created_at);
 								
-								$time = strtotime($converttime);
-								$delay = $common->humanTiming($time);
+							//	$time = strtotime($converttime);
+							//	$delay = $common->humanTiming($time);
 								
 								?>
 								<li>
-									<?php $noteid = Crypt::encrypt($notification['id']) ?>
+									<?php //$noteid = Crypt::encrypt($notification['id']) ?>
 									@if(in_array($notification['type'], array("task_requested", "task_completed", "task_deleted","task_rescheduled")))
 									<a href="{{ url(getenv('adminurl').'/tasks') }}" id="statusnoti" notificationid = "{{ $noteid }}">
 									@elseif(in_array($notification['type'], array("note_created", "note_updated")))
@@ -167,11 +170,11 @@ License: You must have a valid license purchased only from themeforest(the above
 									</a>
 								</li>
 								@endforeach
-								
 							</ul>
 						</li>
 					</ul>
 				</li>
+						<?php  */ ?>	
 				<!-- END NOTIFICATION DROPDOWN -->
 				
 				<!-- BEGIN USER LOGIN DROPDOWN -->
@@ -179,24 +182,25 @@ License: You must have a valid license purchased only from themeforest(the above
 				<li class="dropdown dropdown-user">
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
 						<?php
-						$photo=Auth::user()->photo;
+						$photo=Auth::user()->profile_pic;
 							if($photo==null)
 							{
 						$url_img = asset('uploads/no_image.jpg');
+						
 						$img_path = $common->setPhoto($url_img,'25','25');  ?>
 						<img src="{{ $url_img }}" class="img-circle" alt="User Image"/>
 					<?php
 							}
 							else
 							{
-						$url_img = asset('uploads/'.$photo);
-						$img_path = $common->setPhoto($url_img,'25','25');  ?>
-						<img src="{{ $img_path }}" class="img-circle" alt="User Image"/>
+					//	$url_img = asset('uploads/'.$photo);
+					//	$img_path = $common->setPhoto($url_img,'25','25');  ?>
+						<img src="{{ $photo }}" class="img-circle" alt="User Image"/>
 					<?php	}	
 						
 						?>
 					<span class="username username-hide-on-mobile">
-					{{ Auth::user()->name }}</span>
+					{{ Auth::user()->screen_name }}</span>
 					<i class="fa fa-angle-down"></i>
 					</a>
 					<ul class="dropdown-menu dropdown-menu-default">

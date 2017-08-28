@@ -46,6 +46,7 @@ class AdminController extends Controller
 		{ 
 			if(Auth::user()){
 				$active = 'dashboard';
+			//	die('bcvbcvn');
 				$data=$this->common->getinfo();
 			
 				return view('admin/dashboard',$data,compact('active'));

@@ -39,58 +39,14 @@ class CommonRepository implements CommonRepositoryInterface
 
 	public static function getinfo()
 	{
-		$data['users'] = User::where('role','2')->where('status','!=',2)->count();
-		$data['tasks'] = Task::where('id','!=','')->count();
-		$data['properties'] = Property::where('id','!=','')->count();
-    $data['realtors'] = User::where('id','!=','')->where('type',1)->count();
-		$data['both'] = User::where('id','!=','')->where('type',4)->count();
-		$data['houseowners'] = User::where('id','!=','')->where('type',2)->count();
-		
-		//$data['quoteus'] = Quotation::where('status','!=','2')->where('type','2')->count();
-		//$data['total_amount'] = Booking::where('status','!=','2')->sum('amount');
-//		$data['total_amount'] = Booking::where('status','!=','2')->transactions->sum('amount');
-	//	$data['total_amount'] = Transaction::where('payment_status','1')->sum('amount');
-		/*$data['total_amount'] = DB::table('booking_detail')
-            ->join('transactions', 'booking_detail.id', '=', 'transactions.booking_id')
-            ->select('sum(transactions.amount)')
-            ->where('payment_status','1')
-            ->get();*/
-    /* $data['total_amount'] =   DB::table('transactions')
-  ->select([
-    DB::raw('COALESCE(SUM(transactions.amount),0) AS amount'),
-  ])
-  ->leftJoin('booking_detail', 'booking_detail.id', '=', 'transactions.booking_id')
-  ->where('booking_detail.status','!=','2')
-  ->where('transactions.status','!=','2')
-  ->first();*/
-
-  /*$data['graphdata'] = DB::table('services')
-  ->select([
-    DB::raw('distinct users.id AS uid'),
-  ])
-  ->leftJoin('booking_detail', 'booking_detail.service_id', '=', 'services.id')
-  ->leftJoin('users', 'booking_detail.user_id', '=', 'users.id')
-  ->where('booking_detail.status','!=','2')
-  ->where('services.status','!=','2')
-  ->where('users.status','!=','2')
-  ->groupBy('services.id')
-            ->join('users', 'users.id', '=', 'booking_detail.user_id')
-  ->get('services.name AS name');*/
-  /*$data['graphdata'] = DB::table('booking_detail')
-            ->leftjoin('users','users.id','=','booking_detail.user_id')
-            ->where('booking_detail.status','!=','2')
-		    ->where('users.status','!=','2')
-		    ->groupBy('booking_detail.service_id')
-            ->select(DB::raw('count(booking_detail.user_id) as users'),'booking_detail.service_id')
-            ->distinct()
-            ->orderBy('booking_detail.service_id','ASC')
-            ->get();*/
-
-   /*  SELECT distinct count(u.id) AS user_id, b.service_id AS service_name FROM booking_detail AS b LEFT OUTER JOIN users AS u ON u.id = b.user_id group by b.service_id*/
-
-
-    
-	//	print_r($data['graphdata']); 
+		$data['users'] = User::where('role','2')->count();
+		$data['profiletext'] = User::where('profiletext_change',1)->count();
+    $data['photos'] = User::where(['photo_change'=>1])->count();
+    $data['banuser'] = User::where(['status'=>0])->count();
+		//$data['properties'] = Property::where('id','!=','')->count();
+    //$data['realtors'] = User::where('id','!=','')->where('type',1)->count();
+		//$data['both'] = User::where('id','!=','')->where('type',4)->count();
+		//$data['houseowners'] = User::where('id','!=','')->where('type',2)->count();
 
 		return $data;
 	}
