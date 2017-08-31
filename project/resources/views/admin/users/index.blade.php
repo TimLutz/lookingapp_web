@@ -116,8 +116,6 @@ Users
 	</div>
 </div>
 			<!-- END PAGE CONTENT-->
-		
-			@include('admin.clients.popuprealtor')
 @endsection
 @section('js')
 <script>

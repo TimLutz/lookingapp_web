@@ -103,75 +103,6 @@
         ]
     },
     {
-        "name": "doctrine/inflector",
-        "version": "v1.1.0",
-        "version_normalized": "1.1.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/doctrine/inflector.git",
-            "reference": "90b2128806bfde671b6952ab8bea493942c1fdae"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/inflector/zipball/90b2128806bfde671b6952ab8bea493942c1fdae",
-            "reference": "90b2128806bfde671b6952ab8bea493942c1fdae",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.2"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "4.*"
-        },
-        "time": "2015-11-06 14:35:42",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.1.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Doctrine\\Common\\Inflector\\": "lib/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Roman Borschel",
-                "email": "roman@code-factory.org"
-            },
-            {
-                "name": "Benjamin Eberlei",
-                "email": "kontakt@beberlei.de"
-            },
-            {
-                "name": "Guilherme Blanco",
-                "email": "guilhermeblanco@gmail.com"
-            },
-            {
-                "name": "Jonathan Wage",
-                "email": "jonwage@gmail.com"
-            },
-            {
-                "name": "Johannes Schmitt",
-                "email": "schmittjoh@gmail.com"
-            }
-        ],
-        "description": "Common String Manipulations with regard to casing and singular/plural rules.",
-        "homepage": "http://www.doctrine-project.org",
-        "keywords": [
-            "inflection",
-            "pluralize",
-            "singularize",
-            "string"
-        ]
-    },
-    {
         "name": "laravel/lumen-framework",
         "version": "v5.1.7",
         "version_normalized": "5.1.7.0",
@@ -1275,102 +1206,6 @@
             "check",
             "validate"
         ]
-    },
-    {
-        "name": "phpdocumentor/type-resolver",
-        "version": "0.3.0",
-        "version_normalized": "0.3.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/phpDocumentor/TypeResolver.git",
-            "reference": "fb3933512008d8162b3cdf9e18dba9309b7c3773"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/fb3933512008d8162b3cdf9e18dba9309b7c3773",
-            "reference": "fb3933512008d8162b3cdf9e18dba9309b7c3773",
-            "shasum": ""
-        },
-        "require": {
-            "php": "^5.5 || ^7.0",
-            "phpdocumentor/reflection-common": "^1.0"
-        },
-        "require-dev": {
-            "mockery/mockery": "^0.9.4",
-            "phpunit/phpunit": "^5.2||^4.8.24"
-        },
-        "time": "2017-06-03 08:32:36",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.0.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "phpDocumentor\\Reflection\\": [
-                    "src/"
-                ]
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Mike van Riel",
-                "email": "me@mikevanriel.com"
-            }
-        ]
-    },
-    {
-        "name": "phpdocumentor/reflection-docblock",
-        "version": "3.2.2",
-        "version_normalized": "3.2.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
-            "reference": "4aada1f93c72c35e22fb1383b47fee43b8f1d157"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/4aada1f93c72c35e22fb1383b47fee43b8f1d157",
-            "reference": "4aada1f93c72c35e22fb1383b47fee43b8f1d157",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.5",
-            "phpdocumentor/reflection-common": "^1.0@dev",
-            "phpdocumentor/type-resolver": "^0.3.0",
-            "webmozart/assert": "^1.0"
-        },
-        "require-dev": {
-            "mockery/mockery": "^0.9.4",
-            "phpunit/phpunit": "^4.4"
-        },
-        "time": "2017-08-08 06:39:58",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "phpDocumentor\\Reflection\\": [
-                    "src/"
-                ]
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Mike van Riel",
-                "email": "me@mikevanriel.com"
-            }
-        ],
-        "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock."
     },
     {
         "name": "phpspec/prophecy",
@@ -4034,63 +3869,6 @@
         "homepage": "http://laravel.com"
     },
     {
-        "name": "mongodb/mongodb",
-        "version": "1.0.5",
-        "version_normalized": "1.0.5.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/mongodb/mongo-php-library.git",
-            "reference": "2f99156b29bc85582415d6a32bc31010d61a0a71"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/2f99156b29bc85582415d6a32bc31010d61a0a71",
-            "reference": "2f99156b29bc85582415d6a32bc31010d61a0a71",
-            "shasum": ""
-        },
-        "require": {
-            "ext-mongodb": "^1.1.0",
-            "php": ">=5.4"
-        },
-        "time": "2017-02-16 18:35:09",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "MongoDB\\": "src/"
-            },
-            "files": [
-                "src/functions.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "Apache-2.0"
-        ],
-        "authors": [
-            {
-                "name": "Jeremy Mikola",
-                "email": "jmikola@gmail.com"
-            },
-            {
-                "name": "Hannes Magnusson",
-                "email": "bjori@mongodb.com"
-            },
-            {
-                "name": "Derick Rethans",
-                "email": "github@derickrethans.nl"
-            }
-        ],
-        "description": "MongoDB driver library",
-        "homepage": "https://jira.mongodb.org/browse/PHPLIB",
-        "keywords": [
-            "database",
-            "driver",
-            "mongodb",
-            "persistence"
-        ]
-    },
-    {
         "name": "illuminate/database",
         "version": "v5.1.41",
         "version_normalized": "5.1.41.0",
@@ -4150,69 +3928,6 @@
             "laravel",
             "orm",
             "sql"
-        ]
-    },
-    {
-        "name": "jenssegers/mongodb",
-        "version": "v3.2.2",
-        "version_normalized": "3.2.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/jenssegers/laravel-mongodb.git",
-            "reference": "1358e50428bc0aeea6d3e13717104d6d9b313887"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/jenssegers/laravel-mongodb/zipball/1358e50428bc0aeea6d3e13717104d6d9b313887",
-            "reference": "1358e50428bc0aeea6d3e13717104d6d9b313887",
-            "shasum": ""
-        },
-        "require": {
-            "illuminate/container": "^5.1",
-            "illuminate/database": "^5.1",
-            "illuminate/events": "^5.1",
-            "illuminate/support": "^5.1",
-            "mongodb/mongodb": "^1.0.0"
-        },
-        "require-dev": {
-            "mockery/mockery": "^0.9",
-            "orchestra/testbench": "^3.1",
-            "phpunit/phpunit": "^5.0|^6.0",
-            "satooshi/php-coveralls": "^1.0"
-        },
-        "suggest": {
-            "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB",
-            "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB"
-        },
-        "time": "2017-03-12 09:23:10",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Jenssegers\\Mongodb": "src/",
-                "Jenssegers\\Eloquent": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Jens Segers",
-                "homepage": "https://jenssegers.com"
-            }
-        ],
-        "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
-        "homepage": "https://github.com/jenssegers/laravel-mongodb",
-        "keywords": [
-            "database",
-            "eloquent",
-            "laravel",
-            "model",
-            "moloquent",
-            "mongo",
-            "mongodb"
         ]
     },
     {
@@ -5011,75 +4726,6 @@
         ]
     },
     {
-        "name": "sly/notification-pusher",
-        "version": "v2.3.1",
-        "version_normalized": "2.3.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/Ph3nol/NotificationPusher.git",
-            "reference": "99a93d00bf465ad7d87f75efb91e40821e11e64a"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/Ph3nol/NotificationPusher/zipball/99a93d00bf465ad7d87f75efb91e40821e11e64a",
-            "reference": "99a93d00bf465ad7d87f75efb91e40821e11e64a",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/inflector": "1.1.*",
-            "php": ">=5.6",
-            "symfony/console": "~2.3|~3.0",
-            "symfony/filesystem": "~2.3|~3.0",
-            "symfony/options-resolver": "~2.3|~3.0",
-            "symfony/process": "~2.3|~3.0",
-            "zendframework/zendservice-apple-apns": "1.*",
-            "zendframework/zendservice-google-gcm": "2.*"
-        },
-        "require-dev": {
-            "atoum/atoum": "^3.1",
-            "atoum/stubs": "^2.5",
-            "symfony/var-dumper": "~2.3|~3.0"
-        },
-        "time": "2017-08-11 13:12:47",
-        "bin": [
-            "np"
-        ],
-        "type": "standalone",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Sly": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Cédric Dugat",
-                "email": "cedric@dugat.me"
-            },
-            {
-                "name": "Contributors",
-                "homepage": "https://github.com/Ph3nol/NotificationPusher/contributors"
-            }
-        ],
-        "description": "Standalone PHP library for easy devices notifications push.",
-        "homepage": "https://github.com/Ph3nol/NotificationPusher",
-        "keywords": [
-            "android",
-            "apns",
-            "apple",
-            "gcm",
-            "iphone",
-            "message",
-            "notification",
-            "push",
-            "pusher"
-        ]
-    },
-    {
         "name": "davibennun/laravel-push-notification",
         "version": "dev-laravel5",
         "version_normalized": "dev-laravel5",
@@ -5313,5 +4959,239 @@
             "thumbnail",
             "watermark"
         ]
+    },
+    {
+        "name": "doctrine/inflector",
+        "version": "v1.2.0",
+        "version_normalized": "1.2.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/doctrine/inflector.git",
+            "reference": "e11d84c6e018beedd929cff5220969a3c6d1d462"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/doctrine/inflector/zipball/e11d84c6e018beedd929cff5220969a3c6d1d462",
+            "reference": "e11d84c6e018beedd929cff5220969a3c6d1d462",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^7.0"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "^6.2"
+        },
+        "time": "2017-07-22 12:18:28",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Doctrine\\Common\\Inflector\\": "lib/Doctrine/Common/Inflector"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Roman Borschel",
+                "email": "roman@code-factory.org"
+            },
+            {
+                "name": "Benjamin Eberlei",
+                "email": "kontakt@beberlei.de"
+            },
+            {
+                "name": "Guilherme Blanco",
+                "email": "guilhermeblanco@gmail.com"
+            },
+            {
+                "name": "Jonathan Wage",
+                "email": "jonwage@gmail.com"
+            },
+            {
+                "name": "Johannes Schmitt",
+                "email": "schmittjoh@gmail.com"
+            }
+        ],
+        "description": "Common String Manipulations with regard to casing and singular/plural rules.",
+        "homepage": "http://www.doctrine-project.org",
+        "keywords": [
+            "inflection",
+            "pluralize",
+            "singularize",
+            "string"
+        ]
+    },
+    {
+        "name": "sly/notification-pusher",
+        "version": "v2.3.0",
+        "version_normalized": "2.3.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Ph3nol/NotificationPusher.git",
+            "reference": "c56005a3b9168324713743edcc7da7ada4aad2a2"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Ph3nol/NotificationPusher/zipball/c56005a3b9168324713743edcc7da7ada4aad2a2",
+            "reference": "c56005a3b9168324713743edcc7da7ada4aad2a2",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/inflector": "~1.0",
+            "php": ">=5.6",
+            "symfony/console": "~2.3|~3.0",
+            "symfony/filesystem": "^3.3",
+            "symfony/options-resolver": "~2.3|~3.0",
+            "symfony/process": "~2.3|~3.0",
+            "zendframework/zendservice-apple-apns": "1.*",
+            "zendframework/zendservice-google-gcm": "2.*"
+        },
+        "require-dev": {
+            "atoum/atoum": "^3.1",
+            "atoum/stubs": "^2.5",
+            "symfony/var-dumper": "^3.3"
+        },
+        "time": "2017-08-10 10:40:41",
+        "bin": [
+            "np"
+        ],
+        "type": "standalone",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Sly": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Cédric Dugat",
+                "email": "cedric@dugat.me"
+            },
+            {
+                "name": "Contributors",
+                "homepage": "https://github.com/Ph3nol/NotificationPusher/contributors"
+            }
+        ],
+        "description": "Standalone PHP library for easy devices notifications push.",
+        "homepage": "https://github.com/Ph3nol/NotificationPusher",
+        "keywords": [
+            "android",
+            "apns",
+            "apple",
+            "gcm",
+            "iphone",
+            "message",
+            "notification",
+            "push",
+            "pusher"
+        ]
+    },
+    {
+        "name": "phpdocumentor/type-resolver",
+        "version": "0.4.0",
+        "version_normalized": "0.4.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/phpDocumentor/TypeResolver.git",
+            "reference": "9c977708995954784726e25d0cd1dddf4e65b0f7"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/9c977708995954784726e25d0cd1dddf4e65b0f7",
+            "reference": "9c977708995954784726e25d0cd1dddf4e65b0f7",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^5.5 || ^7.0",
+            "phpdocumentor/reflection-common": "^1.0"
+        },
+        "require-dev": {
+            "mockery/mockery": "^0.9.4",
+            "phpunit/phpunit": "^5.2||^4.8.24"
+        },
+        "time": "2017-07-14 14:27:02",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "phpDocumentor\\Reflection\\": [
+                    "src/"
+                ]
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Mike van Riel",
+                "email": "me@mikevanriel.com"
+            }
+        ]
+    },
+    {
+        "name": "phpdocumentor/reflection-docblock",
+        "version": "3.2.3",
+        "version_normalized": "3.2.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
+            "reference": "86e24012a3139b42a7b71155cfaa325389f00f1f"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/86e24012a3139b42a7b71155cfaa325389f00f1f",
+            "reference": "86e24012a3139b42a7b71155cfaa325389f00f1f",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^7.0",
+            "phpdocumentor/reflection-common": "^1.0@dev",
+            "phpdocumentor/type-resolver": "^0.4.0",
+            "webmozart/assert": "^1.0"
+        },
+        "require-dev": {
+            "mockery/mockery": "^0.9.4",
+            "phpunit/phpunit": "^4.4"
+        },
+        "time": "2017-08-29 19:37:41",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "phpDocumentor\\Reflection\\": [
+                    "src/"
+                ]
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Mike van Riel",
+                "email": "me@mikevanriel.com"
+            }
+        ],
+        "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock."
     }
 ]

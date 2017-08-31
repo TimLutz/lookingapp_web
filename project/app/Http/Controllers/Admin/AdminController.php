@@ -16,7 +16,7 @@ use Mail;
 use App\User;
 use App\EmailTemplate;
 use Cookie;
-use App\Booking;
+
 
 //use Image;
 use Request as AjaxRequest;

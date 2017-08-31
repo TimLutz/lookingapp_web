@@ -19,7 +19,6 @@ $app = new \App\Http\Repositary\CustomLoger(
     realpath(__DIR__.'/../')
 );
 
-$app->register('Jenssegers\Mongodb\MongodbServiceProvider');
 $app->register('Tymon\JWTAuth\Providers\JWTAuthServiceProvider');
 $app->register('Davibennun\LaravelPushNotification\LaravelPushNotificationServiceProvider');
 

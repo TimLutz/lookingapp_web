@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\User;
-
+use DB;
 class PhotosController extends Controller
 {
     /**
@@ -47,57 +47,36 @@ class PhotosController extends Controller
         {
             
             $basearray->where('screen_name','LIKE','%'.$request->name.'%');
-        }
-        if(isset($request->email) && !empty($request->email))
-        {
-            
-            $basearray->where('email','LIKE','%'.$request->email.'%');
-        }
-        if(isset($request->profile_id) && !empty($request->profile_id))
-        {
-            
-            $basearray->where('profile_id','LIKE','%'.$request->profile_id.'%');
         }*/
+        if(isset($request->screen_name) && !empty($request->screen_name))
+        {
+            $basearray->where(function($q) use ($request){
+                $q->orWhere('screen_name','LIKE','%'.$request->screen_name.'%')
+                  ->orWhere('email','LIKE','%'.$request->screen_name.'%');
+            });
+        }
 
         /*****************Below code is for Sorting ****************/
         
-        /*$order = $request->get('order');
-            
-            if($order[0]['column'] == 2)
-            {
-                $basearray->orderBy('screen_name',$order[0]['dir']);
-            }
-            elseif($order[0]['column'] == 3)
-            {
-                $basearray->orderBy('profile_id',$order[0]['dir']);
-            }
-            else if($order[0]['column'] == 4)
-            {
-                $basearray->orderBy('email',$order[0]['dir']);
-            }
-            else if($order[0]['column'] == 5)
-            {
-                $basearray->orderBy('member_type',$order[0]['dir']);
-            }
-            else if($order[0]['column'] == 6)
-            {
-                $basearray->orderBy('created_at',$order[0]['dir']);
-            }
-            else if($order[0]['column'] == 7)
-            {
-                $basearray->orderBy('valid_upto',$order[0]['dir']);
-            }
-            else
-            {
-                $basearray->orderBy('id','desc');
-            }*/
-            
+        $order = $request->get('order');            
+        if($order[0]['column'] == 2)
+        {
+            $basearray->orderBy('email',$order[0]['dir']);
+        }
+        elseif($order[0]['column'] == 3)
+        {
+            $basearray->orderBy('profile_pic_date',$order[0]['dir']);
+        }
+        else
+        {
+            $basearray->orderBy('id','desc');
+        }            
             
         $counttotal =  User::where(['role'=>2,'photo_change'=>1])->get()->count();
         $length = intval($request->get('length'));
         $length = $length < 0 ? $counttotal : $length; 
         
-            $resultset = $basearray->skip($request->get('start'))->take($length)->get();
+        $resultset = $basearray->skip($request->get('start'))->take($length)->get();
         
         
         $i=intval($request->get('start'))+1;
@@ -108,13 +87,10 @@ class PhotosController extends Controller
         foreach($resultset as $value){
             $userId = \Crypt::encrypt($value->id);
             $status = $createDate = '';
-            /*if($value->status== '1')
+            if($value->status== '1')
             {
-                $status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a></div>';
+                $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
             }
-            else{
-                $status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-danger inactive"></i><a></div>';
-            }*/
 
             
             if($value->profile_pic_date)

@@ -21,7 +21,7 @@ class CheckRole {
 		 {
 			 if ($this->auth->check())
 			 {
-				 if($request->user()->role == '1' || $request->user()->role == '2') 
+				 if($request->user()->role == 1) 
 				 {
 					return redirect(getenv('adminurl'));
 				 }

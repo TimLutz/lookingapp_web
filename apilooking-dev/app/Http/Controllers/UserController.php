@@ -54,7 +54,6 @@ class UserController extends Controller {
      * Created on :- 1 Aug 2017
      *
      **/
-
 	public function ForgetPassword(Request $request)
 	{
 		try {
@@ -70,43 +69,52 @@ class UserController extends Controller {
                     $response['errors']     = $validator->errors();
                     $response['success']        = 422;
                 }else{
-                        $user=User::where(array('email'=>$request->input('email')))->first();
+                        $user=User::where(['email'=>$request->input('email'),'role'=>2])->first();
                         if(!$user){
                             $response['success'] = 0;
                             $response['message'] = 'Email entered doesn`t match our records, please check your email and try again';
                             $http_status = 400;
                         }
                         else{
-                            $name = User::where('email',$request->email)->pluck('screen_name');
-                            
-                            $token = hash_hmac('sha256', Str::random(40), $this->hashKey);
-                            
-                            $email = Input::get('email');
-                            $template=EmailTemplate::find(24);
-                            //$url = url('../reset-password/'.$token);
-                            $url = env('EMAIL_URL').'/reset-password/'.$token;
-                            
-                            //$link="<a href='$url'>$url</a>";
-                            $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
-                            
-                            
-                            $find=array('@company@','@click here@','@email@');
-                         //   $find=array('@company@','@click here@','@email@','@name@');
-                            $values=array(env('SITENAME'),$link,$email);
-                          //  $values=array(env('SITENAME'),$link,$email,$name);
-                            
-                            $body=str_replace($find,$values,$template->content);
-                                $user->remember_token = $token;
-                            $user->update();
-                            //Send Mail
-                            Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
+                            if($user->status==0)
                             {
-                                $m->to(Input::get('email'))
-                                    ->subject($template->subject);
-                            });
-                            $response['message']    = 'Recovery password link has been sent on your email address';
-                            $response['status']     = 1;
-                            $http_status = 200; 
+                                $response['message']    = 'You profile banned by the admin.';
+                                $response['status']     = 0;
+                                $http_status = 400; 
+                            }
+                            else
+                            {
+                                $name = User::where('email',$request->email)->pluck('screen_name');
+                                
+                                $token = hash_hmac('sha256', Str::random(40), $this->hashKey);
+                                
+                                $email = Input::get('email');
+                                $template=EmailTemplate::find(24);
+                                //$url = url('../reset-password/'.$token);
+                                $url = env('EMAIL_URL').'/reset-password/'.$token;
+                                
+                                //$link="<a href='$url'>$url</a>";
+                                $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
+                                
+                                
+                                $find=array('@company@','@click here@','@email@');
+                             //   $find=array('@company@','@click here@','@email@','@name@');
+                                $values=array(env('SITENAME'),$link,$email);
+                              //  $values=array(env('SITENAME'),$link,$email,$name);
+                                
+                                $body=str_replace($find,$values,$template->content);
+                                    $user->remember_token = $token;
+                                $user->update();
+                                //Send Mail
+                                Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
+                                {
+                                    $m->to(Input::get('email'))
+                                        ->subject($template->subject);
+                                });
+                                $response['message']    = 'Recovery password link has been sent on your email address';
+                                $response['status']     = 1;
+                                $http_status = 200; 
+                            }
                         }   
                 }   
         } catch (Exception $e) {

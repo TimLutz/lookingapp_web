@@ -86,7 +86,7 @@ class AdminPasswordController extends Controller {
 		try
 		{
 			//call sendResetLink function
-			$users = User::where('role','1')->orWhere('role',2)->where('status','1')->where('email',$request->email)->get()->toArray();
+			$users = User::where('role','1')->where('status','1')->where('email',$request->email)->get()->toArray();
 			if(count($users) > 0)
 			{
 				switch ($response = $this->sendResetLink($request->only('email')))
@@ -165,9 +165,9 @@ class AdminPasswordController extends Controller {
 		{
 			$template=EmailTemplate::find('24');
 			
-			$link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";
+		    $link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";
 			$find=array('@click here@');
-			$values=array($link);
+			$values=array($link); 
 			$body=str_replace($find,$values,$template->content);
 
 			//Send Mail

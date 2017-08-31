@@ -31,9 +31,6 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'admin.auth' => \App\Http\Middleware\CheckRole::class,
-		'backbutton' => \App\Http\Middleware\BackButtonMiddleware::class,
-        'jwt.auth' => \Tymon\JWTAuth\Middleware\GetUserFromToken::class,
-        'jwt.refresh' => \Tymon\JWTAuth\Middleware\RefreshToken::class,
-        'jwtcustom'     => \App\Http\Middleware\JwtAuthCustom::class,
+		'backbutton' => \App\Http\Middleware\BackButtonMiddleware::class
     ];
 }

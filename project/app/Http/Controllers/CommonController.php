@@ -74,7 +74,7 @@ class CommonController extends Controller {
 		//exit;
 	}
 
-	  public function postChangeStatus(Request $request)
+	public function postChangeStatus(Request $request)
     {
     	try {
 			

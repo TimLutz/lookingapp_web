@@ -17,7 +17,7 @@ Users
 			<div class="portlet-body">
 				<div class="table-container">
 					
-					<input type="hidden" name="action" value="users/list-all-photos"/>
+					<input type="hidden" name="action" value="photos/list-all-photos"/>
 					
 					<table class="table table-striped table-bordered table-hover" id="datatable_ajax_for_realtor">
 					<thead>
@@ -51,7 +51,7 @@ Users
 								
 						</td>
 						<td>
-							<input type="text" class="form-control form-filter input-sm" name="screen_name" id="approved_planname" autocomplete="off">
+							<input type="text" class="form-control form-filter input-sm" name="screen_name" id="approved_planname" autocomplete="off" placeholder="Search by name or Email">
 						</td>
 						
 						<td>
@@ -79,8 +79,6 @@ Users
 	</div>
 </div>
 			<!-- END PAGE CONTENT-->
-		
-			@include('admin.clients.popuprealtor')
 @endsection
 @section('js')
 <script>
@@ -122,11 +120,6 @@ jQuery(document).ready(function() {
             }
         });
 	});
-	
-	
-	
-	
- 
 	TableAjax.init();
 	TableAjax.update();
 });

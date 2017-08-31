@@ -115,8 +115,6 @@ Banned Users
 	</div>
 </div>
 			<!-- END PAGE CONTENT-->
-		
-			<?php echo $__env->make('admin.clients.popuprealtor', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
 <?php $__env->stopSection(); ?>
 <?php $__env->startSection('js'); ?>
 <script>
