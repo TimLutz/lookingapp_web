@@ -1,0 +1,21 @@
+
+<div class="form-group">
+    <?php echo Form::label('name', 'Name: '); ?> <span class="star">*</span>
+    <?php echo Form::text('name',null,['class' => 'form-control']); ?>
+
+</div>
+
+<div class="form-group">
+    <?php echo Form::label('subject', 'Subject: '); ?> <span class="star">*</span>
+    <?php echo Form::text('subject',null,['class' => 'form-control']); ?>
+
+</div>
+    
+<?php echo Form::label('content', 'Content: '); ?> <span class="star">*</span>
+<?php echo Form::textarea('content',null,['id' => 'txtEditor','class' => 'form-control']); ?>
+
+
+<div class="form-group">
+    <?php echo Form::hidden('testing',null,['id' => 'hide_template','class' => 'form-control']); ?>
+
+</div>

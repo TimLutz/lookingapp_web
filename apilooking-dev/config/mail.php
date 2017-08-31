@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'from' => ['address' => 'tdemo180@gmail.com', 'name' => 'Looking App'],
+    'from' => ['address' => 'debutinfo1@gmail.com', 'name' => 'LookingApp'],
 
     /*
     |--------------------------------------------------------------------------
@@ -80,7 +80,7 @@ return [
     |
     */
 
-    'username' => 'tdemo180@gmail.com',
+    'username' => 'debutinfo1@gmail.com',
     
     /*
     |--------------------------------------------------------------------------
@@ -93,7 +93,7 @@ return [
     |
     */
 
-    'password' => '123@password',
+    'password' => 'admin@!@#',
 
     /*
     |--------------------------------------------------------------------------

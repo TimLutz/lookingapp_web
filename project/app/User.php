@@ -37,16 +37,6 @@ class User extends Model implements AuthenticatableContract,
      */
     protected $hidden = ['password', 'remember_token'];
     
-    public function quotations()
-    {
-        return $this->hasMany('App\Quotation','user_id')->where('status','!=','2')->where('type','!=',0);
-    }
-
-    public function transactions()
-    { 
-     return $this->hsMany('App\Transaction','user_id')->where('status','!=','2')
-                                                       ->where('payment_status',1);   
-    }
 
     public function setPhoto($path, $photo){
         $photo = ($photo ? $photo : 'null');
@@ -55,17 +45,16 @@ class User extends Model implements AuthenticatableContract,
         }
         return '<img src="/uploads/userDefImage.png">';
     }
-
-    public function booking()
-    {
-        return $this->hasMany('App\Booking', 'user_id')->where('status','!=','2');
-    }
-
      public function setStatus($id, $status)
     {
         
         
        // return '<a href="javascript:void(0);" class="changeStatus" data-id="'.$id.'" data-table="faqs" data-status="'.($status ? 0 : 1).'"><i class="fa fa-circle '.($status ? "active" : "inactive").'"></i></a>';
-        return '<a href="javascript:void(0);" class="changeStatus" data-id="'.$id.'" data-action="dashboard" data-table="users" data-status="'.($status ? 0 : 1).'"><i class="fa '.($status ? "fa-circle text-success active" : "fa-circle text-danger inactive").'"></i></a>';
+        return '<a href="javascript:void(0);" class="changeStatus" data-id="'.$id.'" data-action="dashboard" data-table="users" data-status="'.($status ? 0 : 1).'"><i class="fa '.($status ? "fa fa-check-circle text-success active" : "fa fa-check-circle text-danger inactive").'"></i></a>';
+    }
+
+    public function Profile()
+    {
+        return $this->hasOne('App\models\ProfileModel','user_id');
     }
 }

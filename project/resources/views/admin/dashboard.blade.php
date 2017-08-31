@@ -62,7 +62,7 @@ Dashboard
 						</div>
 						<div class="details">
 							<div class="number">
-								 
+								 {{$reports}}
 							</div>
 							<div class="desc">
 								 Reports

@@ -1,0 +1,15 @@
+
+<?php $__env->startSection('title'); ?>
+Error
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('content'); ?>
+                		
+	<div class="container">
+		<br><br>
+			<h4><b><span style="color:red">ERROR:</span> <?php echo e($exception_message); ?></b></h4>
+		<br><br>
+	</div>
+		
+
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('admin.layout', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>

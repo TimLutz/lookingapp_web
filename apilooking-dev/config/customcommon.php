@@ -17,7 +17,7 @@ return [
     'email'=>'Please enter a valid Email.',
     'emailunique'=>'Email already exists.',
     'passwordmin'=>'Please enter minimum 8 character.',
-    'passwordmax'=>'Password cannot be greaterthen 16 characters.',
+    'passwordmax'=>'Password can`t be greater than 16 characters.',
     'passwordconfirm'=>'Password don`t matched.'
 
 ];

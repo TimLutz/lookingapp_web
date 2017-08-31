@@ -1,10 +1,11 @@
+
 @extends('admin.layout')
 @section('title')
  	Templates		
 @endsection
 @section('heading')
 	Email Templates
-	<!--<a href="{{url('admin/template/create')}}" class="btn btn-primary btn-sm pull-right">Create Template</a>---->
+	<a href="{{url(getenv('adminurl').'/template/create')}}" class="btn btn-primary btn-sm pull-right">Create Template</a>
 @endsection
 @section('content')
 
@@ -28,9 +29,6 @@
 								<th>
 									 Subject
 								</th>
-								<!--<th>
-									 Content
-								</th>--->
 								<th>
 									  Action
 								</th>
@@ -43,14 +41,12 @@
 						<td><?php echo $i; ?></td>
 						<td>{{ $template['name'] }}</td>
 						<td>{{ $template['subject'] }}</td>
-						<!--<td>{{ substr($template['content'],0,100).'...' }}</td>--->
-						<!--<td>{{ substr(strip_tags($template['content']),0,100) }}</td>--->
 						<td>
-						{!! Form::open(['url' => 'admin/template/'.Crypt::encrypt($template['id']),'method' => 'delete' ]) !!}
-						 <a href="template/{{Crypt::encrypt($template['id'])}}/edit"  title="Edit"><span class="icon-pencil btn btn-circle btn-icon-only btn-default" style="color:orange" aria-hidden="true"></span></a>
-						 
-						<!-- <a href="javascript:void(0);" class="deleteRecord" data-confirm-message="Are you sure you want to delete this template?" style="color:red" title="Delete"><span class="fa fa-times" aria-hidden="true"></span></a> -->
-						{!! Form::close() !!}
+							{!! Form::open(['url' => 'admin/template/'.Crypt::encrypt($template['id']),'method' => 'delete' ]) !!}
+							 <a href="template/{{Crypt::encrypt($template['id'])}}/edit"  title="Edit">
+							 	<span class="fa fa-check-circle text-success active" aria-hidden="true"></span>
+							 </a>
+							{!! Form::close() !!}
 						</td>
 					</tr>
 					<?php $i+=1; ?>

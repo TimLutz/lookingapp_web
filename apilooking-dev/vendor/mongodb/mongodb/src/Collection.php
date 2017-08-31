@@ -7,11 +7,9 @@ use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\ReadConcern;
 use MongoDB\Driver\ReadPreference;
-use MongoDB\Driver\Server;
 use MongoDB\Driver\WriteConcern;
 use MongoDB\Exception\InvalidArgumentException;
 use MongoDB\Model\IndexInfoIterator;
-use MongoDB\Model\IndexInput;
 use MongoDB\Operation\Aggregate;
 use MongoDB\Operation\BulkWrite;
 use MongoDB\Operation\CreateIndexes;
@@ -42,6 +40,7 @@ class Collection
         'root' => 'MongoDB\Model\BSONDocument',
     ];
     private static $wireVersionForFindAndModifyWriteConcern = 4;
+    private static $wireVersionForReadConcern = 4;
 
     private $collectionName;
     private $databaseName;
@@ -117,7 +116,7 @@ class Collection
      * Return internal properties for debugging purposes.
      *
      * @see http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.debuginfo
-     * @param array
+     * @return array
      */
     public function __debugInfo()
     {
@@ -136,7 +135,7 @@ class Collection
      * Return the collection namespace (e.g. "db.collection").
      *
      * @see https://docs.mongodb.org/manual/faq/developers/#faq-dev-namespace
-     * @param string
+     * @return string
      */
     public function __toString()
     {
@@ -164,13 +163,6 @@ class Collection
     {
         $hasOutStage = \MongoDB\is_last_pipeline_operator_out($pipeline);
 
-        /* A "majority" read concern is not compatible with the $out stage, so
-         * avoid providing the Collection's read concern if it would conflict.
-         */
-        if ( ! isset($options['readConcern']) && ! ($hasOutStage && $this->readConcern->getLevel() === ReadConcern::MAJORITY)) {
-            $options['readConcern'] = $this->readConcern;
-        }
-
         if ( ! isset($options['readPreference'])) {
             $options['readPreference'] = $this->readPreference;
         }
@@ -179,12 +171,22 @@ class Collection
             $options['readPreference'] = new ReadPreference(ReadPreference::RP_PRIMARY);
         }
 
+        $server = $this->manager->selectServer($options['readPreference']);
+
+        /* A "majority" read concern is not compatible with the $out stage, so
+         * avoid providing the Collection's read concern if it would conflict.
+         */
+        if ( ! isset($options['readConcern']) &&
+             ! ($hasOutStage && $this->readConcern->getLevel() === ReadConcern::MAJORITY) &&
+            \MongoDB\server_supports_feature($server, self::$wireVersionForReadConcern)) {
+            $options['readConcern'] = $this->readConcern;
+        }
+
         if ( ! isset($options['typeMap']) && ( ! isset($options['useCursor']) || $options['useCursor'])) {
             $options['typeMap'] = $this->typeMap;
         }
 
         $operation = new Aggregate($this->databaseName, $this->collectionName, $pipeline, $options);
-        $server = $this->manager->selectServer($options['readPreference']);
 
         return $operation->execute($server);
     }
@@ -219,16 +221,17 @@ class Collection
      */
     public function count($filter = [], array $options = [])
     {
-        if ( ! isset($options['readConcern'])) {
-            $options['readConcern'] = $this->readConcern;
-        }
-
         if ( ! isset($options['readPreference'])) {
             $options['readPreference'] = $this->readPreference;
         }
 
-        $operation = new Count($this->databaseName, $this->collectionName, $filter, $options);
         $server = $this->manager->selectServer($options['readPreference']);
+
+        if ( ! isset($options['readConcern']) && \MongoDB\server_supports_feature($server, self::$wireVersionForReadConcern)) {
+            $options['readConcern'] = $this->readConcern;
+        }
+
+        $operation = new Count($this->databaseName, $this->collectionName, $filter, $options);
 
         return $operation->execute($server);
     }
@@ -331,16 +334,17 @@ class Collection
      */
     public function distinct($fieldName, $filter = [], array $options = [])
     {
-        if ( ! isset($options['readConcern'])) {
-            $options['readConcern'] = $this->readConcern;
-        }
-
         if ( ! isset($options['readPreference'])) {
             $options['readPreference'] = $this->readPreference;
         }
 
-        $operation = new Distinct($this->databaseName, $this->collectionName, $fieldName, $filter, $options);
         $server = $this->manager->selectServer($options['readPreference']);
+
+        if ( ! isset($options['readConcern']) && \MongoDB\server_supports_feature($server, self::$wireVersionForReadConcern)) {
+            $options['readConcern'] = $this->readConcern;
+        }
+
+        $operation = new Distinct($this->databaseName, $this->collectionName, $fieldName, $filter, $options);
 
         return $operation->execute($server);
     }
@@ -421,12 +425,14 @@ class Collection
      */
     public function find($filter = [], array $options = [])
     {
-        if ( ! isset($options['readConcern'])) {
-            $options['readConcern'] = $this->readConcern;
-        }
-
         if ( ! isset($options['readPreference'])) {
             $options['readPreference'] = $this->readPreference;
+        }
+
+        $server = $this->manager->selectServer($options['readPreference']);
+
+        if ( ! isset($options['readConcern']) && \MongoDB\server_supports_feature($server, self::$wireVersionForReadConcern)) {
+            $options['readConcern'] = $this->readConcern;
         }
 
         if ( ! isset($options['typeMap'])) {
@@ -434,7 +440,6 @@ class Collection
         }
 
         $operation = new Find($this->databaseName, $this->collectionName, $filter, $options);
-        $server = $this->manager->selectServer($options['readPreference']);
 
         return $operation->execute($server);
     }
@@ -450,12 +455,14 @@ class Collection
      */
     public function findOne($filter = [], array $options = [])
     {
-        if ( ! isset($options['readConcern'])) {
-            $options['readConcern'] = $this->readConcern;
-        }
-
         if ( ! isset($options['readPreference'])) {
             $options['readPreference'] = $this->readPreference;
+        }
+
+        $server = $this->manager->selectServer($options['readPreference']);
+
+        if ( ! isset($options['readConcern']) && \MongoDB\server_supports_feature($server, self::$wireVersionForReadConcern)) {
+            $options['readConcern'] = $this->readConcern;
         }
 
         if ( ! isset($options['typeMap'])) {
@@ -463,7 +470,6 @@ class Collection
         }
 
         $operation = new FindOne($this->databaseName, $this->collectionName, $filter, $options);
-        $server = $this->manager->selectServer($options['readPreference']);
 
         return $operation->execute($server);
     }

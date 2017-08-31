@@ -36,7 +36,7 @@
 -->
  <div class="form-group">
 			{!! Form::label('Name', 'Name: ') !!} <span class="star">*</span>
-			{!! Form::text('name',Auth::user()->name,['class' => 'form-control']) !!}
+			{!! Form::text('name',Auth::user()->screen_name,['class' => 'form-control']) !!}
 		</div>
 		  
           <div class="form-group">
@@ -47,7 +47,7 @@
 		{!! Form::label('profile_picture', 'Profile Picture: ') !!}
 		<div class="pull-left image col-xs-12">
 		 <?php
-					$photo=Auth::user()->photo;
+					$photo=Auth::user()->profile_pic;
 						if($photo==null)
 						{
 							$url_img = asset('uploads/no_image.jpg');

@@ -47,12 +47,17 @@ class ProjectServiceContainer extends Container
     }
 
     /**
-     * Gets the 'test' service.
+     * {@inheritdoc}
+     */
+    public function isFrozen()
+    {
+        return true;
+    }
+
+    /**
+     * Gets the public 'test' shared service.
      *
-     * This service is shared.
-     * This method always returns the same instance of the service.
-     *
-     * @return \stdClass A stdClass instance.
+     * @return \stdClass
      */
     protected function getTestService()
     {

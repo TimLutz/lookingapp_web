@@ -30,7 +30,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <meta charset="utf-8"/>
 <title>@yield('title') | {{ config('app.website_name') }}</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<link rel="icon" type="image/png" id="favicon" href="{{asset('images/favicon.png')}}"/>
+<link rel="icon" type="image/png" id="favicon" href="{{asset('images/favicon.ico')}}"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <meta content="" name="description"/>
 <meta content="" name="author"/>
@@ -105,7 +105,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		<div class="page-logo">
 			<a href="{{ url(getenv('adminurl')) }}">
 			<!--<img src="#" alt="logo" class="logo-default"/>-->
-				<img src="{{ url('images/logo/logo.png') }}" class="logo-default">
+				<img src="{{ url('images/logo/admin-logo.png') }}" class="logo-default">
 			</a>
 			<div class="menu-toggler sidebar-toggler hide">
 			</div>
@@ -183,19 +183,20 @@ License: You must have a valid license purchased only from themeforest(the above
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
 						<?php
 						$photo=Auth::user()->profile_pic;
-							if($photo==null)
+							if($photo)
 							{
-						$url_img = asset('uploads/no_image.jpg');
-						
-						$img_path = $common->setPhoto($url_img,'25','25');  ?>
-						<img src="{{ $url_img }}" class="img-circle" alt="User Image"/>
+								$url_img = asset('uploads/'.$photo);
+								$img_path = $common->setPhoto($url_img,'25','25');  ?>
+							 	<img src="{{ $img_path }}" class="img-circle" alt="User Image"/> 
 					<?php
 							}
 							else
 							{
-					//	$url_img = asset('uploads/'.$photo);
-					//	$img_path = $common->setPhoto($url_img,'25','25');  ?>
-						<img src="{{ $photo }}" class="img-circle" alt="User Image"/>
+								$url_img = asset('uploads/no_image.jpg');
+						
+								$img_path = $common->setPhoto($url_img,'25','25');  ?>
+								<img src="{{ $url_img }}" class="img-circle" alt="User Image"/>
+						
 					<?php	}	
 						
 						?>

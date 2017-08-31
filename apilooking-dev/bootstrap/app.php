@@ -21,6 +21,7 @@ $app = new \App\Http\Repositary\CustomLoger(
 
 $app->register('Jenssegers\Mongodb\MongodbServiceProvider');
 $app->register('Tymon\JWTAuth\Providers\JWTAuthServiceProvider');
+$app->register('Davibennun\LaravelPushNotification\LaravelPushNotificationServiceProvider');
 
 
 
@@ -31,6 +32,7 @@ $app->withEloquent();
 
 class_alias('Tymon\JWTAuth\Facades\JWTAuth', 'JWTAuth');  
 class_alias('Intervention\Image\Facades\Image', 'Image');
+class_alias('Davibennun\LaravelPushNotification\Facades\PushNotification', 'PushNotification');
 
 
 

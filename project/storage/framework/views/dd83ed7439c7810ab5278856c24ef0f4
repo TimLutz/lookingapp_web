@@ -1,0 +1,133 @@
+<!-- BEGIN CONTAINER -->
+<div class="page-container">
+	<!-- BEGIN SIDEBAR -->
+	<div class="page-sidebar-wrapper">
+		<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+		<!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+		<div class="page-sidebar navbar-collapse collapse">
+			<!-- BEGIN SIDEBAR MENU -->
+			<!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
+			<!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
+			<!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
+			<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+			<!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
+			<!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+			<ul class="page-sidebar-menu " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200">
+				<!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
+				<li class="sidebar-toggler-wrapper">
+					<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+					<div class="sidebar-toggler">
+						<i class="fa fa-bars"></i>
+					</div>
+					<!-- END SIDEBAR TOGGLER BUTTON -->
+				</li>
+				
+				<li class="<?php if(isset($active) && $active == 'dashboard'): ?> active <?php endif; ?>">
+					<a href="<?php echo e(url(getenv('adminurl').'')); ?>">
+					<i class="glyphicon glyphicon-dashboard"></i>
+					<span class="title">
+					Dashboard </span>
+					</a>
+				</li>
+				<li class="<?php if(isset($active) && $active == 'users' || $active == 'banned'): ?> active <?php endif; ?>">
+					<a href="javascript:;">
+					<i class="icon-list"></i>
+					<span class="title">Users</span>
+					<span class="selected"></span>
+					<span class="arrow open"></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="<?php if($active == 'users'): ?> active <?php endif; ?>">
+							<a href="<?php echo e(url(getenv('adminurl').'/users')); ?>">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							All Users</a>
+						</li>
+						<li class="<?php if($active == 'banned'): ?> active <?php endif; ?>">
+							<a href="<?php echo e(url(getenv('adminurl').'/users/banned')); ?>">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Banned Users</a>
+						</li>
+					</ul>
+				</li>
+				<li class="<?php if(isset($active) && $active == 'current' || $active == 'Archive'): ?> active <?php endif; ?>">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
+					<span class="title">Reports Users</span>
+					<span class="selected"></span>
+					<span class="arrow open"></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="<?php if($active == 'current'): ?> active <?php endif; ?>">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Current Users</a>
+						</li>
+						<li class="<?php if($active == 'Archive'): ?> active <?php endif; ?>">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Archived Users</a>
+						</li>
+					</ul>
+				</li>
+				
+				<li class="<?php if(isset($active) && $active == 'photos'): ?> active <?php endif; ?>">
+					<a href="<?php echo e(url(getenv('adminurl').'/photos')); ?>">
+					<i class="icon-list"></i>
+					<span class="title">
+					Photos </span>
+					</a>
+				</li>
+				<li class="<?php if(isset($active) && $active == 'profiletext'): ?> active <?php endif; ?>">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
+					<span class="title">
+					Profile Text </span>
+					</a>
+				</li>
+				
+				<li class="<?php if(isset($active) && $active == 'free' || $active == 'paid'): ?> active <?php endif; ?>">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
+					<span class="title">Restrictions</span>
+					<span class="selected"></span>
+					<span class="arrow open"></span>
+					</a>
+					<ul class="sub-menu">
+						<li class="<?php if($active == 'free'): ?> active <?php endif; ?>">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Free Users</a>
+						</li>
+						<li class="<?php if($active == 'paid'): ?> active <?php endif; ?>">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Paid Users</a>
+						</li>
+					</ul>
+				</li>
+				<li class="<?php if(isset($active) && $active == 'trials'): ?> active <?php endif; ?>">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
+					<span class="title">
+					Trials </span>
+					</a>
+				</li>	
+				<li class="<?php if(isset($active) && $active == 'template'): ?> active <?php endif; ?>">
+					<a href="<?php echo e(url(getenv('adminurl').'/template')); ?>">
+					<i class="icon-list"></i>
+					<span class="title">
+					Templates </span>
+					</a>
+				</li>
+				
+
+				
+				
+				
+			</ul>
+			<!-- END SIDEBAR MENU -->
+		</div>
+	</div>
+	<!-- END SIDEBAR -->
+
+	

@@ -20,7 +20,7 @@
     @include('admin.template.form')
 	
 			<div class="form-group">
-			<a href="{{ url('admin/template') }}" class="btn btn-danger">Back</a>
+			<a href="{{ url(getenv('adminurl').'/template') }}" class="btn btn-danger">Back</a>
 				{!! Form::submit('Add Template', ['class' => 'btn btn-primary']) !!}
 			</div>
 			

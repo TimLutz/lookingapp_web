@@ -55,3 +55,13 @@ display:none;
 
 
 .datepicker-days td{ cursor:pointer}
+
+.fa-check-circle {
+    color: #2ecc71;
+    font-size: 24px;
+}
+
+.fa-ban {
+    color: #e85547;
+    font-size: 24px;
+}

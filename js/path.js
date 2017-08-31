@@ -1,4 +1,4 @@
-path = "http://localhost/frontline/";
+path = "http://localhost/lookingApp/";
 	//path = "http://frontline.debutinfotech.com/";
 
 

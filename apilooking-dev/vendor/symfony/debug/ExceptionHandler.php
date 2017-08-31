@@ -39,8 +39,6 @@ class ExceptionHandler
     public function __construct($debug = true, $charset = null, $fileLinkFormat = null)
     {
         if (false !== strpos($charset, '%')) {
-            @trigger_error('Providing $fileLinkFormat as second argument to '.__METHOD__.' is deprecated since version 2.8 and will be unsupported in 3.0. Please provide it as third argument, after $charset.', E_USER_DEPRECATED);
-
             // Swap $charset and $fileLinkFormat for BC reasons
             $pivot = $fileLinkFormat;
             $fileLinkFormat = $charset;
@@ -58,7 +56,7 @@ class ExceptionHandler
      * @param string|null $charset        The charset used by exception messages
      * @param string|null $fileLinkFormat The IDE link template
      *
-     * @return ExceptionHandler The registered exception handler
+     * @return static
      */
     public static function register($debug = true, $charset = null, $fileLinkFormat = null)
     {
@@ -166,7 +164,6 @@ class ExceptionHandler
             $response = $this->createResponse($exception);
             $response->sendHeaders();
             $response->sendContent();
-            @trigger_error(sprintf("The %s::createResponse method is deprecated since 2.8 and won't be called anymore when handling an exception in 3.0.", $reflector->class), E_USER_DEPRECATED);
 
             return;
         }
@@ -180,7 +177,7 @@ class ExceptionHandler
      * This method uses plain PHP functions like header() and echo to output
      * the response.
      *
-     * @param \Exception|FlattenException $exception An \Exception or FlattenException instance
+     * @param \Exception|FlattenException $exception An \Exception instance
      */
     public function sendPhpResponse($exception)
     {
@@ -202,37 +199,17 @@ class ExceptionHandler
     /**
      * Creates the error Response associated with the given Exception.
      *
-     * @param \Exception|FlattenException $exception An \Exception or FlattenException instance
+     * @param \Exception|FlattenException $exception An \Exception instance
      *
      * @return Response A Response instance
-     *
-     * @deprecated since 2.8, to be removed in 3.0.
      */
     public function createResponse($exception)
     {
-        @trigger_error('The '.__METHOD__.' method is deprecated since version 2.8 and will be removed in 3.0.', E_USER_DEPRECATED);
-
         if (!$exception instanceof FlattenException) {
             $exception = FlattenException::create($exception);
         }
 
-        return Response::create($this->getHtml($exception), $exception->getStatusCode(), $exception->getHeaders())->setCharset($this->charset);
-    }
-
-    /**
-     * Gets the full HTML content associated with the given exception.
-     *
-     * @param \Exception|FlattenException $exception An \Exception or FlattenException instance
-     *
-     * @return string The HTML content as a string
-     */
-    public function getHtml($exception)
-    {
-        if (!$exception instanceof FlattenException) {
-            $exception = FlattenException::create($exception);
-        }
-
-        return $this->decorate($this->getContent($exception), $this->getStylesheet($exception));
+        return Response::create($this->decorate($this->getContent($exception), $this->getStylesheet($exception)), $exception->getStatusCode(), $exception->getHeaders())->setCharset($this->charset);
     }
 
     /**
@@ -342,6 +319,7 @@ EOF;
                 border-bottom:1px solid #ccc;
                 border-right:1px solid #ccc;
                 border-left:1px solid #ccc;
+                word-wrap: break-word;
             }
             .sf-reset .block_exception { background-color:#ddd; color: #333; padding:20px;
                 -webkit-border-top-left-radius: 16px;
@@ -441,7 +419,7 @@ EOF;
                 $formattedValue = str_replace("\n", '', var_export($this->escapeHtml((string) $item[1]), true));
             }
 
-            $result[] = is_int($key) ? $formattedValue : sprintf("'%s' => %s", $key, $formattedValue);
+            $result[] = is_int($key) ? $formattedValue : sprintf("'%s' => %s", $this->escapeHtml($key), $formattedValue);
         }
 
         return implode(', ', $result);
@@ -456,7 +434,7 @@ EOF;
     {
         @trigger_error('The '.__METHOD__.' method is deprecated since version 2.7 and will be removed in 3.0.', E_USER_DEPRECATED);
 
-        return htmlspecialchars($str, ENT_QUOTES | (PHP_VERSION_ID >= 50400 ? ENT_SUBSTITUTE : 0), 'UTF-8');
+        return htmlspecialchars($str, ENT_QUOTES | (\PHP_VERSION_ID >= 50400 ? ENT_SUBSTITUTE : 0), 'UTF-8');
     }
 
     /**
@@ -464,7 +442,7 @@ EOF;
      */
     private function escapeHtml($str)
     {
-        return htmlspecialchars($str, ENT_QUOTES | (PHP_VERSION_ID >= 50400 ? ENT_SUBSTITUTE : 0), $this->charset);
+        return htmlspecialchars($str, ENT_QUOTES | (\PHP_VERSION_ID >= 50400 ? ENT_SUBSTITUTE : 0), $this->charset);
     }
 
     /**

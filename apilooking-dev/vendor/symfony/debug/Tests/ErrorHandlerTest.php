@@ -11,9 +11,9 @@
 
 namespace Symfony\Component\Debug\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Symfony\Component\Debug\ErrorHandler;
-use Symfony\Component\Debug\BufferingLogger;
 use Symfony\Component\Debug\Exception\ContextErrorException;
 
 /**
@@ -22,7 +22,7 @@ use Symfony\Component\Debug\Exception\ContextErrorException;
  * @author Robert Schönthal <seroscho@googlemail.com>
  * @author Nicolas Grekas <p@tchwork.com>
  */
-class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
+class ErrorHandlerTest extends TestCase
 {
     public function testRegister()
     {
@@ -134,7 +134,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         try {
             $handler = ErrorHandler::register();
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $handler->setDefaultLogger($logger, E_NOTICE);
             $handler->setDefaultLogger($logger, array(E_USER_NOTICE => LogLevel::CRITICAL));
@@ -213,7 +213,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             restore_error_handler();
             restore_exception_handler();
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $that = $this;
             $warnArgCheck = function ($logLevel, $message, $context) use ($that) {
@@ -238,7 +238,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             restore_error_handler();
             restore_exception_handler();
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $that = $this;
             $logArgCheck = function ($level, $message, $context) use ($that) {
@@ -269,33 +269,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testHandleUserError()
-    {
-        try {
-            $handler = ErrorHandler::register();
-            $handler->throwAt(0, true);
-
-            $e = null;
-            $x = new \Exception('Foo');
-
-            try {
-                $f = new Fixtures\ToStringThrower($x);
-                $f .= ''; // Trigger $f->__toString()
-            } catch (\Exception $e) {
-            }
-
-            $this->assertSame($x, $e);
-
-            restore_error_handler();
-            restore_exception_handler();
-        } catch (\Exception $e) {
-            restore_error_handler();
-            restore_exception_handler();
-
-            throw $e;
-        }
-    }
-
     public function testHandleDeprecation()
     {
         $that = $this;
@@ -306,7 +279,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             $that->assertArrayHasKey('stack', $context);
         };
 
-        $logger = $this->getMock('Psr\Log\LoggerInterface');
+        $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
         $logger
             ->expects($this->once())
             ->method('log')
@@ -325,7 +298,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
             $exception = new \Exception('foo');
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $that = $this;
             $logArgCheck = function ($level, $message, $context) use ($that) {
@@ -372,7 +345,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             $handler = ErrorHandler::register();
             $handler->screamAt(E_USER_WARNING);
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $logger
                 ->expects($this->exactly(2))
@@ -400,49 +373,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testBootstrappingLogger()
-    {
-        $bootLogger = new BufferingLogger();
-        $handler = new ErrorHandler($bootLogger);
-
-        $loggers = array(
-            E_DEPRECATED => array($bootLogger, LogLevel::INFO),
-            E_USER_DEPRECATED => array($bootLogger, LogLevel::INFO),
-            E_NOTICE => array($bootLogger, LogLevel::WARNING),
-            E_USER_NOTICE => array($bootLogger, LogLevel::WARNING),
-            E_STRICT => array($bootLogger, LogLevel::WARNING),
-            E_WARNING => array($bootLogger, LogLevel::WARNING),
-            E_USER_WARNING => array($bootLogger, LogLevel::WARNING),
-            E_COMPILE_WARNING => array($bootLogger, LogLevel::WARNING),
-            E_CORE_WARNING => array($bootLogger, LogLevel::WARNING),
-            E_USER_ERROR => array($bootLogger, LogLevel::CRITICAL),
-            E_RECOVERABLE_ERROR => array($bootLogger, LogLevel::CRITICAL),
-            E_COMPILE_ERROR => array($bootLogger, LogLevel::CRITICAL),
-            E_PARSE => array($bootLogger, LogLevel::CRITICAL),
-            E_ERROR => array($bootLogger, LogLevel::CRITICAL),
-            E_CORE_ERROR => array($bootLogger, LogLevel::CRITICAL),
-        );
-
-        $this->assertSame($loggers, $handler->setLoggers(array()));
-
-        $handler->handleError(E_DEPRECATED, 'Foo message', __FILE__, 123, array());
-        $expectedLog = array(LogLevel::INFO, 'Foo message', array('type' => E_DEPRECATED, 'file' => __FILE__, 'line' => 123, 'level' => error_reporting()));
-
-        $logs = $bootLogger->cleanLogs();
-        unset($logs[0][2]['stack']);
-
-        $this->assertSame(array($expectedLog), $logs);
-
-        $bootLogger->log($expectedLog[0], $expectedLog[1], $expectedLog[2]);
-
-        $mockLogger = $this->getMock('Psr\Log\LoggerInterface');
-        $mockLogger->expects($this->once())
-            ->method('log')
-            ->with(LogLevel::WARNING, 'Foo message', $expectedLog[2]);
-
-        $handler->setLoggers(array(E_DEPRECATED => array($mockLogger, LogLevel::WARNING)));
-    }
-
     public function testHandleFatalError()
     {
         try {
@@ -455,7 +385,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
                 'line' => 123,
             );
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $that = $this;
             $logArgCheck = function ($level, $message, $context) use ($that) {
@@ -507,7 +437,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         try {
             $handler = ErrorHandler::register();
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
             $logger
                 ->expects($this->once())
                 ->method('log')
@@ -560,7 +490,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             restore_error_handler();
             restore_exception_handler();
 
-            $logger = $this->getMock('Psr\Log\LoggerInterface');
+            $logger = $this->getMockBuilder('Psr\Log\LoggerInterface')->getMock();
 
             $that = $this;
             $logArgCheck = function ($level, $message, $context) use ($that) {

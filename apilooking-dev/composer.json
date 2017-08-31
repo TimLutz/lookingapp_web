@@ -17,7 +17,8 @@
 		
 		
         "illuminate/mail": "5.1.*",
-        "intervention/image": "^2.3"
+        "intervention/image": "^2.3",
+        "davibennun/laravel-push-notification":"dev-laravel5"
         
         
     },

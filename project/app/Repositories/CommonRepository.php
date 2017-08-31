@@ -17,6 +17,7 @@ use App\models\Device;
 use App\Messages;
 use App\models\Category;
 use App\models\SubCategory;
+use App\models\FlagModel;
 use App\models\Product;
 use App\models\Video;
 use App\models\Task;
@@ -43,11 +44,17 @@ class CommonRepository implements CommonRepositoryInterface
 		$data['profiletext'] = User::where('profiletext_change',1)->count();
     $data['photos'] = User::where(['photo_change'=>1])->count();
     $data['banuser'] = User::where(['status'=>0])->count();
-		//$data['properties'] = Property::where('id','!=','')->count();
-    //$data['realtors'] = User::where('id','!=','')->where('type',1)->count();
-		//$data['both'] = User::where('id','!=','')->where('type',4)->count();
-		//$data['houseowners'] = User::where('id','!=','')->where('type',2)->count();
+    $data['reports'] = FlagModel::whereHas('flagUser',function($q){
+      $q->where('status',1) ;
+    })->whereHas('flagReceiverUser',function($q){
+      $q->where('status',1) ;
+    })->where(['archive'=>0])->orderBY('created_at','ASC')->count();
 
+   /* $data['reports'] = DB::table('flags AS f')
+                          ->join('users AS s','s.id','=','f.sender_id')
+                          ->join('users AS r','r.id','=','f.receiver_id')
+                          ->where(['f.archive'=>0,'r.status'=>1])
+                          ->count();*/
 		return $data;
 	}
 

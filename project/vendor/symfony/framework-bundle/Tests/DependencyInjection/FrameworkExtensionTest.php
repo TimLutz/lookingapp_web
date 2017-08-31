@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\DefinitionDecorator;
 use Symfony\Component\DependencyInjection\Loader\ClosureLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\Validator\Validation;
 
 abstract class FrameworkExtensionTest extends TestCase
 {
@@ -97,6 +96,13 @@ abstract class FrameworkExtensionTest extends TestCase
         $container = $this->createContainerFromFile('full');
 
         $this->assertTrue($container->hasDefinition('esi'), '->registerEsiConfiguration() loads esi.xml');
+    }
+
+    public function testSsi()
+    {
+        $container = $this->createContainerFromFile('full');
+
+        $this->assertTrue($container->hasDefinition('ssi'), '->registerSsiConfiguration() loads ssi.xml');
     }
 
     public function testEnabledProfiler()
@@ -225,7 +231,7 @@ abstract class FrameworkExtensionTest extends TestCase
         $this->assertEquals('translator.default', (string) $container->getAlias('translator'), '->registerTranslatorConfiguration() redefines translator service from identity to real translator');
         $options = $container->getDefinition('translator.default')->getArgument(3);
 
-        $files = array_map(function ($resource) { return realpath($resource); }, $options['resource_files']['en']);
+        $files = array_map('realpath', $options['resource_files']['en']);
         $ref = new \ReflectionClass('Symfony\Component\Validator\Validation');
         $this->assertContains(
             strtr(dirname($ref->getFileName()).'/Resources/translations/validators.en.xlf', '/', DIRECTORY_SEPARATOR),
@@ -319,6 +325,10 @@ abstract class FrameworkExtensionTest extends TestCase
 
     public function testFileLinkFormat()
     {
+        if (ini_get('xdebug.file_link_format') || get_cfg_var('xdebug.file_link_format')) {
+            $this->markTestSkipped('A custom file_link_format is defined.');
+        }
+
         $container = $this->createContainerFromFile('full');
 
         $this->assertEquals('file%link%format', $container->getParameter('templating.helper.code.file_link_format'));
@@ -343,7 +353,8 @@ abstract class FrameworkExtensionTest extends TestCase
         require_once __DIR__.'/Fixtures/TestBundle/TestBundle.php';
 
         $container = $this->createContainerFromFile('validation_annotations', array(
-            'kernel.bundles' => array('TestBundle' => 'Symfony\Bundle\FrameworkBundle\Tests\TestBundle'),
+            'kernel.bundles' => array('TestBundle' => 'Symfony\\Bundle\\FrameworkBundle\\Tests\\TestBundle'),
+            'kernel.bundles_metadata' => array('TestBundle' => array('namespace' => 'Symfony\\Bundle\\FrameworkBundle\\Tests', 'parent' => null, 'path' => __DIR__.'/Fixtures/TestBundle')),
         ));
 
         $calls = $container->getDefinition('validator.builder')->getMethodCalls();
@@ -364,11 +375,38 @@ abstract class FrameworkExtensionTest extends TestCase
             // Testing symfony/framework-bundle with deps=high
             $this->assertStringEndsWith('symfony'.DIRECTORY_SEPARATOR.'form/Resources/config/validation.xml', $xmlMappings[0]);
         }
-        $this->assertStringEndsWith('TestBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'validation.xml', $xmlMappings[1]);
+        $this->assertStringEndsWith('TestBundle/Resources/config/validation.xml', $xmlMappings[1]);
 
         $yamlMappings = $calls[4][1][0];
         $this->assertCount(1, $yamlMappings);
-        $this->assertStringEndsWith('TestBundle'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'validation.yml', $yamlMappings[0]);
+        $this->assertStringEndsWith('TestBundle/Resources/config/validation.yml', $yamlMappings[0]);
+    }
+
+    public function testValidationPathsUsingCustomBundlePath()
+    {
+        require_once __DIR__.'/Fixtures/CustomPathBundle/src/CustomPathBundle.php';
+
+        $container = $this->createContainerFromFile('validation_annotations', array(
+            'kernel.bundles' => array('CustomPathBundle' => 'Symfony\\Bundle\\FrameworkBundle\\Tests\\CustomPathBundle'),
+            'kernel.bundles_metadata' => array('TestBundle' => array('namespace' => 'Symfony\\Bundle\\FrameworkBundle\\Tests', 'parent' => null, 'path' => __DIR__.'/Fixtures/CustomPathBundle')),
+        ));
+
+        $calls = $container->getDefinition('validator.builder')->getMethodCalls();
+        $xmlMappings = $calls[3][1][0];
+        $this->assertCount(2, $xmlMappings);
+
+        try {
+            // Testing symfony/symfony
+            $this->assertStringEndsWith('Component'.DIRECTORY_SEPARATOR.'Form/Resources/config/validation.xml', $xmlMappings[0]);
+        } catch (\Exception $e) {
+            // Testing symfony/framework-bundle with deps=high
+            $this->assertStringEndsWith('symfony'.DIRECTORY_SEPARATOR.'form/Resources/config/validation.xml', $xmlMappings[0]);
+        }
+        $this->assertStringEndsWith('CustomPathBundle/Resources/config/validation.xml', $xmlMappings[1]);
+
+        $yamlMappings = $calls[4][1][0];
+        $this->assertCount(1, $yamlMappings);
+        $this->assertStringEndsWith('CustomPathBundle/Resources/config/validation.yml', $yamlMappings[0]);
     }
 
     public function testValidationNoStaticMethod()
@@ -442,6 +480,17 @@ abstract class FrameworkExtensionTest extends TestCase
         $this->assertTrue($container->has('serializer'));
     }
 
+    public function testObjectNormalizerRegistered()
+    {
+        $container = $this->createContainerFromFile('full');
+
+        $definition = $container->getDefinition('serializer.normalizer.object');
+        $tag = $definition->getTag('serializer.normalizer');
+
+        $this->assertEquals('Symfony\Component\Serializer\Normalizer\ObjectNormalizer', $definition->getClass());
+        $this->assertEquals(-1000, $tag[0]['priority']);
+    }
+
     public function testAssetHelperWhenAssetsAreEnabled()
     {
         $container = $this->createContainerFromFile('full');
@@ -462,11 +511,13 @@ abstract class FrameworkExtensionTest extends TestCase
     {
         return new ContainerBuilder(new ParameterBag(array_merge(array(
             'kernel.bundles' => array('FrameworkBundle' => 'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'),
+            'kernel.bundles_metadata' => array('FrameworkBundle' => array('namespace' => 'Symfony\\Bundle\\FrameworkBundle', 'path' => __DIR__.'/../..', 'parent' => null)),
             'kernel.cache_dir' => __DIR__,
             'kernel.debug' => false,
             'kernel.environment' => 'test',
             'kernel.name' => 'kernel',
             'kernel.root_dir' => __DIR__,
+            'kernel.container_class' => 'testContainer',
         ), $data)));
     }
 
@@ -547,7 +598,7 @@ abstract class FrameworkExtensionTest extends TestCase
 
     private function assertVersionStrategy(ContainerBuilder $container, Reference $reference, $version, $format)
     {
-        $versionStrategy = $container->getDefinition($reference);
+        $versionStrategy = $container->getDefinition((string) $reference);
         if (null === $version) {
             $this->assertEquals('assets.empty_version_strategy', (string) $reference);
         } else {

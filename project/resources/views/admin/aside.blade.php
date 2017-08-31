@@ -29,147 +29,98 @@
 					Dashboard </span>
 					</a>
 				</li>
-<!--
-				<li class="@if(isset($active) && $active == 'users') active @endif">
-					<a href="{{ url(getenv('adminurl').'/dashboard/users') }}">
-					<i class="icon-users"></i>
-					<span class="title">
-					Manage Users </span>
-					</a>
-				</li>
--->
-
-
-
-			<!-- 	<li class="start @if($active == 'realtors' || $active == 'houseowners') active @endif open">
+				<li class="@if(isset($active) && $active == 'users' || $active == 'banned') active @endif">
 					<a href="javascript:;">
-					<i class="icon-users"></i>
-					<span class="title">Manage Users</span>
+					<i class="icon-list"></i>
+					<span class="title">Users</span>
 					<span class="selected"></span>
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="@if($active == 'realtors') active @endif">
+						<li class="@if($active == 'users') active @endif">
 							<a href="{{ url(getenv('adminurl').'/users') }}">
-							<i class="glyphicon glyphicon-registration-mark"></i>
-							Manage Realtors</a>
+							<i class="glyphicon glyphicon-pushpin"></i>
+							All Users</a>
 						</li>
-						<li class="@if($active == 'houseowners') active @endif">
-						<a href="{{ url(getenv('adminurl').'/users/index-house') }}">
-							<i class="glyphicon glyphicon-home"></i>
-								Manage Houseowners</a>
+						<li class="@if($active == 'banned') active @endif">
+							<a href="{{ url(getenv('adminurl').'/users/banned') }}">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Banned Users</a>
 						</li>
-						
 					</ul>
-				</li> -->
-
-				<li class="@if(isset($active) && $active == 'realtors') active @endif">
-					<a href="{{ url(getenv('adminurl').'/users') }}">
-					<i class="glyphicon glyphicon-user"></i>
-					<span class="title">
-					Manage Users </span>
+				</li>
+				<li class="@if(isset($active) && $active == 'current' || $active == 'Archive') active @endif">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
+					<span class="title">Reports Users</span>
+					<span class="selected"></span>
+					<span class="arrow open"></span>
 					</a>
-				</li>				
-
-
-
-<!--
-
-				<li class="@if(isset($active) && $active == 'realtors') active @endif">
-					<a href="{{ url(getenv('adminurl').'/users') }}">
-					<i class="icon-users"></i>
+					<ul class="sub-menu">
+						<li class="@if($active == 'current') active @endif">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Current Users</a>
+						</li>
+						<li class="@if($active == 'Archive') active @endif">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Archived Users</a>
+						</li>
+					</ul>
+				</li>
+				
+				<li class="@if(isset($active) && $active == 'photos') active @endif">
+					<a href="{{ url(getenv('adminurl').'/photos') }}">
+					<i class="icon-list"></i>
 					<span class="title">
-					Manage Realtors </span>
+					Photos </span>
 					</a>
 				</li>
-				<li class="@if(isset($active) && $active == 'houseowners') active @endif">
-					<a href="{{ url(getenv('adminurl').'/users/index-house') }}">
-					<i class="icon-users"></i>
+				<li class="@if(isset($active) && $active == 'profiletext') active @endif">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
 					<span class="title">
-					Manage Houseowners </span>
-					</a>
-				</li>
--->
-
-				<li class="@if(isset($active) && $active == 'technicians') active @endif">
-					<a href="{{ url(getenv('adminurl').'/users/index-technician') }}">
-					<i class="glyphicon glyphicon-wrench"></i>
-					<span class="title">
-					Manage Technicians </span>
-					</a>
-				</li>
-				<li class="@if(isset($active) && $active == 'properties') active @endif">
-					<a href="{{ url(getenv('adminurl').'/properties') }}">
-					<i class="fa fa-cube"></i>
-					<span class="title">
-					Manage Properties </span>
-					</a>
-				</li>
-				<li class="@if(isset($active) && $active == 'timeslot') active @endif">
-					<a href="{{ url(getenv('adminurl').'/timeslot') }}">
-					<i class="glyphicon glyphicon-time"></i>
-					<span class="title">
-					Manage Timeslots </span>
-					</a>
-				</li>
-				<li class="@if(isset($active) && $active == 'tasks') active @endif">
-					<a href="{{ url(getenv('adminurl').'/tasks') }}">
-					<i class="glyphicon glyphicon-screenshot"></i>
-					<span class="title">
-					Manage Tasks </span>
+					Profile Text </span>
 					</a>
 				</li>
 				
-				<li class="@if(isset($active) && $active == 'tech-tasks') active @endif">
-					<a href="{{ url(getenv('adminurl').'/tasks/index-techtask') }}">
-					<i class="glyphicon glyphicon-link"></i>
-					<span class="title">
-					Manage Technician Tasks </span>
+				<li class="@if(isset($active) && $active == 'free' || $active == 'paid') active @endif">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
+					<span class="title">Restrictions</span>
+					<span class="selected"></span>
+					<span class="arrow open"></span>
 					</a>
+					<ul class="sub-menu">
+						<li class="@if($active == 'free') active @endif">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Free Users</a>
+						</li>
+						<li class="@if($active == 'paid') active @endif">
+							<a href="javascript:void(0)">
+							<i class="glyphicon glyphicon-pushpin"></i>
+							Paid Users</a>
+						</li>
+					</ul>
 				</li>
-				
-				<li class="@if(isset($active) && $active == 'client-feedback') active @endif">
-					<a href="{{ url(getenv('adminurl').'/tasks/index-feedback') }}">
-					<i class="glyphicon glyphicon-check"></i>
+				<li class="@if(isset($active) && $active == 'trials') active @endif">
+					<a href="javascript:void(0)">
+					<i class="icon-list"></i>
 					<span class="title">
-					Client's Feedback </span>
+					Trials </span>
 					</a>
-				</li>
-				
-				<li class="@if(isset($active) && $active == 'notes') active @endif">
-					<a href="{{ url(getenv('adminurl').'/notes/index') }}">
-					<i class="glyphicon glyphicon-list-alt"></i>
-					<span class="title">
-					General Notes </span>
-					</a>
-				</li>
-				
-				<li class="@if(isset($active) && $active == 'pages') active @endif">
-					<a href="{{ url(getenv('adminurl').'/pages') }}">
-					<i class="fa fa-link"></i>
-					<span class="title">
-					Settings</span>
-					</a>
-				</li>
-				</li>
-				
+				</li>	
 				<li class="@if(isset($active) && $active == 'template') active @endif">
 					<a href="{{ url(getenv('adminurl').'/template') }}">
-					<i class="icon-envelope-open"></i>
+					<i class="icon-list"></i>
 					<span class="title">
 					Templates </span>
 					</a>
 				</li>
 				
-<!--
-				<li class="@if(isset($active) && $active == 'settings') active @endif">
-					<a href="{{ url(getenv('adminurl').'/setting') }}">
-					<i class="glyphicon glyphicon-record"></i>
-					<span class="title">
-					Settings </span>
-					</a>
-				</li>
--->
+
 				
 				
 				

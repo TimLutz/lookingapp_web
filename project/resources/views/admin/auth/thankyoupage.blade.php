@@ -65,8 +65,8 @@ License: You must have a valid license purchased only from themeforest(the above
 <div class="page-inner">
 	<img src="../../assets/admin/pages/media/pages/earth.jpg" class="img-responsive" alt="">
 </div>
-<div class="container error-404">
-	<h1>{{$heading}}</h1>
+<div class="container error-404 congratesMessage">
+	<h1 class="congrtMessage">{{$heading}}</h1>
 	<h2>{{$message}}</h2>
 <!--
 	<p>

@@ -132,7 +132,7 @@ class CodeHelper extends Helper
             $code = @highlight_file($file, true);
             // remove main code/span tags
             $code = preg_replace('#^<code.*?>\s*<span.*?>(.*)</span>\s*</code>#s', '\\1', $code);
-            $content = preg_split('#<br />#', $code);
+            $content = explode('<br />', $code);
 
             $lines = array();
             for ($i = max($line - 3, 1), $max = min($line + 3, count($content)); $i <= $max; ++$i) {
@@ -154,7 +154,7 @@ class CodeHelper extends Helper
      */
     public function formatFile($file, $line, $text = null)
     {
-        if (PHP_VERSION_ID >= 50400) {
+        if (\PHP_VERSION_ID >= 50400) {
             $flags = ENT_QUOTES | ENT_SUBSTITUTE;
         } else {
             $flags = ENT_QUOTES;

@@ -10,48 +10,25 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-Route::controller('pages', 'PagesController');
-
-	Route::group(['prefix' => getenv('adminurl')], function()
+Route::group(['middleware' => ['backbutton']], function() 
+{
+	Route::controller('pages', 'PagesController');
+	Route::group(['prefix' =>getenv('adminurl'),'backbutton'], function()
 	{
-		Route::post('notification','admin\NotificationController@changestatus');
-		Route::controller('timeslot', 'admin\TimeslotController');
-		Route::get('properties/{userid}','admin\PropertyController@getIndex');
-		Route::post('properties/list-properties/{userid}','admin\PropertyController@postListProperties');
-			Route::get('/', 'Admin\AdminController@Index');
-			Route::controller('users','admin\UsersController');
-			Route::controller('tasks','admin\TaskController');
-			Route::post('status','admin\TaskController@status');
-			Route::post('technician-assigned','admin\TaskController@technicianAssigned');
-			Route::post('updatestatus','admin\TaskController@updatestatus');
-			Route::post('technicianupdate','admin\TaskController@technicianupdate');
-			Route::controller('notes','admin\GeneralNotesController');
-			
-			Route::controller('properties','admin\PropertyController');
-			
-			Route::post('contact/change-status', 'admin\ContactusController@postChangeStatus');
-			Route::post('/dashboard/detailsTestimonials','admin\TestimonialsController@detailstestimonials');
-			Route::resource('contact', 'admin\ContactusController');
-			
-			Route::resource('pages', 'admin\PagesController');
-			Route::post('pages/list-pages', 'admin\PagesController@ListPages');
-			Route::resource('services', 'admin\ServiceController');
-			Route::controller('multidelete', 'admin\MultideleteController');
-			Route::controller('auth', 'admin\AdminauthController');
-			Route::controller('dashboard', 'admin\AdminController');
-			Route::controller('password', 'admin\AdminPasswordController');
-			Route::resource('template', 'admin\TemplateController');
-			
-			Route::resource('interest', 'admin\InterestController');
-			Route::resource('settings', 'admin\SettingsController');
-			Route::controller('homepage', 'admin\HomepageController');
-			Route::resource('setting', 'admin\SettingsController');
-			Route::resource('location', 'admin\AddresslocationController');
-		
-			
+		Route::get('/', 'Admin\AdminController@Index');
+		Route::get('users/genrateCsv','admin\UsersController@genrateCsv');
+		Route::get('users/genrateCsv1','admin\UsersController@genrateCsvBannedUser');
+		Route::controller('users','Admin\UsersController');
+		Route::controller('photos','Admin\PhotosController');
+		Route::controller('multidelete', 'Admin\MultideleteController');
+		Route::controller('auth', 'Admin\AdminauthController');
+		Route::controller('dashboard', 'Admin\AdminController');
+		Route::controller('password', 'Admin\AdminPasswordController');
+		Route::controller('password', 'Admin\AdminPasswordController');
+		Route::resource('template', 'Admin\TemplateController');
 	});
-	
 	Route::controller('common', 'CommonController');
 	
 Route::get('reset-password/{token}', 'PasswordController@reset');
 Route::post('app-password-reset', 'PasswordController@Resetpassword');
+});	

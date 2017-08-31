@@ -39,6 +39,8 @@ composer require jenssegers/mongodb
  5.0.x    | 2.1.x
  5.1.x    | 2.2.x or 3.0.x
  5.2.x    | 2.3.x or 3.0.x
+ 5.3.x    | 3.1.x or 3.2.x
+ 5.4.x    | 3.2.x
 
 And add the service provider in `config/app.php`:
 
@@ -49,7 +51,7 @@ Jenssegers\Mongodb\MongodbServiceProvider::class,
 For usage with [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. In this file, you will also need to enable Eloquent. You must however ensure that your call to `$app->withEloquent();` is **below** where you have registered the `MongodbServiceProvider`:
 
 ```php
-$app->register('Jenssegers\Mongodb\MongodbServiceProvider');
+$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
 
 $app->withEloquent();
 ```
@@ -103,7 +105,7 @@ $books = $user->books()->sortBy('title');
 Configuration
 -------------
 
-Change your default database connection name in `app/config/database.php`:
+Change your default database connection name in `config/database.php`:
 
 ```php
 'default' => env('DB_CONNECTION', 'mongodb'),
@@ -116,11 +118,11 @@ And add a new mongodb connection:
     'driver'   => 'mongodb',
     'host'     => env('DB_HOST', 'localhost'),
     'port'     => env('DB_PORT', 27017),
-    'database' => env('DB_DATABASE', ''),
-    'username' => env('DB_USERNAME', ''),
-    'password' => env('DB_PASSWORD', ''),
-    'options' => [
-        'db' => 'admin' // sets the authentication database required by mongo 3
+    'database' => env('DB_DATABASE'),
+    'username' => env('DB_USERNAME'),
+    'password' => env('DB_PASSWORD'),
+    'options'  => [
+        'database' => 'admin' // sets the authentication database required by mongo 3
     ]
 ],
 ```
@@ -132,10 +134,12 @@ You can connect to multiple servers or replica sets with the following configura
     'driver'   => 'mongodb',
     'host'     => ['server1', 'server2'],
     'port'     => env('DB_PORT', 27017),
-    'database' => env('DB_DATABASE', ''),
-    'username' => env('DB_USERNAME', ''),
-    'password' => env('DB_PASSWORD', ''),
-    'options'  => ['replicaSet' => 'replicaSetName']
+    'database' => env('DB_DATABASE'),
+    'username' => env('DB_USERNAME'),
+    'password' => env('DB_PASSWORD'),
+    'options'  => [
+		'replicaSet' => 'replicaSetName'
+	]
 ],
 ```
 
@@ -178,10 +182,10 @@ Everything else (should) work just like the original Eloquent model. Read more a
 
 ### Optional: Alias
 
-You may also register an alias for the MongoDB model by adding the following to the alias array in `app/config/app.php`:
+You may also register an alias for the MongoDB model by adding the following to the alias array in `config/app.php`:
 
 ```php
-'Moloquent'       => 'Jenssegers\Mongodb\Eloquent\Model',
+'Moloquent'       => Jenssegers\Mongodb\Eloquent\Model::class,
 ```
 
 This will allow you to use the registered alias like:
@@ -259,6 +263,21 @@ If you want to use MongoDB as your database backend, change the the driver in `c
         'queue'  => 'default',
         'expire' => 60,
     ],
+```
+
+If you want to use MongoDB to handle failed jobs, change the database in `config/queue.php`:
+
+```php
+'failed' => [
+    'database' => 'mongodb',
+    'table'    => 'failed_jobs',
+    ],
+```
+
+And add the service provider in `config/app.php`: 
+
+```php
+Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
 ```
 
 ### Sentry
@@ -389,6 +408,15 @@ Aggregations can be combined with **where**:
 $sold = Orders::where('sold', true)->sum('price');
 ```
 
+Aggregations can be also used on subdocuments:
+
+```php
+$total = Order::max('suborder.price');
+...
+```
+
+**NOTE**: this aggreagtion only works with single subdocuments (like embedsOne) not subdocument arrays (like embedsMany)
+
 **Like**
 
 ```php
@@ -466,10 +494,10 @@ User::where('tags', 'size', 3)->get();
 Selects documents where values match a specified regular expression.
 
 ```php
-User::where('name', 'regex', new MongoRegex("/.*doe/i"))->get();
+User::where('name', 'regex', new \MongoDB\BSON\Regex("/.*doe/i"))->get();
 ```
 
-**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoRegex object.
+**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoDB\BSON\Regex object.
 
 ```php
 User::where('name', 'regexp', '/.*doe/i'))->get();
@@ -620,7 +648,7 @@ class User extends Eloquent {
 
     public function groups()
     {
-        return $this->belongsToMany('Group', null, 'users', 'groups');
+        return $this->belongsToMany('Group', null, 'user_ids', 'group_ids');
     }
 
 }
@@ -804,7 +832,7 @@ class Message extends Eloquent {
 These expressions will be injected directly into the query.
 
 ```php
-User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40]))->get();
+User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40)])->get();
 ```
 
 You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models. If this is executed on the query builder, it will return the original response.
