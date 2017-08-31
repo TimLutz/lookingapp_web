@@ -70,13 +70,13 @@
 					</ul>
 				</li>
 				
-				<li class="@if(isset($active) && $active == 'photos') active @endif">
+				<!-- <li class="@if(isset($active) && $active == 'photos') active @endif">
 					<a href="{{ url(getenv('adminurl').'/photos') }}">
 					<i class="icon-list"></i>
 					<span class="title">
 					Photos </span>
 					</a>
-				</li>
+				</li> -->
 				<li class="@if(isset($active) && $active == 'profiletext') active @endif">
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
