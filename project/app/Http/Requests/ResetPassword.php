@@ -25,7 +25,8 @@ class ResetPassword extends Request
     {
         return [
 			//'old_password' => 'required',
-			'password' => 'required|confirmed|password_custom|min:6|max:30',
+        //    'password' => 'required|confirmed|password_custom|min:6|max:30',
+			'password' => 'required|confirmed|min:8|max:16',
 			'password_confirmation' => 'required',
 		];
     }
