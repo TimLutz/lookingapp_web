@@ -4,8 +4,8 @@ return array(
 
     'appNameIOS'     => array(
         'environment' =>'development',
-        'certificate' =>app_path().'/certificate.pem',
-        'passPhrase'  =>'password',
+        'certificate' =>base_path()."/public/apns_cert/pushcert.pem",
+        'passPhrase'  =>'123456',
         'service'     =>'apns'
     ),
     'appNameAndroid' => array(

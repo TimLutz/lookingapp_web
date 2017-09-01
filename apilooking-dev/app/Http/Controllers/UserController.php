@@ -38,12 +38,21 @@ use Carbon\Carbon;
 use Log;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
+use PushNotification;
 class UserController extends Controller {
 	
 	protected $hashKey;
 	
-	public function __construct(){
+	public function __construct(Request $request){
+       // print_r($request->header()); die('here');
+       /* PushNotification::app(['environment' => 'development',
+        'certificate' => base_path()."/public/apns_cert/pushcert.pem",
+        'passPhrase'  => '123456',
+        'service'     => 'apns'])*/
+
+        /*PushNotification::app('appNameIOS')
+                ->to('c0dab333a984e0f44ff513eee6ea98bdc838be92a5d6fd329aac22f2f4bd47e3')
+                ->send('Testing lokinghfghfgh'); die;*/
       $this->middleware('jwt.auth', ['except' => ['postLogin','ForgetPassword','getTermsAndCondition']]);
     }
     
@@ -1384,7 +1393,46 @@ class UserController extends Controller {
                 }
                 // Pending push notification
                 
+                $userdetails =  User::find($receiver_id); 
+                if(count($userdetails))
+                {
+                    /*                 * ***********total count message ************ */
+                    $chatusers = $this->ChatUser->find('all', array('conditions' => array('ChatUser.chat_user_id' => $receiver_id)));
+                    $chatusers = ChatModel::where(['chat_user_id'=>$receiver_id])->get();
+                    $total_unread_message = 0;
+                    if ($chatusers) {
 
+                    foreach ($chatusers as $key => $value) {
+                            if ($value['invite'] > 0) {
+                                $invite = 1;
+                            } else {
+                                $invite = 0;
+                            }
+                            $total_unread_message+=($value['count'] + $invite);
+                        }
+                    }
+
+                    if ($total_unread_message == 0) {
+                        $total_unread_message = '';
+                    }
+
+                    if($userdetails->online_status==1)
+                    {
+                        if ($accept == 1) {
+                            $msg = $username['User']['screen_name'] . ' accept invitation';
+                            $type = 'accept_invitation';
+                        } else {
+                            $msg = $username['User']['screen_name'] . ' send invitation';
+                            $type = 'sent_invitation';
+                        }
+                    }
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'user details not found.';
+                    $http_status = 400;
+                }
                 $response['success'] = 1;
                 $response['message'] = 'Success';
                 $http_status = 200;

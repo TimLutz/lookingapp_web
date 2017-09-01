@@ -29,6 +29,7 @@ class GetUserFromToken extends BaseMiddleware
             return $this->respond('tymon.jwt.absent', 'token_not_provided', 400);
         }
 
+$user = $this->auth->authenticate($token);
         try {
             $user = $this->auth->authenticate($token);
         } catch (TokenExpiredException $e) {
@@ -37,7 +38,7 @@ class GetUserFromToken extends BaseMiddleware
             return $this->respond('tymon.jwt.invalid', 'token_invalid', $e->getStatusCode(), [$e]);
         }
 
-        if (! $user) {
+        if (!$user) {
             return $this->respond('tymon.jwt.user_not_found', 'user_not_found', 404);
         }
 
