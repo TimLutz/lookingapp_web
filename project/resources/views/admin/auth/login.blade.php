@@ -62,7 +62,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- BEGIN LOGO -->
 <div class="logo">
 	<a href="{{ url(getenv('adminurl')) }}">
-	<img src="{{ url('images/logo/logo.png') }}" class="logo-default" height="80px" width="320px">
+	<img src="{{ url('images/logo/logo.png') }}" class="logo-default">
 	</a>
 </div>
 <!-- END LOGO -->

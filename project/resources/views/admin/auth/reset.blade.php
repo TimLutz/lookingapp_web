@@ -7,7 +7,7 @@
 <meta charset="utf-8"/>
 <title>{{ config('app.website_name') }} | Reset Password</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<link rel="icon" type="image/png" id="favicon" href="{{asset('images/favicon.png')}}"/>
+<link rel="icon" type="image/png" id="favicon" href="{{asset('images/favicon.ico')}}"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <meta content="" name="description"/>
@@ -49,7 +49,7 @@
 <!-- BEGIN LOGO -->
 <div class="logo">
 	<a href="{{ url(getenv('adminurl')) }}">
-	<img src="{{ url('images/logo/logo.png') }}" class="logo-default" height="80px" width="320px">
+	<img src="{{ url('images/logo/logo.png') }}" class="logo-default">
 	</a>
 </div>
 <!-- END LOGO -->
