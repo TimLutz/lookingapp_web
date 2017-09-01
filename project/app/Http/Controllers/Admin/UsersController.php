@@ -59,8 +59,8 @@ class UsersController extends Controller
      *********/
     public function postListAllUsers(Request $request,CommonRepository $common)
 	{
-		 $basearray = User::with(['Profile'])->where(['status'=>1,'role'=>2]);
-		  $totalusercount = DB::table('users')->where(['status'=>1,'role'=>2])->count();
+		 $basearray = User::with(['Profile'])->where(['role'=>2]);
+		  $totalusercount = DB::table('users')->where(['role'=>2])->count();
 		
 		/*****************Below code is for filtering ****************/
 		if(isset($request->name) && !empty($request->name))
@@ -113,7 +113,7 @@ class UsersController extends Controller
 			}
 			
 			
-		$counttotal =  User::where(['status'=>1,'role'=>2])->get()->count();
+		$counttotal =  User::where(['role'=>2])->get()->count();
 		$length = intval($request->get('length'));
 		$length = $length < 0 ? $counttotal : $length; 
 		
@@ -129,10 +129,10 @@ class UsersController extends Controller
 			$userId = \Crypt::encrypt($value->id);
 			if($value->status== '1')
 			{
-				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a></div>';
+				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success"></i><a></div>';
 			}
 			else{
-				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-danger inactive"></i><a></div>';
+				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger"></i><a></div>';
 			}
 
 			$aboutMe = $createDate=$memberType = '';
@@ -348,7 +348,7 @@ class UsersController extends Controller
 			$userId = \Crypt::encrypt($value->id);
 			if($value->status== '0')
 			{
-				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
+				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger"></i><a></div>';
 			}
 
 			$aboutMe = $createDate=$memberType = '';

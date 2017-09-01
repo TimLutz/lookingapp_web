@@ -22,14 +22,14 @@
 					<!-- END SIDEBAR TOGGLER BUTTON -->
 				</li>
 				
-				<li class="@if(isset($active) && $active == 'dashboard') active @endif">
-					<a href="{{ url(getenv('adminurl').'') }}">
+				<li class="<?php if(isset($active) && $active == 'dashboard'): ?> active <?php endif; ?>">
+					<a href="<?php echo e(url(getenv('adminurl').'')); ?>">
 					<i class="glyphicon glyphicon-dashboard"></i>
 					<span class="title">
 					Dashboard </span>
 					</a>
 				</li>
-				<li class="@if(isset($active) && $active == 'users' || $active == 'banned') active @endif">
+				<li class="<?php if(isset($active) && $active == 'users' || $active == 'banned'): ?> active <?php endif; ?>">
 					<a href="javascript:;">
 					<i class="icon-list"></i>
 					<span class="title">Users</span>
@@ -37,19 +37,19 @@
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="@if($active == 'users') active @endif">
-							<a href="{{ url(getenv('adminurl').'/users') }}">
+						<li class="<?php if($active == 'users'): ?> active <?php endif; ?>">
+							<a href="<?php echo e(url(getenv('adminurl').'/users')); ?>">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							All Users</a>
 						</li>
-						<li class="@if($active == 'banned') active @endif">
-							<a href="{{ url(getenv('adminurl').'/users/banned') }}">
+						<li class="<?php if($active == 'banned'): ?> active <?php endif; ?>">
+							<a href="<?php echo e(url(getenv('adminurl').'/users/banned')); ?>">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Banned Users</a>
 						</li>
 					</ul>
 				</li>
-				<li class="@if(isset($active) && $active == 'current' || $active == 'Archive') active @endif">
+				<li class="<?php if(isset($active) && $active == 'current' || $active == 'Archive'): ?> active <?php endif; ?>">
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">Reports Users</span>
@@ -57,12 +57,12 @@
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="@if($active == 'current') active @endif">
+						<li class="<?php if($active == 'current'): ?> active <?php endif; ?>">
 							<a href="javascript:void(0)">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Current Users</a>
 						</li>
-						<li class="@if($active == 'Archive') active @endif">
+						<li class="<?php if($active == 'Archive'): ?> active <?php endif; ?>">
 							<a href="javascript:void(0)">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Archived Users</a>
@@ -70,15 +70,15 @@
 					</ul>
 				</li>
 				
-				<li class="@if(isset($active) && $active == 'photos') active @endif">
-					<!-- <a href="{{ url(getenv('adminurl').'/photos') }}"> -->
-					<a href="javascript:void(0)">
+				<li class="<?php if(isset($active) && $active == 'photos'): ?> active <?php endif; ?>">
+					<a href="<?php echo e(url(getenv('adminurl').'/photos')); ?>">
+					<!-- <a href="javascript:void(0)"> -->
 					<i class="icon-list"></i>
 					<span class="title">
 					Photos </span>
 					</a>
 				</li>
-				<li class="@if(isset($active) && $active == 'profiletext') active @endif">
+				<li class="<?php if(isset($active) && $active == 'profiletext'): ?> active <?php endif; ?>">
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
@@ -86,7 +86,7 @@
 					</a>
 				</li>
 				
-				<li class="@if(isset($active) && $active == 'free' || $active == 'paid') active @endif">
+				<li class="<?php if(isset($active) && $active == 'free' || $active == 'paid'): ?> active <?php endif; ?>">
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">Restrictions</span>
@@ -94,27 +94,27 @@
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="@if($active == 'free') active @endif">
+						<li class="<?php if($active == 'free'): ?> active <?php endif; ?>">
 							<a href="javascript:void(0)">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Free Users</a>
 						</li>
-						<li class="@if($active == 'paid') active @endif">
+						<li class="<?php if($active == 'paid'): ?> active <?php endif; ?>">
 							<a href="javascript:void(0)">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Paid Users</a>
 						</li>
 					</ul>
 				</li>
-				<li class="@if(isset($active) && $active == 'trials') active @endif">
+				<li class="<?php if(isset($active) && $active == 'trials'): ?> active <?php endif; ?>">
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
 					Trials </span>
 					</a>
 				</li>	
-				<li class="@if(isset($active) && $active == 'template') active @endif">
-					<a href="{{ url(getenv('adminurl').'/template') }}">
+				<li class="<?php if(isset($active) && $active == 'template'): ?> active <?php endif; ?>">
+					<a href="<?php echo e(url(getenv('adminurl').'/template')); ?>">
 					<i class="icon-list"></i>
 					<span class="title">
 					Templates </span>

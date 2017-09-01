@@ -87,11 +87,8 @@ class PhotosController extends Controller
         foreach($resultset as $value){
             $userId = \Crypt::encrypt($value->id);
             $status = $createDate = '';
-            if($value->status== '1')
-            {
-                $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
-            }
-
+            
+            $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
             
             if($value->profile_pic_date)
             {

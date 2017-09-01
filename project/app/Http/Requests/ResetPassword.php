@@ -37,8 +37,6 @@ class ResetPassword extends Request
 		return [
 		'password.password_custom' => 'Password should be of atleast 6 characters, one uppercase, one lowercase and one number',
 		    'password_confirmation.required' => 'Confirm password field is required',
-			
-			
 		];
 	}
 }
