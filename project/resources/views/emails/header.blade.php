@@ -53,7 +53,7 @@ table td {border-collapse:collapse;}
     <td height="50">&nbsp;</td>
   </tr>
    <tr>
-    <td  style="color: #fff; font-weight:bold; text-align:left; font-size: 34px; line-height:2em;"><img border="0" alt="{{config('app.website_name')}}" src="{{ url('images/logo/logo.png') }}"></td>
+    <td  style="color: #fff; font-weight:bold; font-size: 34px; line-height:2em;"><img border="0" alt="{{config('app.website_name')}}" src="{{ url('images/logo/logo.png') }}"></td>
   </tr>
   
    <tr>
