@@ -50,14 +50,14 @@ table td {border-collapse:collapse;}
     <!-- header -->
     	<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#1a3752">
   <tr>
-    <td height="50">&nbsp;</td>
+    <td height="10">&nbsp;</td>
   </tr>
    <tr>
     <td  style="color: #fff; font-weight:bold; font-size: 34px; line-height:2em;"><img border="0" alt="{{config('app.website_name')}}" src="{{ url('images/logo/logo.png') }}"></td>
   </tr>
   
    <tr>
-    <td height="30">&nbsp;</td>
+    <td height="10">&nbsp;</td>
   </tr>
   
 </table>
