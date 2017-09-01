@@ -56,7 +56,7 @@ return [
     */
 
     //'from' => ['address' => null, 'name' => null],
-    'from' => ['address' => 'debutinfo1@gmail.com', 'name' => 'LookingApp'],
+    'from' => ['address' => 'tdemo180@gmail.com', 'name' => 'Looking App'],
 
     /*
     |--------------------------------------------------------------------------
@@ -84,7 +84,7 @@ return [
     */
 
     //'username' => env('MAIL_USERNAME'),
-    'username' => 'debutinfo1@gmail.com',
+    'username' => 'tdemo180@gmail.com',
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
     */
 
     //'password' => env('MAIL_PASSWORD'),
-    'password' => 'admin@!@#',
+    'password' => '123@password',
 
     /*
     |--------------------------------------------------------------------------
