@@ -59,6 +59,10 @@ Change Quick Sidebar Width
 }
 */
 
+@media only screen and (max-width: 980px){
+    .page-404-3 h1.congrtMessage{ font-size: 55px;line-height: 60px;  }
+}
+
 @media only screen and (max-width: 768px){
     .page-404-3 h1.congrtMessage{ font-size: 45px;line-height: 60px;  }
 }
