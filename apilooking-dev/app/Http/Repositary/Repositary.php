@@ -13,7 +13,7 @@ use App\Models\JobSeekers;
 use Validator; 
 use DB;
 use Mail; 
-
+use PushNotification;
 class Repositary
 {
 	/*==================================================================================================
@@ -230,10 +230,30 @@ class Repositary
 	{
 		return ChatModel::where(['user_id'=>$cId,'chat_user_id'=>$rId])->first();
 	}
-/*
-	public function sentNotification($data)
+
+    /*==================================================================================================
+    Function for sent notification.
+    ====================================================================================================
+    */
+	public function sentNotification($device_token,$device_type,$messages,$data)
 	{
-		# code...
-	}*/
+        try {
+
+            $message = PushNotification::Message($messages,$data);
+            $dType = 'appNameIOS';
+            if($device_type == 'android')
+            {
+                $dType = 'appNameAndroid';
+            }
+
+            PushNotification::app($dType)
+                        ->to($device_token)
+                        ->send($message);
+            
+        } catch (Exception $e) {
+            return false;
+        }
+		
+	}
 
 }

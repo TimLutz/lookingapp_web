@@ -36,7 +36,6 @@ Dashboard
 
 				<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
 				<a href="{{ url(getenv('adminurl').'/users/banned') }}">
-				<a href="javascript:void(0);"></a>
 					<div class="dashboard-stat red-intense">
 						<div class="visual">
 							<i class="glyphicon glyphicon-home"></i>
@@ -57,7 +56,7 @@ Dashboard
 				</div>
 				<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
 				<!-- <a href="{{ url(getenv('adminurl').'/users') }}"> -->
-					<a href="javascript:void(0)"></a>
+					<a href="javascript:void(0)">
 					<div class="dashboard-stat green-haze">
 						<div class="visual">
 							<i class="glyphicon glyphicon-registration-mark"></i>
@@ -71,7 +70,7 @@ Dashboard
 							</div>
 						</div>
 						<!-- <a class="more" href="{{ url(getenv('adminurl').'/users') }}"> -->
-						<a href="javascript:void(0)"></a>
+						<a class="more" href="javascript:void(0)">
 						View more <i class="m-icon-swapright m-icon-white"></i>
 						</a>
 					</div>
@@ -80,7 +79,7 @@ Dashboard
 				
 				<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
 				<!-- <a href="{{ url(getenv('adminurl').'/properties') }}"> -->
-					<a href="javascript:void(0);"></a>
+					<a href="javascript:void(0);">
 					<div class="dashboard-stat purple-plum">
 						<div class="visual">
 							<i class="fa fa-cube"></i>
@@ -94,7 +93,7 @@ Dashboard
 							</div>
 						</div>
 						<!-- <a class="more" href="{{ url(getenv('adminurl').'/properties') }}"> -->
-						<a href="javascript:void(0);"></a>
+						<a class="more" href="javascript:void(0);">
 						View more <i class="m-icon-swapright m-icon-white"></i>
 						</a>
 					</div>
@@ -103,7 +102,7 @@ Dashboard
 
 				<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
 				<!-- <a href="{{ url(getenv('adminurl').'/users') }}"> -->
-					<a href="javascript:void(0);"></a>
+					<a href="javascript:void(0);">
 					<div class="dashboard-stat purple-plum">
 						<div class="visual">
 							<i class="fa fa-cube"></i>
@@ -117,7 +116,7 @@ Dashboard
 							</div>
 						</div>
 						<!-- <a class="more" href="{{ url(getenv('adminurl').'/users') }}"> -->
-						<a href="javascript:void(0);"></a>
+						<a class="more" href="javascript:void(0);">
 						View more <i class="m-icon-swapright m-icon-white"></i>
 						</a>
 					</div>

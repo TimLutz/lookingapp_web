@@ -39,8 +39,10 @@ $app->get('/', function () use ($app) {
     $app->post('unshare_all_album_access','UserController@postUnshareAllAlbumAccess');
     $app->post('share_album','UserController@postShareAlbum');
     $app->post('add_flag','UserController@postAddFlag');
+    $app->post('chat_message_push_notification','UserController@postChatMessagePushNotification');
     $app->post('declain_invitation','UserController@postDeclainInvitation');
     $app->get('terms','UserController@getTermsAndCondition');
+    
 });
 
 

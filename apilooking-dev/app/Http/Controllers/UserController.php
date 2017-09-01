@@ -1393,12 +1393,12 @@ class UserController extends Controller {
                 }
                 // Pending push notification
                 
-                $userdetails =  User::find($receiver_id); 
+                $userdetails =  User::find($data['receiver_id']); 
                 if(count($userdetails))
                 {
                     /*                 * ***********total count message ************ */
-                    $chatusers = $this->ChatUser->find('all', array('conditions' => array('ChatUser.chat_user_id' => $receiver_id)));
-                    $chatusers = ChatModel::where(['chat_user_id'=>$receiver_id])->get();
+                   
+                    $chatusers = ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
                     $total_unread_message = 0;
                     if ($chatusers) {
 
@@ -1416,16 +1416,40 @@ class UserController extends Controller {
                         $total_unread_message = '';
                     }
 
+                    /***** Send Pushnotification   *****/
                     if($userdetails->online_status==1)
                     {
-                        if ($accept == 1) {
-                            $msg = $username['User']['screen_name'] . ' accept invitation';
-                            $type = 'accept_invitation';
-                        } else {
-                            $msg = $username['User']['screen_name'] . ' send invitation';
-                            $type = 'sent_invitation';
+                        try {
+
+                            $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
+                        //    $device_token = $userdetails->device_token; 
+                            if (isset($data['accept']) && $data['accept']==1) {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' accept invitation';
+                                $type = 'accept_invitation';
+                            } else {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send invitation';
+                                $type = 'sent_invitation';
+                            }
+
+                            if($userdetails->device_type=='android')
+                            {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send message for you';
+                                $notification = ['sound'=>'default'];
+                            }   
+                            else
+                            {
+                                $notification = ['badge'=>$total_unread_message,'type'=>$type,'sound'=>'default'];
+                            }
+
+                            $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
+
+                        } catch (Exception $e) {
+                            $response['success'] = 0;
+                            $response['message'] = 'Invaid device token.';
+                            $http_status = 400;
                         }
                     }
+                    
                 }
                 else
                 {
@@ -1771,6 +1795,7 @@ class UserController extends Controller {
                             $is_received = 1;
                             $is_view = 1;
                         }
+                        $data['id'] = $sharealbum->id;
                         $data['is_view'] = $is_view;
                         $data['is_received'] = $is_received;
                         
@@ -1778,6 +1803,7 @@ class UserController extends Controller {
                         $is_received = 1;
                         $data['is_received'] = $is_received;
                         $data['is_view'] = 1;
+                        $data['id'] = '';
                     }
                     /*******Check the limit of sharalbum************/
                     $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'PrivateAlbumSharePerDay');
@@ -1798,51 +1824,58 @@ class UserController extends Controller {
 
                     if($is_share_count==1)
                     {
-                        if($sharealbum)
+                        if(ShareAlbumModel::updateOrCreate(['id'=>$data['id']],$data))
                         {
-                            if($sharealbum->update($data))
-                            {
-                                $count = 1;
+                            $chatusers = ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
+                            $total_unread_message = 0;
+                            if ($chatusers) {
+                                foreach ($chatusers as $key => $value) {
+                                    if ($value['invite'] > 0) {
+                                        $invite = 1;
+                                    } else {
+                                        $invite = 0;
+                                    }
+                                    $total_unread_message+=($value['count'] + $invite);
+                                }
                             }
+                            if ($total_unread_message == 0) {
+                                $total_unread_message = '';
+                            }
+
+                            $userdetails = User::find($data['receiver_id']);
+
+                            /***** Send Pushnotification   *****/
+                            if($userdetails->online_status==1)
+                            {
+                               $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
+                            //    $device_token = $userdetails->device_token;
+                                $count_view = $common->count_view($data['receiver_id']);
+                                $count_sharealbum = $common->count_sharealbum($data['receiver_id']);
+                                $total_view_and_share = (int) $count_view + (int) $count_sharealbum;
+
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' share album with you';
+                                if($userdetails->device_type=='android')
+                                {
+                                    $notification = ['sound'=>'default'];
+                                }   
+                                else
+                                {
+                                    $notification = ['badge'=>(int) $total_unread_message,'type'=>'share_album','sound'=>'default','count_unread_msg'=>1,'total_view_and_share'=>$total_view_and_share];
+                                }
+
+                                $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
+                            }
+
+                            $response['success'] = 1;
+                            $response['message'] = 'Success';
+                            $http_status = 200;
                         }
                         else
                         {
-                            if(ShareAlbumModel::create($data))
-                            {
-                                $count = 1;
-                            }
+                            $response['success'] = 0;
+                            $response['message'] = 'unable to save database';
+                            $http_status = 400;   
                         }
-                    }
-
-                    if ($count==1) 
-                    {
-                        $chatusers = ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
-                        $total_unread_message = 0;
-                        if ($chatusers) {
-                            foreach ($chatusers as $key => $value) {
-                                if ($value['invite'] > 0) {
-                                    $invite = 1;
-                                } else {
-                                    $invite = 0;
-                                }
-                                $total_unread_message+=($value['count'] + $invite);
-                            }
-                        }
-                        if ($total_unread_message == 0) {
-                            $total_unread_message = '';
-                        }
-
-                        //Pending Notification process
-
-                        $response['success'] = 1;
-                        $response['message'] = 'Success';
-                        $http_status = 200;
-                    } 
-                    else 
-                    {
-                        $response['success'] = 0;
-                        $response['message'] = 'unable to save database';
-                        $http_status = 400;
                     }
                 } 
                 else
@@ -2564,7 +2597,7 @@ class UserController extends Controller {
      *
      **/
 
-    public function postChatMessagePushNotification(Request $request) {
+    public function postChatMessagePushNotification(Request $request,Repositary $common) {
         try 
         {
                 $validator = Validator::make( $request->all(),[
@@ -2588,34 +2621,29 @@ class UserController extends Controller {
                     $data = $request->all();
                     $chat_count_message = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$data['receiver_id']])->first();
                     if ($chat_count_message) {
-                        $chat_count_message->update(['count'=>$chat_count_message+1,'created_at'=>carbon::now()]);
+                        $chat_count_message->update(['count'=>$chat_count_message->count+1,'created_at'=>carbon::now()]);
                         
                     }
                     
                     $chat_count_message1 = ChatModel::where(['user_id'=>$data['receiver_id'],'chat_user_id'=>$clientId])->first();
 
                     if ($chat_count_message1) {
-                        
-                        $this->ChatUser->updateAll(
-                                array('ChatUser.creation_date' => "'" . $current_date . "'"), array('ChatUser.id' => $chat_count_message1['ChatUser']['id']));
-
                         $chat_count_message1->update(['created_at'=>carbon::now()]);
-                        
                     }
 
                     /*             * ***********total count message ************ */
-                    $chatusers = $ChatModel::where(['chat_user_id'=>$data->receiver_id])->get();
+                    $chatusers =ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
                     $total_unread_message = 0;
                     $UserData = array();
                     if ($chatusers) {
 
                         foreach ($chatusers as $key => $value) {
-                            if ($value['ChatUser']['invite'] > 0) {
+                            if ($value['invite'] > 0) {
                                 $invite = 1;
                             } else {
                                 $invite = 0;
                             }
-                            $total_unread_message+=($value['ChatUser']['count'] + $invite);
+                            $total_unread_message+=($value['count'] + $invite);
                         }
                     }
                     
@@ -2624,7 +2652,7 @@ class UserController extends Controller {
                         $total_unread_message = '';
                     }
                     
-                    $is_active_look_date = UserLookdateModel::where(['user'=>$clientId])->first();
+                    $is_active_look_date = UserLookdateModel::where(['user_id'=>$clientId])->first();
                     
                     if ($is_active_look_date) {
                         $is_active_lookdate_profile = 1;
@@ -2633,11 +2661,50 @@ class UserController extends Controller {
                     }
                     
                     //Pending push notification
+                    $userdetails = User::find($data['receiver_id']);
+                    if ($userdetails) {
+                        //$device_token = $userdetails['User']['device_token'];    
+                        
+                        /***** Send Pushnotification   *****/    
+                        if ($userdetails->online_status == 1) {
+                            /*                         * ********* send notification for ios ************* */
+                            $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
+                            //$device_token = $userdetails->device_token; 
+                            $message = isset($data['message']) && !empty($data['message']) ? $data['message'] : '';
+                            if ($message == 'send location') {
+                                $message = $data['message'];
+                                $msg = 'Location received';
+                            } else if ($message == 'Detail profile unlocked') {
+                                $message = $data['message'];
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' unlocked ' . ((isset($data['browse']) && $data['browse']) ? $data['browse'] : '') . ' profile';
+                            } else {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send message for you'; //'You have a message';
+                            }
+
+                            if($userdetails->device_type=='android')
+                            {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send message for you';
+                                $notification = ['sound'=>'default'];
+                            }   
+                            else
+                            {
+                                $notification = ['badge'=>(int) $total_unread_message,'type'=>'chat message','sound'=>'default','count_unread_msg'=>$total_unread_message,'sender_id'=>$clientId,'receiver_id'=>$data['receiver_id'],'content-available'=>1,'message'=>$message];
+                            } 
+
+                            $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
+                        }
+                        
+                        $data['success'] = 1;
+                        $data['msg'] = 'success';
+                    }else {
+                        $response['success'] = 0;
+                        $response['message'] = 'user details not found';
+                        $http_status = 400;
+                    }
 
                     $response['message'] = 'Success';
                     $response['success'] = 1;
                     $http_status = 200;
-
                 }        
         }
         catch (Exception $e) 
