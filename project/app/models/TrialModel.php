@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model;
+namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,5 +9,5 @@ class TrialModel extends Model
     //
     protected $table = 'trials';
 
-    protected $fillable = ['month'];
+    protected $fillable = ['days'];
 }

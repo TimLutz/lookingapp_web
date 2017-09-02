@@ -1,13 +1,13 @@
-<?php $__env->startSection('title'); ?>
-	Users 	
-<?php $__env->stopSection(); ?>
-<?php $__env->startSection('content'); ?>
+@extends('admin.layout')
+@section('title')
+	Profile Text
+@endsection
+@section('content')
 <h3 class="page-title">
-Users
-<a href="<?php echo e(url(getenv('adminurl').'/users/genrateCsv')); ?>" class="btn btn-danger pull-right">Export</a>
+Profile Text
 </h3><br>
 <!-- BEGIN PAGE CONTENT-->
-<?php echo $__env->make('flash::message', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+@include('flash::message')
 <div class="row">
 	<div class="col-md-12">
 		
@@ -16,22 +16,30 @@ Users
 			<div class="portlet-body">
 				<div class="table-container">
 					
-					<input type="hidden" name="action" value="photos/list-all-photos"/>
+					<input type="hidden" name="action" value="profiletext/list-all-profile"/>
 					
 					<table class="table table-striped table-bordered table-hover" id="datatable_ajax_for_realtor">
 					<thead>
 					<tr role="row" class="heading">
+<!--
+						<th width="2%">
+							<input type="checkbox" name="selectall" class="group-checkable">
+						</th>
+-->
 						<th width="5%">
 							 S.No.
 						</th>
 						<th width="15%">
 							 Image
 						</th>
+						<th width="15%">
+							 Profile Text
+						</th>
 						
 						<th width="15%">
 							Email
 						</th>
-						<th width="10%">
+						<th width="15%">
 							Post Date
 						</th>
 						<th width="10%">
@@ -43,27 +51,21 @@ Users
 <!--
 						<td></td>
 -->
-						<td>
-								
+						<td>	
+						</td>
+						<td>	
 						</td>
 						<td>
-								
 						</td>
 						<td>
-							<input type="text" class="form-control form-filter input-sm" name="screen_name" id="approved_planname" autocomplete="off" placeholder="Search by name or Email">
+							<input type="text" class="form-control form-filter input-sm" name="email" id="email" autocomplete="off">
 						</td>
-						
 						<td>
-								
-						</td>	
-						
+						</td>
 						<td>
 						<button style="display:none;" class="btn btn-sm yellow filter-submit margin-bottom"></button>
 						<button title="Reset" class="btn btn-sm red filter-cancel">Reset</button>	
 						</td>
-					
-
-
 					</tr>
 					</thead>
 					<tbody>
@@ -78,8 +80,8 @@ Users
 	</div>
 </div>
 			<!-- END PAGE CONTENT-->
-<?php $__env->stopSection(); ?>
-<?php $__env->startSection('js'); ?>
+@endsection
+@section('js')
 <script>
 jQuery(document).ready(function() {
    $(document).on('click','#change-common-status', function(){
@@ -93,7 +95,7 @@ jQuery(document).ready(function() {
 		 bootbox.confirm('Are Sure you want to '+(status == true ? "Ban" : "Unban")+' User?', function (result) {
             if (result) {
                 $.ajax({
-						url: path+addU+'/photos/change-status',
+						url: path+addU+'/profiletext/change-status',
 						data : $this.closest('form').serialize()+'&id='+id+'&table='+table+'&status='+status+'&action='+action+'&_token='+token,
 						dataType: 'json',
 						type: 'post',
@@ -128,19 +130,19 @@ jQuery(document).ready(function() {
         });
 	});
 
-   	$(document).on('click','#change-photo-status', function(){
+   	$(document).on('click','#change-profiletext-status', function(){
 		var $this = $(this);
 		var table = $this.data('table');
 		var token = $('meta[name=csrf-token]').attr("content");
 		var id = $this.data('id');
-		var status = $this.data('photostatus');
+		var status = $this.data('profilestatus');
 		alert(status);
 		var action = $this.data('action');
 		var addU = "<?php echo getenv('adminurl') ?>";
-		 bootbox.confirm('Are Sure you want to '+(status == true ? "approve" : "Approve")+' User?', function (result) {
+		 bootbox.confirm('Are Sure you want to '+(status == true ? "Approve" : "approve")+' User?', function (result) {
             if (result) {
                 $.ajax({
-						url: path+addU+'/photos/change-photos',
+						url: path+addU+'/profiletext/change-text',
 						data : $this.closest('form').serialize()+'&id='+id+'&table='+table+'&status='+status+'&action='+action+'&_token='+token,
 						dataType: 'json',
 						type: 'post',
@@ -153,7 +155,7 @@ jQuery(document).ready(function() {
 						success: function(json){
 							console.log(json);
 							if (json.success) {
-								showSuccessMessage('Photo Approved Successfully');
+								showSuccessMessage('Profile Text has been Approved Successfully');
 								TableAjax.refresh();
 							} else if (json.exception_message) {
 								showErrorMessage('Something went wrong!!');
@@ -161,7 +163,6 @@ jQuery(document).ready(function() {
 							}
 							else
 							{
-								alert('sdxcbnc');
 								showErrorMessage('Something went wrong!!');
 								TableAjax.refresh();	
 							}
@@ -174,14 +175,12 @@ jQuery(document).ready(function() {
             }
         });
 	});
-
+ 
 	TableAjax.init();
 	TableAjax.update();
 });
 </script>
-<script src="<?php echo e(asset('js/photos.js')); ?>"></script>
-<?php $__env->stopSection(); ?>
+<script src="{{ asset('js/profiletext.js') }}"></script>
+@endsection
 
 
-
-<?php echo $__env->make('admin.layout', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>

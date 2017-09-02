@@ -79,7 +79,8 @@
 					</a>
 				</li>
 				<li class="<?php if(isset($active) && $active == 'profiletext'): ?> active <?php endif; ?>">
-					<a href="javascript:void(0)">
+					<a href="<?php echo e(url(getenv('adminurl').'/profiletext')); ?>">
+					<!-- <a href="javascript:void(0)"> -->
 					<i class="icon-list"></i>
 					<span class="title">
 					Profile Text </span>
@@ -107,7 +108,8 @@
 					</ul>
 				</li>
 				<li class="<?php if(isset($active) && $active == 'trials'): ?> active <?php endif; ?>">
-					<a href="javascript:void(0)">
+					<a href="<?php echo e(url(getenv('adminurl').'/trials')); ?>">
+					<!-- <a href="javascript:void(0)"> -->
 					<i class="icon-list"></i>
 					<span class="title">
 					Trials </span>

@@ -79,6 +79,7 @@
 					</a>
 				</li>
 				<li class="@if(isset($active) && $active == 'profiletext') active @endif">
+					<!-- <a href="{{ url(getenv('adminurl').'/profiletext') }}"> -->
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
@@ -107,6 +108,7 @@
 					</ul>
 				</li>
 				<li class="@if(isset($active) && $active == 'trials') active @endif">
+					<!-- <a href="{{ url(getenv('adminurl').'/trials') }}"> -->
 					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">

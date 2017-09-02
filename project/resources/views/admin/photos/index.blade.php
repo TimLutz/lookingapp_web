@@ -90,10 +90,11 @@ jQuery(document).ready(function() {
 		var id = $this.data('id');
 		var status = $this.data('status');
 		var action = $this.data('action');
+		var addU = "<?php echo getenv('adminurl') ?>";
 		 bootbox.confirm('Are Sure you want to '+(status == true ? "Ban" : "Unban")+' User?', function (result) {
             if (result) {
                 $.ajax({
-						url: path+'common/change-status',
+						url: path+addU+'/photos/change-status',
 						data : $this.closest('form').serialize()+'&id='+id+'&table='+table+'&status='+status+'&action='+action+'&_token='+token,
 						dataType: 'json',
 						type: 'post',
@@ -112,14 +113,69 @@ jQuery(document).ready(function() {
 								showErrorMessage('Something went wrong!!');
 								TableAjax.refresh();
 							}
+							else
+							{
+								alert('sdxcbnc');
+								showErrorMessage('Something went wrong!!');
+								TableAjax.refresh();	
+							}
 						},
 						error : function(xhr, ajaxOptions, thrownError) {
 							showErrorMessage('Something went wrong!!');
+							TableAjax.refresh();	
 						}
 					});
             }
         });
 	});
+
+   	$(document).on('click','#change-photo-status', function(){
+		var $this = $(this);
+		var table = $this.data('table');
+		var token = $('meta[name=csrf-token]').attr("content");
+		var id = $this.data('id');
+		var status = $this.data('photostatus');
+		alert(status);
+		var action = $this.data('action');
+		var addU = "<?php echo getenv('adminurl') ?>";
+		 bootbox.confirm('Are Sure you want to '+(status == true ? "approve" : "Approve")+' User?', function (result) {
+            if (result) {
+                $.ajax({
+						url: path+addU+'/photos/change-photos',
+						data : $this.closest('form').serialize()+'&id='+id+'&table='+table+'&status='+status+'&action='+action+'&_token='+token,
+						dataType: 'json',
+						type: 'post',
+						beforeSend: function(){
+							$this.html('<i class="fa fa-spin fa-spinner"></i>');
+						},
+						complete: function(){
+							
+						},
+						success: function(json){
+							console.log(json);
+							if (json.success) {
+								showSuccessMessage('Photo Approved Successfully');
+								TableAjax.refresh();
+							} else if (json.exception_message) {
+								showErrorMessage('Something went wrong!!');
+								TableAjax.refresh();
+							}
+							else
+							{
+								alert('sdxcbnc');
+								showErrorMessage('Something went wrong!!');
+								TableAjax.refresh();	
+							}
+						},
+						error : function(xhr, ajaxOptions, thrownError) {
+							showErrorMessage('Something went wrong!!');
+							TableAjax.refresh();	
+						}
+					});
+            }
+        });
+	});
+
 	TableAjax.init();
 	TableAjax.update();
 });

@@ -7,13 +7,8 @@ use Illuminate\Http\Request;
 use repositories\CommonRepository;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\InterestRequest;
 use App\User;
-use App\EmailTemplate;
-use Input;
-use Mail;
 use DB;
-use Hash;
 use Response;
 
 class UsersController extends Controller

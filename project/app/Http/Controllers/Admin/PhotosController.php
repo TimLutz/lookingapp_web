@@ -87,8 +87,8 @@ class PhotosController extends Controller
         foreach($resultset as $value){
             $userId = \Crypt::encrypt($value->id);
             $status = $createDate = '';
-            
-            $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
+
+            $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.\Crypt::encrypt($value->id).'" data-photostatus="'.$value->photo_change.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.\Crypt::encrypt($value->id).'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
             
             if($value->profile_pic_date)
             {
@@ -180,4 +180,93 @@ class PhotosController extends Controller
     {
         //
     }
+
+    public function postChangeStatus(Request $request) {
+
+        try {
+            $data = $request->all();
+            $id = \Crypt::decrypt($data['id']);
+            if(!empty($id))
+            {
+                $status = User::find($id);
+                if($status)
+                {
+                    if($data['status'] == 0)
+                    {
+                        $data['status']= 1;
+                    }
+                    else
+                    {
+                        $data['status']= 0;   
+                    }
+                    
+                    if($status->update(['status'=>$data['status'],'photo_change'=>0]))
+                    {
+                        return response()->json(['success'=>true,'action' => $request['action']]);
+                    }
+                    else
+                    {
+                        return response()->json(['success'=>false,'action' => $request['action']]);
+                    }
+                }
+                else
+                {
+                    return response()->json(['success'=>false,'action' => $request['action']]);
+                }
+            }
+            else
+            {
+                return response()->json(['success'=>false,'action' => $request['action']]);
+            }
+        } catch (Exception $e) {
+            return response()->json(['success'=>false,'action' => $request['action']]);
+        }
+
+        return response()->json($response,$http_status);
+    }
+
+    public function postChangePhotos(Request $request) {
+        
+        try {
+            $data = $request->all();
+            $id = \Crypt::decrypt($data['id']);
+            if(!empty($id))
+            {
+                $status = User::find($id);
+                if($status)
+                {
+                    if($data['status'] == 0)
+                    {
+                        $data['status']= 1;
+                    }
+                    else
+                    {
+                        $data['status']= 0;   
+                    }
+                    
+                    if($status->update(['photo_change'=>0]))
+                    {
+                        return response()->json(['success'=>true,'action' => $request['action']]);
+                    }
+                    else
+                    {
+                        return response()->json(['success'=>false,'action' => $request['action']]);
+                    }
+                }
+                else
+                {
+                    return response()->json(['success'=>false,'action' => $request['action']]);
+                }
+            }
+            else
+            {
+                return response()->json(['success'=>false,'action' => $request['action']]);
+            }
+        } catch (Exception $e) {
+            return response()->json(['success'=>false,'action' => $request['action']]);
+        }
+
+        return response()->json($response,$http_status);
+    }
+        
 }

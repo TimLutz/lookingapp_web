@@ -53,7 +53,7 @@ var TableAjax = function () {
                 "aoColumnDefs" : [
 				 {
 				   'bSortable' : false,
-				   'aTargets' : [ 0,1,3]
+				   'aTargets' : [ 0,1,2,5]
 				 }],
                 "order": [
                     [2, "asc"]

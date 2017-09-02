@@ -11,6 +11,7 @@ var TableAjax = function () {
     var handleRecords = function () {
 		
 		var action = $('input[name="action"]').val();
+		
         var grid = new Datatable();
 
         grid.init({
@@ -53,10 +54,10 @@ var TableAjax = function () {
                 "aoColumnDefs" : [
 				 {
 				   'bSortable' : false,
-				   'aTargets' : [ 0,1,3]
+				   'aTargets' : [ 0,1,2]
 				 }],
                 "order": [
-                    [2, "asc"]
+                    [0, "asc"]
                 ]// set first column as a default sort by asc
             }
         });

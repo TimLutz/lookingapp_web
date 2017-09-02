@@ -16,10 +16,12 @@ Route::group(['middleware' => ['backbutton']], function()
 	Route::group(['prefix' =>getenv('adminurl'),'backbutton'], function()
 	{
 		Route::get('/', 'Admin\AdminController@Index');
-		Route::get('users/genrateCsv','admin\UsersController@genrateCsv');
-		Route::get('users/genrateCsv1','admin\UsersController@genrateCsvBannedUser');
+		Route::get('users/genrateCsv','Admin\UsersController@genrateCsv');
+		Route::get('users/genrateCsv1','Admin\UsersController@genrateCsvBannedUser');
 		Route::controller('users','Admin\UsersController');
 		Route::controller('photos','Admin\PhotosController');
+		Route::controller('trials','Admin\TrialController');
+		Route::controller('profiletext','Admin\ProfiletextController');
 		Route::controller('multidelete', 'Admin\MultideleteController');
 		Route::controller('auth', 'Admin\AdminauthController');
 		Route::controller('dashboard', 'Admin\AdminController');
