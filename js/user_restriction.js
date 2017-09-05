@@ -45,18 +45,21 @@ var TableAjax = function () {
                     "url": path+adminname+'/'+action, // ajax source
                     //~ "data": function(data) {
 						//~ data.token = $('meta[name="csrf-token"]').attr('content')
-					//~ },
+					//~ }
+                    "data" : {
+                        'type' : $('#user_type').val()
+                    },
 					headers: {
-						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
 					}
                 },
                 "aoColumnDefs" : [
 				 {
 				   'bSortable' : false,
-				   'aTargets' : [ 0,1,2,5]
+				   'aTargets' : [ 0,1,2,3]
 				 }],
                 "order": [
-                    [3, "asc"]
+                    [0, "asc"]
                 ]// set first column as a default sort by asc
             }
         });

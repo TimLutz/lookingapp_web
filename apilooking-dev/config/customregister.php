@@ -12,9 +12,9 @@ return [
     | has failed, such as for an invalid token or invalid new password.
     |
     */
-    'alpha_num' => 'Username name may only contain letters and numbers.',
-    'max' => 'Username should not be greaterthen 16 character.',
-    'min'=>'Username must not be lessthen 4 character.',
+    'alpha_num' => 'Screen name may only contain letters and numbers.',
+    'max' => 'Screen name should not be greaterthen 13 character.',
+    'min'=>'Screen name must not be lessthen 4 character.',
     'required'=>'Please enter your username',
-    'unique' => 'Username already exist.',
+    'unique' => 'Screen name already exist.',
 ];

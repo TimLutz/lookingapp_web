@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 use App\models\TrialModel;
 use Response;
 use DB;
-
+use App\Http\Requests\TrailsRequest;
 class TrialController extends Controller
 {
 
@@ -99,7 +99,7 @@ class TrialController extends Controller
      * Created for: function for update record
      * 
      *********/
-    public function postUpdate(Request $request,$id)
+    public function postUpdate(TrailsRequest $request,$id)
     {
         try
         {

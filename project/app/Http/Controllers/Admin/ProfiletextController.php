@@ -25,7 +25,7 @@ class ProfiletextController extends Controller
         {
             $result = [
                 'exception_message' => $e->getMessage(),
-                'active' => 'users'
+                'active' => 'profiletext'
             ];
             return view('errors.error', $result);
         }
@@ -46,48 +46,24 @@ class ProfiletextController extends Controller
                       ->orWhere('screen_name','LIKE','%'.$request->email.'%');
                 });    
             }
-
-            /*if(isset($request->screen_name) && !empty($request->screen_name))
-            {
-                $basearray->where(function($q) use ($request){
-                    $q->orWhere('screen_name','LIKE','%'.$request->screen_name.'%')
-                      ->orWhere('email','LIKE','%'.$request->screen_name.'%');
-                });
-            }*/
             
-
             /*****************Below code is for Sorting ****************/
             
-            /*$order = $request->get('order');
+            $order = $request->get('order');
                 
-                if($order[0]['column'] == 2)
-                {
-                    $basearray->orderBy('screen_name',$order[0]['dir']);
-                }
-                elseif($order[0]['column'] == 3)
-                {
-                    $basearray->orderBy('profile_id',$order[0]['dir']);
-                }
-                else if($order[0]['column'] == 4)
-                {
-                    $basearray->orderBy('email',$order[0]['dir']);
-                }
-                else if($order[0]['column'] == 5)
-                {
-                    $basearray->orderBy('member_type',$order[0]['dir']);
-                }
-                else if($order[0]['column'] == 6)
-                {
-                    $basearray->orderBy('created_at',$order[0]['dir']);
-                }
-                else if($order[0]['column'] == 7)
-                {
-                    $basearray->orderBy('valid_upto',$order[0]['dir']);
-                }
-                else
-                {
-                    $basearray->orderBy('id','desc');
-                }*/
+                
+            if($order[0]['column'] == 3)
+            {
+                $basearray->orderBy('email',$order[0]['dir']);
+            }
+            else if($order[0]['column'] == 4)
+            {
+                $basearray->orderBy('profile_text_change_date',$order[0]['dir']);
+            }
+            else
+            {
+                $basearray->orderBy('id','desc');
+            }
                 
                 
             $counttotal =  User::where(['role'=>2,'profiletext_change'=>1])->get()->count();
@@ -105,7 +81,7 @@ class ProfiletextController extends Controller
             foreach($resultset as $value){
                 $userId = \Crypt::encrypt($value->id);
                      
-                    $status='<div class="statuscenter"><a  id="change-profiletext-status" data-table="users" data-id="'.$userId.'" data-profilestatus="'.$value->profiletext_change.'" data-action="Plans"><i class="fa fa-check-circle"></i><a><a  id="change-common-status" data-table="users" data-id="'.$userId.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban"></i><a></div>';
+                    $status='<div class="statuscenter"><a  id="change-profiletex-status" data-table="users" data-id="'.$userId.'" data-profilestatus="'.$value->profiletext_change.'" data-action="Plans"><i class="fa fa-check-circle"></i><a><a  id="change-common-status" data-table="users" data-id="'.$userId.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban"></i><a></div>';
                 
 
                 $aboutMe = $createDate = '';
@@ -142,7 +118,7 @@ class ProfiletextController extends Controller
         } catch (\Exception $e) {
             $result = [
                 'exception_message' => $e->getMessage(),
-                'active' => 'users'
+                'active' => 'profiletext'
             ];
             return view('errors.error', $result);
         }

@@ -22,6 +22,7 @@ Route::group(['middleware' => ['backbutton']], function()
 		Route::controller('photos','Admin\PhotosController');
 		Route::controller('trials','Admin\TrialController');
 		Route::controller('profiletext','Admin\ProfiletextController');
+		Route::controller('userrestriction','Admin\UserRestrictionController');
 		Route::controller('multidelete', 'Admin\MultideleteController');
 		Route::controller('auth', 'Admin\AdminauthController');
 		Route::controller('dashboard', 'Admin\AdminController');
@@ -31,6 +32,7 @@ Route::group(['middleware' => ['backbutton']], function()
 	});
 	Route::controller('common', 'CommonController');
 	
+Route::get('terms','PagesController@getTandc');
 Route::get('reset-password/{token}', 'PasswordController@reset');
 Route::post('app-password-reset', 'PasswordController@Resetpassword');
 });	

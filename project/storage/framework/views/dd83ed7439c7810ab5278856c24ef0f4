@@ -96,12 +96,14 @@
 					</a>
 					<ul class="sub-menu">
 						<li class="<?php if($active == 'free'): ?> active <?php endif; ?>">
-							<a href="javascript:void(0)">
+							<!-- <a href="javascript:void(0)"> -->
+							<a href="<?php echo e(url(getenv('adminurl').'/userrestriction')); ?>">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Free Users</a>
 						</li>
 						<li class="<?php if($active == 'paid'): ?> active <?php endif; ?>">
-							<a href="javascript:void(0)">
+							<!-- <a href="javascript:void(0)"> -->
+							<a href="<?php echo e(url(getenv('adminurl').'/userrestriction/paid')); ?>">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Paid Users</a>
 						</li>

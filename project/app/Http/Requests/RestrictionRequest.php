@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Request;
 
-class TrailsRequest extends Request
+class RestrictionRequest extends Request
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,18 +16,23 @@ class TrailsRequest extends Request
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
     public function rules()
     {
         switch ($this->get('edit')) {
             case 'edit':
                 $rules =  [
-                    'days'=>'numeric|required'
+                    'limit'=>'numeric|required'
                 ];
                 break;
             
             default:
                 $rules =  [
-                    'days'=>'numeric|required'
+                    'limit'=>'numeric|required'
                 ];
                 break;
         }
@@ -38,8 +43,8 @@ class TrailsRequest extends Request
     public function messages()
     {
         return [
-                    'days.numeric'=>'Days must be numeric',
-                    'days.required'=>'Days can`t be empty'
+                    'limit.numeric'=>'Limit must be numeric',
+                    'limit.required'=>'Limit can`t be empty'
                ];
     }
 }

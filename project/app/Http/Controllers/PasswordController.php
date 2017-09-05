@@ -37,8 +37,8 @@ class PasswordController extends Controller {
 		  if(isset($user) && !empty($user)){
 			  
 		  }else{
-			  $message = "Sorry this link has been expired";
-			  $heading = "Oops!!";
+			  $message = "This link has expired";
+			  $heading = "ERROR";
 			  return view('admin.auth.thankyoupage',compact('message','heading'));
 		  }
 		  //$userdata = User::where('id','=',$id)->first();
@@ -73,8 +73,8 @@ class PasswordController extends Controller {
 				$savedpassword = $user->save();
 				if($savedpassword)
 				{
-			  $message = "Password Reset Successfull";
-			  $heading = "Congratulations!!";
+			  $message = "Your password has been reset";
+			  $heading = "SUCCESS";
 			  return view('admin.auth.thankyoupage',compact('message','heading'));
 				}
 				else

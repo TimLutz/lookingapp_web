@@ -76,10 +76,10 @@ Users
 							<input type="text" class="form-control form-filter input-sm" name="name" id="approved_planname" autocomplete="off">
 						</td>
 						<td>
-							<input type="text" class="form-control form-filter input-sm" name="profile_id" id="email" autocomplete="off">
+							<input type="text" class="form-control form-filter input-sm" name="profile_id"  autocomplete="off">
 						</td>
 						<td>
-							<input type="text" class="form-control form-filter input-sm" name="email" id="email" autocomplete="off">
+							<input type="text" class="form-control form-filter input-sm" name="email"  autocomplete="off">
 						</td>
 						
 						<td>					

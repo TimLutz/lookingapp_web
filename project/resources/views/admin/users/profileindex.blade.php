@@ -58,7 +58,7 @@ Profile Text
 						<td>
 						</td>
 						<td>
-							<input type="text" class="form-control form-filter input-sm" name="email" id="email" autocomplete="off">
+							<input class="form-control form-filter input-sm" name="email" autocomplete="off" type="text">
 						</td>
 						<td>
 						</td>
@@ -116,7 +116,6 @@ jQuery(document).ready(function() {
 							}
 							else
 							{
-								alert('sdxcbnc');
 								showErrorMessage('Something went wrong!!');
 								TableAjax.refresh();	
 							}

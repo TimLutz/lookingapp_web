@@ -26,11 +26,12 @@ class PagesController extends Controller
      * Created on: 7 dec 2016
      * purpose: Terms and Condition page
      */
-    public function getTandc()
+    /*public function getTandc()
     {
-        $privacy = Page::where('id',4)->first();
+        $privacy = Page::where('id',6)->first();
         return view('pages.privacy',compact('privacy'));
-    }
+
+    }*/
     
      /**
      * Created by: Jagraj Singh	
@@ -41,6 +42,19 @@ class PagesController extends Controller
     {
         $privacy = Page::where('id',5)->first();
         return view('pages.privacy',compact('privacy'));
+    }
+
+    /**
+     * Name: getTermsAndCondition
+     * Purpose: function for getting view of term and conditions
+     * created By: Lovepreet
+     * Created on :- 24 Aug 2017
+     *
+     **/
+    public function getTandc()
+    {
+        $privacy = Page::where(['id'=>6])->first();
+        return  view('pages.privacy',compact('privacy'));
     }
 
 }

@@ -151,7 +151,7 @@ class UserController extends Controller {
                      'birthday'            => 'required|date_format:"Y-m-d"|age_restriction', 
                      'height'              => 'required', 
                      'weight'              => 'required',
-                   //  'about_me'            => 'required|Min:5|Max:500',
+                     'about_me'            => 'Max:1000',
                      'his_identitie'       => 'required',
                      'relationship_status' => 'required',
                 ],
@@ -164,7 +164,12 @@ class UserController extends Controller {
                    'weight.required'              =>  'Please enter weight.',
                    'his_identitie.required'       =>  'Please enter his identity.',
                    'relationship_status.required' =>  'Please enter relationship status.',
-                   'birthday.age_restriction'     =>  'Age must be greater then 18 years.' 
+                   'birthday.age_restriction'     =>  'Age must be greater then 18 years.',
+                   'about_me.required'            =>  'About me field is required.',
+                   'about_me.Min'                 =>  'About me field can`t be less then 5 character.',
+                   'about_me.Max'                 =>  'About me field can`t be greater then 1000 character.',
+
+
                 ]
                 );
 
@@ -512,7 +517,14 @@ class UserController extends Controller {
                     /********Search By profile pic*********/
                     if(isset($finalArr['profile_pic_type']) && $finalArr['profile_pic_type'] != 'Not Set')
                     {
-                        $user = $user->whereIn('profile_pic_type',[$finalArr['profile_pic_type']]); 
+                        if($finalArr['profile_pic_type']==1)
+                        {
+                            $user = $user->whereIn('profile_pic_type',[1,2]); 
+                        }
+                        else
+                        {
+                            $user = $user->whereIn('profile_pic_type',[$finalArr['profile_pic_type']]); 
+                        }
                     } 
                     /********End*********/
 

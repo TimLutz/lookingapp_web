@@ -1,0 +1,25 @@
+<?php $__env->startSection('title'); ?>
+	UserRestriction
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('heading'); ?>
+	Edit Restriction
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('content'); ?>
+<div class="row">
+	<div class="col-md-8">
+<?php echo $__env->make('errors.user_error', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+<?php echo $__env->make('flash::message', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+ <?php echo Form::model($restriction,['id' => 'add_template','method' => 'post','url' => getenv('adminurl').'/userrestriction/update/'.Crypt::encrypt($restriction->id) ]); ?>
+
+    <?php echo Form::hidden('action','edit'); ?>
+
+    <?php echo Form::hidden('resid',Crypt::encrypt($restriction->id)); ?>
+
+    <?php echo $__env->make('admin.user_restriction.form',['submitButtonText' => 'Update Restriction'], array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+    <?php echo Form::close(); ?>
+
+</div>
+</div>
+<?php $__env->stopSection(); ?>	
+
+<?php echo $__env->make('admin.layout', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>

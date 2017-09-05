@@ -36,7 +36,8 @@ class RegisterController extends Controller
         try {
            $validator = Validator::make( $request->all()  ,      [
                
-                'screen_name'           => 'required|Min:4|Max:16|alpha_num',
+              //  'screen_name'           => 'required|Min:4|Max:16|alpha_num',
+                'screen_name'           => 'required|Min:4|Max:13|alpha_num',
                 'email'                 => 'required|email|unique:users,email',
                 'password'              => 'required|Min:8|Max:16|confirmed',
                 'password_confirmation' => 'required',
@@ -47,7 +48,7 @@ class RegisterController extends Controller
                 "screen_name.required"      => config('customregister.required'),
                 "screen_name.min"           => config('customregister.min'),
                 "screen_name.max"           => config('customregister.max'),
-                "screen_name.alpha_num"     => config('customregister.alpha_num'),
+            //    "screen_name.alpha_num"     => config('customregister.alpha_num'),
                 "screen_name.unique"        => config('customregister.unique'),
                 "email.required"            => config('customcommon.emailrequired'),
                 "password.required"         => config('customcommon.password'),

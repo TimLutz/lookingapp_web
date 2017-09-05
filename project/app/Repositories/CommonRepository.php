@@ -38,6 +38,19 @@ class CommonRepository implements CommonRepositoryInterface
                           ->join('users AS r','r.id','=','f.receiver_id')
                           ->where(['f.archive'=>0,'r.status'=>1])
                           ->count();*/
+        /*$data['reports'] = FlagModel::whereHas('flagUser',function($q){
+      $q->where('status',1);
+    })->whereHas('flagReceiverUser',function($q){
+      $q->where('status',1);
+    })->with(['flagUser'=>function($q1){
+    	$q1->where(['status'=>1])->select('id','email');//->get();
+    }
+    ,'flagReceiverUser'=>function($q2){
+    	$q2->where(['status'=>1])->select('id','email');//->get();
+    }])
+    ->where(['archive'=>0])
+    ->orderBY('created_at','ASC')
+    ->get();*/                  
 		return $data;
 	}
 
