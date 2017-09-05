@@ -37,7 +37,7 @@ class RegisterController extends Controller
            $validator = Validator::make( $request->all()  ,      [
                
               //  'screen_name'           => 'required|Min:4|Max:16|alpha_num',
-                'screen_name'           => 'required|Min:4|Max:13|alpha_num',
+                'screen_name'           => 'required|Min:4|Max:13',
                 'email'                 => 'required|email|unique:users,email',
                 'password'              => 'required|Min:8|Max:16|confirmed',
                 'password_confirmation' => 'required',
