@@ -1,0 +1,58 @@
+<div class="portlet box">
+<div class="portlet-body form">
+
+<div class="form-group">
+    <?php echo Form::label('title', 'Title: '); ?> <span class="star">*</span>
+    <?php echo Form::text('title',null,['class' => 'form-control']); ?>
+
+</div>
+
+<div class="form-group">
+    <?php echo Form::label('name', 'Name: '); ?> <span class="star">*</span>
+    <?php echo Form::text('name',null,['class' => 'form-control']); ?>
+
+</div>
+    
+	<?php echo Form::label('content', 'Content: '); ?> <span class="star">*</span>
+	<?php echo Form::textarea('content',null,['id' => 'txtEditor','class' => 'form-control']); ?>
+
+
+
+<div class="form-group">
+    <?php echo Form::label('meta_title', 'Meta Title: '); ?> <span class="star">*</span>
+    <?php echo Form::text('meta_title',null,['class' => 'form-control']); ?>
+
+</div>
+
+<!--
+<div class="form-group">
+	<label>Alias <span class="star">*</span></label><br>
+	<span><?php echo e(url('pages')); ?></span>
+	<?php echo Form::text('alias',null,['id' => '','class' => 'form-control']); ?>
+
+	<p>	<span id="link" ></span>
+		<span id="url_message"></span> </p>
+</div>
+-->
+
+<div class="form-group">
+    <?php echo Form::label('meta_description', 'Meta Description: '); ?> <span class="star">*</span>
+    <?php echo Form::textarea('meta_description',null,['class' => 'form-control','rows' => 2, 'cols' => 40]); ?>
+
+</div>
+
+<div class="form-group">
+    <?php echo Form::label('meta_tags', 'Meta Tags: '); ?> <span class="star">*</span>
+    <?php echo Form::text('meta_tags',null,['class' => 'form-control']); ?>
+
+</div>
+
+<?php echo $__env->make('partials.status', ['status' => $page->status], array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+
+<div class="form-group">
+    <?php echo Form::submit($submitButtonText, ['class' => 'btn blue']); ?>
+
+    <a href="<?php echo e(url(getenv('adminurl').'/pages')); ?>" class="btn green btn-primary">Back</a>
+</div>
+</div>
+</div>

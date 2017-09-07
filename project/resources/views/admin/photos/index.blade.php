@@ -1,10 +1,10 @@
 @extends('admin.layout')
 @section('title')
-	Users 	
+	Users Management	
 @endsection
 @section('content')
 <h3 class="page-title">
-Users
+Photos
 <a href="{{ url(getenv('adminurl').'/users/genrateCsv') }}" class="btn btn-danger pull-right">Export</a>
 </h3><br>
 <!-- BEGIN PAGE CONTENT-->
@@ -135,7 +135,7 @@ jQuery(document).ready(function() {
 		var token = $('meta[name=csrf-token]').attr("content");
 		var id = $this.data('id');
 		var status = $this.data('photostatus');
-		alert(status);
+		
 		var action = $this.data('action');
 		var addU = "<?php echo getenv('adminurl') ?>";
 		 bootbox.confirm('Are Sure you want to '+(status == true ? "approve" : "Approve")+' User?', function (result) {

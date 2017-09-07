@@ -88,7 +88,6 @@ class CommonController extends Controller {
 			}
 				
 			else{
-				
 				$status->update(['status' => '0']);
 			}  
 			return response()->json(['success'=>true,'action' => $request['action']]);

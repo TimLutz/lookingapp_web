@@ -58,12 +58,14 @@
 					</a>
 					<ul class="sub-menu">
 						<li class="@if($active == 'current') active @endif">
-							<a href="javascript:void(0)">
+							<!-- <a href="javascript:void(0)"> -->
+							<a href="{{ url(getenv('adminurl').'/reports') }}">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Current Users</a>
 						</li>
 						<li class="@if($active == 'Archive') active @endif">
-							<a href="javascript:void(0)">
+							<!-- <a href="javascript:void(0)"> -->
+							<a href="{{ url(getenv('adminurl').'/reports/archiveindex') }}">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Archived Users</a>
 						</li>
@@ -125,6 +127,13 @@
 					</a>
 				</li>
 				
+				<li class="@if(isset($active) && $active == 'pages') active @endif">
+					<a href="{{ url(getenv('adminurl').'/pages') }}">
+					<i class="fa fa-link"></i>
+					<span class="title">
+					Settings</span>
+					</a>
+				</li>
 
 				
 				

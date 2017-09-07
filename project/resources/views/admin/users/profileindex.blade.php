@@ -1,6 +1,6 @@
 @extends('admin.layout')
 @section('title')
-	Profile Text
+	Users Management
 @endsection
 @section('content')
 <h3 class="page-title">

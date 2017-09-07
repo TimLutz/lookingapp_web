@@ -1,5 +1,5 @@
 <?php $__env->startSection('title'); ?>
-	Profile Text
+	Users Management
 <?php $__env->stopSection(); ?>
 <?php $__env->startSection('content'); ?>
 <h3 class="page-title">

@@ -88,13 +88,13 @@ class PhotosController extends Controller
             $userId = \Crypt::encrypt($value->id);
             $status = $createDate = '';
 
-            $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.\Crypt::encrypt($value->id).'" data-photostatus="'.$value->photo_change.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.\Crypt::encrypt($value->id).'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
             
             if($value->profile_pic_date)
             {
                 $createDate = date('Y-m-d H:i:s',strtotime($value->profile_pic_date));
             }
 
+            $status='<div class="statuscenter"><a  id="change-photo-status" data-table="users" data-id="'.\Crypt::encrypt($value->id).'" data-photostatus="'.$value->photo_change.'" data-action="Plans"><i class="fa fa-check-circle text-success active"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger active"></i><a></div>';
             if($value->profile_pic)
             {
                 $imagee = '<img class="img-circle" src="'.$value->profile_pic.'" alt="User Image" width="50px" height="50">';

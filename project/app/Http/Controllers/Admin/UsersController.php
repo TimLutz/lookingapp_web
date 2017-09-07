@@ -44,9 +44,6 @@ class UsersController extends Controller
         }
     }
     
-    
-    
-    
     /********
      * created by: Lovepreet Singh
      * Created for: Listing Unban Users in datatable with filters using ajax 
