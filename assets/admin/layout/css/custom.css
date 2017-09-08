@@ -59,10 +59,21 @@ Change Quick Sidebar Width
 }
 */
 
+.page-404-3 .congratesMessage{ 
+  text-align: center; 
+}
+
+.page-404-3 h1.congrtMessage { color: #fff;font-size: 65px;line-height: 56px; font-weight: bold;}
+
+.page-404-3 h2.contmsg{ color: #fff;font-size: 35px;margin-bottom: 30px; font-weight: 400;}
+
 @media only screen and (max-width: 980px){
-    .page-404-3 h1.congrtMessage{ font-size: 55px;line-height: 60px;  }
+    .page-404-3 h1.congrtMessage{ font-size: 55px;line-height: 33px; margin-top: 20px; font-weight: bold; }
+    .page-404-3 h2.contmsg{color: #fff;font-size: 30px;margin-bottom: 30px; font-weight: 400;}
 }
 
 @media only screen and (max-width: 768px){
-    .page-404-3 h1.congrtMessage{ font-size: 45px;line-height: 60px;  }
+    .page-404-3 h1.congrtMessage{ font-size: 45px;line-height: 33px; margin-top: 50px; font-weight: bold;
+    }
+    .page-404-3 h2.contmsg{color: #fff;font-size: 30px;margin-bottom: 30px;font-weight: 400;}
 }

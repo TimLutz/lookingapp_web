@@ -67,7 +67,7 @@ License: You must have a valid license purchased only from themeforest(the above
 </div>
 <div class="container error-404 congratesMessage">
 	<h1 class="congrtMessage">{{$heading}}</h1>
-	<h2>{{$message}}</h2>
+	<h2 class="contmsg">{{$message}}</h2>
 <!--
 	<p>
 		 Actually, the page you are looking for does not exist.
