@@ -129,9 +129,17 @@
 				
 				<li class="@if(isset($active) && $active == 'pages') active @endif">
 					<a href="{{ url(getenv('adminurl').'/pages') }}">
-					<i class="fa fa-link"></i>
+					<i class="icon-list"></i>
 					<span class="title">
 					Settings</span>
+					</a>
+				</li>
+
+				<li>
+					<a href="{{ url('looking/wp-admin') }}" target="_blank">
+					<i class="icon-list"></i>
+					<span class="title">
+					Website Admin</span>
 					</a>
 				</li>
 

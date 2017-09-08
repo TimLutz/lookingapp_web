@@ -2186,7 +2186,7 @@ class UserController extends Controller {
      *
      **/
     public function postAddChatUser(Request $request) {
-        try {
+        try { 
 
             $clientId = JWTAuth::parseToken()->authenticate()->id;
 

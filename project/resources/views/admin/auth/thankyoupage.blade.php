@@ -63,7 +63,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- DOC: Apply "page-full-width" class to the body element to have full width page without the sidebar menu -->
 <body class="page-404-3">
 <div class="page-inner">
-	<img src="<?php echo getenv('earimage') ?>/assets/admin/pages/media/pages/earth.jpg" class="img-responsive" alt="">
+	<?php /* <img src="<?php echo getenv('earimage') ?>/assets/admin/pages/media/pages/earth.jpg" class="img-responsive" alt=""> <?php */ ?>
 </div>
 <div class="container error-404 congratesMessage">
 	<h1 class="congrtMessage">{{$heading}}</h1>
