@@ -69,11 +69,11 @@ Change Quick Sidebar Width
 
 @media only screen and (max-width: 980px){
     .page-404-3 h1.congrtMessage{ font-size: 55px;line-height: 33px; margin-top: 20px; font-weight: bold; }
-    .page-404-3 h2.contmsg{color: #fff;font-size: 30px;margin-bottom: 30px; font-weight: 400;}
+    .page-404-3 h2.contmsg{color: #fff;font-size: 29px;margin-bottom: 30px; font-weight: 400;}
 }
 
 @media only screen and (max-width: 768px){
     .page-404-3 h1.congrtMessage{ font-size: 45px;line-height: 33px; margin-top: 50px; font-weight: bold;
     }
-    .page-404-3 h2.contmsg{color: #fff;font-size: 30px;margin-bottom: 30px;font-weight: 400;}
+    .page-404-3 h2.contmsg{color: #fff;font-size: 29px;margin-bottom: 30px;font-weight: 400;}
 }
