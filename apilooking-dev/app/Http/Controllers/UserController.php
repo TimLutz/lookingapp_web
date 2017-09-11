@@ -2301,8 +2301,9 @@ class UserController extends Controller {
             }else
             {
                 $data = $request->all();
-                $arrphrases = explode('~~~', $data['phrases']);
-                foreach ($arrphrases as $key => $value) {
+            //    $arrphrases = explode('~~~', $data['phrases']);
+                
+                foreach ($data['phrases'] as $key => $value) {
                     $data['user_id'] = $clientId;
                     $data['phrases'] = $value;
 
