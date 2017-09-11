@@ -2345,7 +2345,7 @@ class UserController extends Controller {
         try {
              $clientId = JWTAuth::parseToken()->authenticate()->id;
 
-            $phrases = PhraseModel::where(['user_id'=>$clientId])->lists('phrases');
+            $phrases = PhraseModel::where(['user_id'=>$clientId])->get();
             if($phrases)
             {
                 $response['message'] = 'Success';
