@@ -2301,24 +2301,27 @@ class UserController extends Controller {
             }else
             {
                 $data = $request->all();
+                $data1 = [];
             //    $arrphrases = explode('~~~', $data['phrases']);
                 
                 foreach ($data['phrases'] as $key => $value) {
-                    $data['user_id'] = $clientId;
-                    $data['phrases'] = $value;
+                    $data1[$key]['user_id'] = $clientId;
+                    $data1[$key]['phrases'] = $value;
+                    $data1[$key]['created_at'] = Carbon::now();
+                    $data1[$key]['updated_at'] = Carbon::now();
+                }
 
-                    if(PhraseModel::create($data))
-                    {
-                        $response['message'] = 'Success';
-                        $response['success'] = 1;
-                        $http_status = 200;
-                    }
-                    else
-                    {
-                        $response['message'] = 'unable to save into database';
-                        $response['success'] = 0;
-                        $http_status = 400;
-                    }
+                if(PhraseModel::Insert($data1))
+                {
+                    $response['message'] = 'Success';
+                    $response['success'] = 1;
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['message'] = 'unable to save into database';
+                    $response['success'] = 0;
+                    $http_status = 400;
                 }
             } 
         } catch (Exception $e) {
