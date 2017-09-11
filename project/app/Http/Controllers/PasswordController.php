@@ -39,7 +39,7 @@ class PasswordController extends Controller {
 		  }else{
 			  $message = "This link has expired";
 			  $heading = "ERROR";
-			  return view('admin.auth.thankyoupage',compact('message','heading'));
+			  return view('admin.auth.successpage',compact('message','heading'));
 		  }
 		  //$userdata = User::where('id','=',$id)->first();
 			
@@ -75,14 +75,15 @@ class PasswordController extends Controller {
 				{
 			  $message = "Your password has been reset";
 			  $heading = "SUCCESS";
-			  return view('admin.auth.thankyoupage',compact('message','heading'));
+			  $signIn = 1;
+			  return view('admin.auth.successpage',compact('message','heading','signIn'));
 				}
 				else
 				{
 					flash()->error('Sorry, password not updated. Please try again.');
 					 $message = "password not updated. Please try again.";
 					$heading = "Awww!!";
-			  return view('admin.auth.thankyoupage',compact('message','heading'));
+			  return view('admin.auth.successpage',compact('message','heading'));
 				}
 				
 			}
