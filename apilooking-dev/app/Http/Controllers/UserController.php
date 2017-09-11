@@ -579,7 +579,8 @@ class UserController extends Controller {
                     if(isset($finalArr['his_identitie']) && $finalArr['his_identitie'] != 'Not Set')
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-                            $q->whereIn('name',explode(' , ', $finalArr['his_identitie']))
+                            $string = str_replace(' ', '', $finalArr['his_identitie']);
+                            $q->whereIn('name',explode(' , ', $string))
                               ->where(array('type'=>'identity'));
                         });
                     }
