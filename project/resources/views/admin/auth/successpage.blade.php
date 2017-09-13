@@ -42,9 +42,9 @@
 	if(isset($signIn))
 	{
 	?>
-		<!-- <div class="bot-section">
+		<div class="bot-section">
 			<a href="javascript:void(0)">Back to Sign in</a>
-		</div> -->
+		</div>
 	<?php
 	}
 ?>
