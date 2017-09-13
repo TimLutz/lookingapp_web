@@ -532,7 +532,7 @@ class UserController extends Controller {
                     if(isset($finalArr['relationship_status']) && $finalArr['relationship_status'] != 'Not Set')
                     {
                         $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                            $q->whereIn('relationship_status',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['relationship_status']))));
+                            $q->whereIn('relationship_status',explode(',',$finalArr['relationship_status']));
                         });
                     }
 
@@ -540,7 +540,7 @@ class UserController extends Controller {
                     if(isset($finalArr['ethnicity']) && $finalArr['ethnicity'] != 'Not Set')
                     {
                         $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                            $q->whereIn('ethnicity',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['ethnicity']))));
+                            $q->whereIn('ethnicity',explode(',',$finalArr['ethnicity']));
                         }); 
                     }
                     /********End*********/
