@@ -532,7 +532,12 @@ class UserController extends Controller {
                     if(isset($finalArr['relationship_status']) && $finalArr['relationship_status'] != 'Not Set')
                     {
                         $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                            $q->whereIn('relationship_status',explode(',', str_replace(' ', '', $finalArr['relationship_status'])));
+                            $val = [];
+                            foreach($finalArr['relationship_status'] $k=>$value)
+                            {
+                              $val[] = trim($value);  
+                            }
+                            $q->whereIn('relationship_status',$val);
                         });
                     }
 
@@ -540,7 +545,12 @@ class UserController extends Controller {
                     if(isset($finalArr['ethnicity']) && $finalArr['ethnicity'] != 'Not Set')
                     {
                         $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                            $q->whereIn('ethnicity',explode(',', str_replace(' ', '', $finalArr['ethnicity'])));
+                            $val = [];
+                            foreach($finalArr['ethnicity'] $k=>$value)
+                            {
+                              $val[] = trim($value);  
+                            }
+                            $q->whereIn('ethnicity',$val);
                         }); 
                     }
                     /********End*********/
@@ -579,8 +589,12 @@ class UserController extends Controller {
                     if(isset($finalArr['his_identitie']) && $finalArr['his_identitie'] != 'Not Set')
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-
-                            $q->whereIn('name',explode(' , ', str_replace(' ', '', $finalArr['his_identitie'])))
+                            $val = [];
+                            foreach($finalArr['his_identitie'] $k=>$value)
+                            {
+                              $val[] = trim($value);  
+                            }
+                            $q->whereIn('name',$val)
                               ->where(array('type'=>'identity'));
                         });
                     }
@@ -590,7 +604,12 @@ class UserController extends Controller {
                     if(isset($finalArr['his_seeking']) && $finalArr['his_seeking'] != 'Not Set')
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-                            $q->whereIn('name',explode(',', str_replace(' ', '', $finalArr['his_seeking'])))
+                            $val = [];
+                            foreach($finalArr['his_seeking'] $k=>$value)
+                            {
+                              $val[] = trim($value);  
+                            }
+                            $q->whereIn('name',$val)
                               ->where(array('type'=>'his_identites'));
                         });
                     }
