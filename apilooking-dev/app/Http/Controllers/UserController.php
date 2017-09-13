@@ -580,7 +580,7 @@ class UserController extends Controller {
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
 
-                            $q->whereIn('name',explode(' , ', str_replace(' ', '', $finalArr['his_identitie'])))
+                            $q->whereIn('name',explode(' , ', str_replace([', ',' ,'], ',', $finalArr['his_identitie'])))
                               ->where(array('type'=>'identity'));
                         });
                     }
