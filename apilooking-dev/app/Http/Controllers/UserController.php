@@ -532,7 +532,7 @@ class UserController extends Controller {
                     if(isset($finalArr['relationship_status']) && $finalArr['relationship_status'] != 'Not Set')
                     {
                         $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                            $q->whereIn('relationship_status',explode(',', str_replace(' ', '', $finalArr['relationship_status'])));
+                            $q->whereIn('relationship_status',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['relationship_status']))));
                         });
                     }
 
@@ -540,7 +540,7 @@ class UserController extends Controller {
                     if(isset($finalArr['ethnicity']) && $finalArr['ethnicity'] != 'Not Set')
                     {
                         $user = $user->whereHas('Profile',function($q) use ($finalArr){
-                            $q->whereIn('ethnicity',explode(',', str_replace(' ', '', $finalArr['ethnicity'])));
+                            $q->whereIn('ethnicity',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['ethnicity']))));
                         }); 
                     }
                     /********End*********/
@@ -580,7 +580,7 @@ class UserController extends Controller {
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
 //print_r(explode(',', str_replace([', ',' ,'], ',', $finalArr['his_identitie']))); die;
-                            $q->whereIn('name',explode(',', str_replace([', ',' ,'], ',', $finalArr['his_identitie'])))
+                            $q->whereIn('name',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['his_identitie']))))
                               ->where(array('type'=>'identity'));
                         });
                     }
@@ -590,7 +590,7 @@ class UserController extends Controller {
                     if(isset($finalArr['his_seeking']) && $finalArr['his_seeking'] != 'Not Set')
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-                            $q->whereIn('name',explode(',', str_replace(' ', '', $finalArr['his_seeking'])))
+                            $q->whereIn('name',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['his_seeking']))))
                               ->where(array('type'=>'his_identites'));
                         });
                     }
