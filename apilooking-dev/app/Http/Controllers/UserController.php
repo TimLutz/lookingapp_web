@@ -39,6 +39,7 @@ use Log;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use PushNotification;
+use App\Models\ChatroomModel;
 class UserController extends Controller {
 	
 	protected $hashKey;
@@ -580,7 +581,7 @@ class UserController extends Controller {
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
 //print_r(explode(',', str_replace([', ',' ,'], ',', $finalArr['his_identitie']))); die;
-                            $q->whereIn('name',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['his_identitie']))))
+                            $q->whereIn('name',explode(',', str_replace([', ',' ,',' , '], ',', trim($finalArr['his_identitie']))))
                               ->where(array('type'=>'identity'));
                         });
                     }
@@ -1080,13 +1081,28 @@ class UserController extends Controller {
                         $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
                         
                         /*******Check invitation send to receiver by sender************/
-                        $chat_invitation = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$viewer_id])->first();
+                        /*$chat_invitation = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$viewer_id])->first();
+                        if ($chat_invitation) {
+                            $Userdetails['User_Invitation'] = $chat_invitation->toArray();
+                        }*/
+                        $chat_invitation = ChatroomModel::where(function($q) use ($clientId,$viewer_id){
+                            $q->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id])
+                            ->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId]);
+                        })->first();
                         if ($chat_invitation) {
                             $Userdetails['User_Invitation'] = $chat_invitation->toArray();
                         }
 
+
                         /*******Check invitation send to sender by receiver************/
-                        $chat_invitation_viewer = ChatModel::where(['user_id'=>$viewer_id,'chat_user_id'=>$clientId])->first();    
+                        /*$chat_invitation_viewer = ChatModel::where(['user_id'=>$viewer_id,'chat_user_id'=>$clientId])->first();    
+                        if ($chat_invitation_viewer) {
+                            $Userdetails['Viewer_Invitation'] = $chat_invitation_viewer->toArray();
+                        }*/
+                        $chat_invitation_viewer = ChatroomModel::where(function($q) use ($clientId,$viewer_id){
+                            $q->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId])
+                            ->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id]);
+                        })->first();
                         if ($chat_invitation_viewer) {
                             $Userdetails['Viewer_Invitation'] = $chat_invitation_viewer->toArray();
                         }
@@ -1343,7 +1359,7 @@ class UserController extends Controller {
      * Created on :- 12 Aug 2017
      *
      **/   
-    public function postSentInvitation(Request $request,Repositary $common) {
+    public function postSentInvitation1(Request $request,Repositary $common) {
         try {
 
             $data = $request->all();
@@ -1436,6 +1452,146 @@ class UserController extends Controller {
 
                             $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
                         //    $device_token = $userdetails->device_token; 
+                            if (isset($data['accept']) && $data['accept']==1) {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' accept invitation';
+                                $type = 'accept_invitation';
+                            } else {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send invitation';
+                                $type = 'sent_invitation';
+                            }
+
+                            if($userdetails->device_type=='android')
+                            {
+                                $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send message for you';
+                                $notification = ['sound'=>'default'];
+                            }   
+                            else
+                            {
+                                $notification = ['badge'=>$total_unread_message,'type'=>$type,'sound'=>'default'];
+                            }
+
+                            $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
+
+                        } catch (Exception $e) {
+                            $response['success'] = 0;
+                            $response['message'] = 'Invaid device token.';
+                            $http_status = 400;
+                        }
+                    }
+                    
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'user details not found.';
+                    $http_status = 400;
+                }
+                $response['success'] = 1;
+                $response['message'] = 'Success';
+                $http_status = 200;
+            }
+
+
+        } catch (Exception $e) {
+            $response['message']    = $e->getMessage();
+            $response['status']     = 0;
+            $http_status = 400;
+        }
+        return response()->json($response,$http_status);
+    }
+
+
+    /**
+     * Name: postSentInvitation
+     * Purpose: function for sent chat notification
+     * created By: Lovepreet
+     * Created on :- 12 Aug 2017
+     *
+     **/   
+    public function postSentInvitation(Request $request,Repositary $common) {
+        try {
+
+            $data = $request->all();
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $validator = Validator::make( $request->all(),[
+                'receiver_id' => 'required|numeric',
+                'accept' => 'numeric'
+            ],
+            [
+                'receiver_id.required' => 'Recevier user id not found.', 
+                'receiver_id.numeric' => 'Recevier id must must be numeric.', 
+                'accept.numeric' => 'Accept have only numeric value.'
+            ]
+
+            );
+        
+            if ($validator->fails()) {
+                
+                $response['errors']     = $validator->errors();
+                $response['success']     = 0;
+                $http_status=422;
+            }else{
+                $data = $request->all();
+                $chat_count_message = ChatroomModel::where(function($q) use ($clientId,$data){
+                    $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['receiver_id']])
+                    ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['receiver_id']]);
+                })->first();
+                if(isset($data['accept']) && $data['accept']==1)
+                {
+                    $chat_count_message1 = ChatroomModel::where(['to_user'=>$clientId,'from_user'=>$data['receiver_id']])->first();
+                    if(count($chat_count_message1))
+                    {
+                       $chat_count_message1->update(['invite'=>1]);
+                    }
+                }
+                else
+                {
+                    if(count($chat_count_message))
+                    {
+                        $response['errors']     = 'invitation already send.';
+                        $response['success']     = 0;
+                        $http_status=400;
+                        return response()->json($response,$http_status);
+                    }
+                    else
+                    {
+                        $data['from_user'] = $clientId;
+                        $data['to_user'] = $data['receiver_id'];
+                        $data['invite'] = 0;
+                        ChatroomModel::create($data);
+                    }
+                }
+                // Pending push notification
+                
+                $userdetails =  User::find($data['receiver_id']); 
+                if(count($userdetails))
+                {
+                    /*                 * ***********total count message ************ */
+                   
+                  //  $chatusers = ChatroomModel::where(['to_user'=>$data['receiver_id']])->first();
+                    $total_unread_message = 0;
+                    /*if ($chatusers) {
+
+                    foreach ($chatusers as $key => $value) {
+                            if ($value['invite'] > 0) {
+                                $invite = 1;
+                            } else {
+                                $invite = 0;
+                            }
+                            $total_unread_message+=($value['count'] + $invite);
+                        }
+                    }*/
+
+                    /*if ($total_unread_message == 0) {
+                        $total_unread_message = '';
+                    }*/
+
+                    /***** Send Pushnotification   *****/
+                    if($userdetails->online_status==1)
+                    {
+                        try {
+                          // $device_token = 'c50afd3ae826d56fe8179fba5d452c009b30f94d2b61ef0f073933fdc18a91e9';
+                            $device_token = $userdetails->device_token; 
                             if (isset($data['accept']) && $data['accept']==1) {
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' accept invitation';
                                 $type = 'accept_invitation';
@@ -1839,9 +1995,9 @@ class UserController extends Controller {
                     {
                         if(ShareAlbumModel::updateOrCreate(['id'=>$data['id']],$data))
                         {
-                            $chatusers = ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
+                            /*$chatusers = ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();*/
                             $total_unread_message = 0;
-                            if ($chatusers) {
+                            /*if ($chatusers) {
                                 foreach ($chatusers as $key => $value) {
                                     if ($value['invite'] > 0) {
                                         $invite = 1;
@@ -1853,15 +2009,15 @@ class UserController extends Controller {
                             }
                             if ($total_unread_message == 0) {
                                 $total_unread_message = '';
-                            }
+                            }*/
 
                             $userdetails = User::find($data['receiver_id']);
 
                             /***** Send Pushnotification   *****/
                             if($userdetails->online_status==1)
                             {
-                               $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
-                            //    $device_token = $userdetails->device_token;
+                              // $device_token = $userdeyails->device_token;
+                            $device_token = 'c50afd3ae826d56fe8179fba5d452c009b30f94d2b61ef0f073933fdc18a91e9';
                                 $count_view = $common->count_view($data['receiver_id']);
                                 $count_sharealbum = $common->count_sharealbum($data['receiver_id']);
                                 $total_view_and_share = (int) $count_view + (int) $count_sharealbum;
@@ -2209,20 +2365,18 @@ class UserController extends Controller {
             }else
             {
                 $data = $request->all();
-                $chat_users = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$data['chat_user_id']])->get();
+                $chat_users = ChatroomModel::where(function($q) use($clientId,$data){
+                    $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['chat_user_id']])
+                      ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['chat_user_id']]);  
+                })->first();
                 if(count($chat_users)==0)
                 {
-                    $chat_users1 = ChatModel::where(['user_id'=>$data['chat_user_id'],'chat_user_id'=>$clientId])->get();
+                    
 
-                    if(count($chat_users1)==0)
-                    {
-                        $chatUser['user_id'] = $data['chat_user_id'];
-                        $chatUser['chat_user_id'] = $clientId;
-                        ChatModel::create($chatUser);
-                    }
-
-                    $data['user_id'] = $clientId;
-                    if(ChatModel::create($data))
+                    $data['from_user'] = $clientId;
+                    $data['to_user'] = $data['chat_user_id'];
+                    $data['invite'] = 0;
+                    if(ChatroomModel::create($data))
                     {
                         $response['success'] = 1;
                         $response['message'] = 'Success';
@@ -2237,32 +2391,9 @@ class UserController extends Controller {
                 }
                 else
                 {
-                    $chat_users1 = ChatModel::where(['user_id'=>$data['chat_user_id'],'chat_user_id'=>$clientId])->get();
-
-                    if(count($chat_users1)==0)
-                    {
-                        $chatUser['user_id'] = $data['chat_user_id'];
-                        $chatUser['chat_user_id'] = $clientId;
-                        if(ChatModel::create($chatUser))
-                        {
-                            $response['success'] = 1;
-                            $response['message'] = 'Success';
-                            $http_status = 200;
-                        }
-                        else
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'unable to save into database';
-                            $http_status = 400;
-                        }
-                    }
-                    else
-                    {
-                        $response['success'] = 1;
-                        $response['message'] = 'Already save into databse';
-                        $http_status = 200;
-                    }
-                   
+                    $response['success'] = 0;
+                    $response['message'] = 'Already save into databse';
+                    $http_status = 400;
                 }
             }
 
@@ -2574,10 +2705,10 @@ class UserController extends Controller {
                     $clientId = JWTAuth::parseToken()->authenticate()->id;
                     $data = $request->all();
                 
-                    $chat_count_message = ChatModel::where(['user_id'=>$data['receiver_id'],'chat_user_id'=>$clientId])->first();
+                    $chat_count_message = ChatroomModel::where(['from_user'=>$data['receiver_id'],'to_user'=>$clientId])->first();
                     if($chat_count_message)
                     {
-                        if($chat_count_message->update(['invite'=>0]))
+                        if($chat_count_message->update(['invite'=>2]))
                         {
                             $response['message'] = 'Success';
                             $response['success'] = 1;
@@ -2636,22 +2767,20 @@ class UserController extends Controller {
                 {
                     $clientId = JWTAuth::parseToken()->authenticate()->id;
                     $data = $request->all();
-                    $chat_count_message = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$data['receiver_id']])->first();
+                    $chat_count_message = ChatroomModel::where(function($q) use($clientId,$data){
+                        $q->OrWhere((['from_user'=>$clientId,'to_user'=>$data['receiver_id']]))
+                          ->OrWhere(['from_user'=>$data['receiver_id'],'to_user'=>$clientId]);
+                    })->first();
                     if ($chat_count_message) {
-                        $chat_count_message->update(['count'=>$chat_count_message->count+1,'created_at'=>carbon::now()]);
+                        $chat_count_message->update(['created_at'=>carbon::now()]);
                         
                     }
                     
-                    $chat_count_message1 = ChatModel::where(['user_id'=>$data['receiver_id'],'chat_user_id'=>$clientId])->first();
-
-                    if ($chat_count_message1) {
-                        $chat_count_message1->update(['created_at'=>carbon::now()]);
-                    }
 
                     /*             * ***********total count message ************ */
-                    $chatusers =ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
+                   // $chatusers =ChatModel::where(['chat_user_id'=>$data['receiver_id']])->get();
                     $total_unread_message = 0;
-                    $UserData = array();
+                   /* $UserData = array();
                     if ($chatusers) {
 
                         foreach ($chatusers as $key => $value) {
@@ -2667,7 +2796,7 @@ class UserController extends Controller {
 
                     if ($total_unread_message == 0) {
                         $total_unread_message = '';
-                    }
+                    }*/
                     
                     $is_active_look_date = UserLookdateModel::where(['user_id'=>$clientId])->first();
                     
@@ -2685,7 +2814,8 @@ class UserController extends Controller {
                         /***** Send Pushnotification   *****/    
                         if ($userdetails->online_status == 1) {
                             /*                         * ********* send notification for ios ************* */
-                            $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
+                            $device_token = $userdetails->device_token;
+                            //$device_token = 'c50afd3ae826d56fe8179fba5d452c009b30f94d2b61ef0f073933fdc18a91e9';
                             //$device_token = $userdetails->device_token; 
                             $message = isset($data['message']) && !empty($data['message']) ? $data['message'] : '';
                             if ($message == 'send location') {
