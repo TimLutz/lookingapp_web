@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'from' => ['address' => 'debuttesting8@gmail.com', 'name' => 'Looking App'],
+    'from' => ['address' => 'lookingapptesting@gmail.com', 'name' => 'Looking App'],
 
     /*
     |--------------------------------------------------------------------------
@@ -81,7 +81,7 @@ return [
     */
 
  //   'username' => 'tdemo180@gmail.com',
-    'username' => 'debuttesting8@gmail.com',
+    'username' => 'lookingapptesting@gmail.com',
     
     /*
     |--------------------------------------------------------------------------

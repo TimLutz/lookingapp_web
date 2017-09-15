@@ -1535,23 +1535,56 @@ class UserController extends Controller {
                 $chat_count_message = ChatroomModel::where(function($q) use ($clientId,$data){
                     $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['receiver_id']])
                     ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['receiver_id']]);
-                })->first();
+                })
+                //->where('invite','!=',2)
+                ->orderBY('id','desc')->first();
                 if(isset($data['accept']) && $data['accept']==1)
                 {
-                    $chat_count_message1 = ChatroomModel::where(['to_user'=>$clientId,'from_user'=>$data['receiver_id']])->first();
+                    $chat_count_message1 = ChatroomModel::where(['to_user'=>$clientId,'from_user'=>$data['receiver_id']])->where('invite','!=',2)->orderBY('id','desc')->first();
                     if(count($chat_count_message1))
                     {
-                       $chat_count_message1->update(['invite'=>1]);
+                        if($chat_count_message1->invite == 0)
+                        {
+                            $chat_count_message1->update(['invite'=>1]);
+                        }
+                        else if($chat_count_message1->invite==1)
+                        {
+                            $response['errors']     = 'You are already connected.';
+                            $response['success']     = 0;
+                            $http_status=400;
+                            return response()->json($response,$http_status);
+                        }
+                    }
+                    else
+                    {
+                        $response['errors']     = 'Something wrong.';
+                        $response['success']     = 0;
+                        $http_status=400;
+                        return response()->json($response,$http_status);
                     }
                 }
                 else
                 {
                     if(count($chat_count_message))
                     {
-                        $response['errors']     = 'invitation already send.';
-                        $response['success']     = 0;
-                        $http_status=400;
-                        return response()->json($response,$http_status);
+                        if($chat_count_message->invite==1)
+                        {
+                            $response['errors']     = 'You are already connected.';
+                            $response['success']     = 0;
+                            $http_status=400;
+                            return response()->json($response,$http_status);
+                        }
+                        else if($chat_count_message->invite==2)
+                        {
+                            $chat_count_message->update(['invite'=>0]);   
+                        }
+                        else
+                        {
+                            $response['errors']     = 'invitation already send.';
+                            $response['success']     = 0;
+                            $http_status=400;
+                            return response()->json($response,$http_status);
+                        }
                     }
                     else
                     {
