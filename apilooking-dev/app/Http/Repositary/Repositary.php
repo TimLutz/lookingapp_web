@@ -9,11 +9,14 @@ use App\Models\ShareAlbumModel;
 use App\Models\UserLooksexModel;
 use App\Models\ViewerModel;
 use App\Models\ChatModel;
-use App\Models\JobSeekers; 
+use App\Models\JobSeekers;
+use App\Models\UserLokDatesexTypeModel;
 use Validator; 
 use DB;
 use Mail; 
 use PushNotification;
+use Carbon\Carbon;
+
 class Repositary
 {
 	/*==================================================================================================
@@ -201,8 +204,8 @@ class Repositary
     {
     	$identity = $his_identity = array();
     	//print_r($identite);
-    	$identite = explode(',', $identite);
-    	$his_identitie = explode(',', $his_identitie);
+    	$identite = explode(',', str_replace([', ',' ,',' , '], ',', trim($identite)));
+    	$his_identitie = explode(',', str_replace([', ',' ,',' , '], ',', trim($his_identitie)));
     	foreach($identite AS $key => $value)
         {
             $identity[$key]['user_id'] = $clientId;
@@ -255,5 +258,73 @@ class Repositary
         }
 		
 	}
+
+    public function saveLooksexvalue($data=null,$userid=null,$looksexid=null,$type=null)
+    {
+        if(isset($data['my_physical_appearance']))
+        {
+            $this->insertLookData($data['my_physical_appearance'],$userid,$looksexid,'my_physical_appearance',$type);               
+        }
+
+        if(isset($data['his_physical_appearance']))
+        {
+            $this->insertLookData($data['his_physical_appearance'],$userid,$looksexid,'his_physical_appearance',$type);  
+        }
+
+        if(isset($data['my_sextual_preferences']))
+        {
+            $this->insertLookData($data['my_sextual_preferences'],$userid,$looksexid,'my_sextual_preferences',$type);  
+        }
+
+        if(isset($data['his_sextual_preferences']))
+        {
+            $this->insertLookData($data['his_sextual_preferences'],$userid,$looksexid,'his_sextual_preferences',$type);   
+        }
+
+        if(isset($data['my_social_habits']))
+        {
+            $this->insertLookData($data['my_social_habits'],$userid,$looksexid,'my_social_habits',$type);  
+        }
+
+        if(isset($data['his_social_habits']))
+        {
+            $this->insertLookData($data['his_social_habits'],$userid,$looksexid,'his_social_habits',$type);  
+        }
+
+        if(isset($data['my_traits']))
+        {
+            $this->insertLookData($data['my_traits'],$userid,$looksexid,'my_traits',$type);  
+        }
+
+        if(isset($data['his_traits']))
+        {
+            $this->insertLookData($data['his_traits'],$userid,$looksexid,'his_traits',$type);  
+        }
+
+        if(isset($data['my_interest']))
+        {
+            $this->insertLookData($data['my_interest'],$userid,$looksexid,'my_interest',$type);  
+        }
+
+
+    }
+
+    public function insertLookData($data=null,$userid=null,$looksexid=null,$type,$looktype=null)
+    {
+        $myphysical = explode(',',$data);
+        
+        foreach($myphysical AS $key => $value)
+        {
+            $data1[$key]['user_id'] = $userid;
+            $data1[$key]['lookdatesex_id'] = $looksexid;
+            $data1[$key]['type'] = $type;
+            $data1[$key]['looktype'] = $looktype;
+            $data1[$key]['name'] = trim($value);
+            $data1[$key]['created_at'] = Carbon::now();
+            $data1[$key]['updated_at'] = Carbon::now();
+        }
+    //    print_r($data1); die('here');
+        return UserLokDatesexTypeModel::insert($data1);    
+    }
 
 }

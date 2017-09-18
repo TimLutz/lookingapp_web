@@ -42,6 +42,7 @@ $app->get('/', function () use ($app) {
     $app->post('chat_message_push_notification','UserController@postChatMessagePushNotification');
     $app->post('declain_invitation','UserController@postDeclainInvitation');
     $app->get('terms','UserController@getTermsAndCondition');
+    $app->post('add_looking_sex','UserController@postAddSexRecord');
     
 });
 

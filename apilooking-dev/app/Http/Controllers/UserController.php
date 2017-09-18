@@ -40,6 +40,9 @@ use Illuminate\Support\Facades\Lang;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use PushNotification;
 use App\Models\ChatroomModel;
+use App\Models\UserLooksexdateModel;
+use App\Models\UserLokDatesexTypeModel;
+
 class UserController extends Controller {
 	
 	protected $hashKey;
@@ -591,7 +594,7 @@ class UserController extends Controller {
                     if(isset($finalArr['his_seeking']) && $finalArr['his_seeking'] != 'Not Set')
                     {
                         $user = $user->whereHas('UserIdentity',function($q) use ($finalArr){
-                            $q->whereIn('name',explode(',', str_replace([', ',' ,'], ',', trim($finalArr['his_seeking']))))
+                            $q->whereIn('name',explode(',', str_replace([', ',' ,',' , '], ',', trim($finalArr['his_seeking']))))
                               ->where(array('type'=>'his_identites'));
                         });
                     }
@@ -2920,5 +2923,155 @@ class UserController extends Controller {
         return  response()->json($response,$http_status);
     }
 
+    public function postAddSexRecord(Request $request,Repositary $common)
+    {
+        try {
+                $validator = Validator::make( $request->all(),[
+                    'start_time' => 'required',
+                    'end_time' => 'required',
+                    'profile_name' => 'required',
+                    'my_physical_appearance' => 'required',
+                    'his_physical_appearance' => 'required',
+                    'my_sextual_preferences' => 'required',
+                    'his_sextual_preferences' => 'required',
+                    'my_social_habits' => 'required',
+                    'his_social_habits' => 'required',
+                    'description' => 'required',
+                    'duration' => 'required'
+                    ],
+                    [
+                        'start_time.required' => 'Start time is required.',
+                        'end_time.required'  => 'End time is required.',
+                        'profile_name.required' => 'Profile name is required.',
+                        'my_physical_appearance.required' => 'My physical appearance is required.',
+                        'his_physical_appearance.required' => 'His physical appearance is required.',
+                        'my_sextual_preferences.required' => 'My sextual preferences is required.',
+                        'his_sextual_preferences.required' => 'His sextual preferences is required.',
+                        'my_social_habits.required' => 'My social habits is required.',
+                        'his_social_habits.required' => 'His social habits is required.',
+                        'description.required' => 'Description is required.',
+                        'duration.required' => 'Duration is required.',
+                        'type.required'=> 'Type is required.'
+                    ]
+                );
+           
+                if ($validator->fails()) {
+                   
+                    $response['errors']     = $validator->errors();
+                    $response['success']     = 0;
+                    $http_status=422;
+                }else
+                {
+                    $data = $request->all();
+                    $clientId = JWTAuth::parseToken()->authenticate()->id;
+                    //===for calculate notification time calculate===//
+                    $actual_date = date('Y-m-d H:i:s', strtotime($data['end_time']));
+                    $actual_endDate = strtotime($actual_date);
+                    $getprevDate = $actual_endDate - (60 * 10);
+                    $notification_time = date("Y-m-d H:i:s", $getprevDate);
 
+                    $data1['login_user_member_type'] = JWTAuth::parseToken()->authenticate()->member_type;
+                    $data1['login_user_removead'] = JWTAuth::parseToken()->authenticate()->removead;
+                    $data1['login_user_is_trial'] = JWTAuth::parseToken()->authenticate()->is_trial;
+
+                    if(JWTAuth::parseToken()->authenticate()->member_type==0)
+                    {
+                        $response['message']     = 'Success';
+                        $response['success']     = 1;
+                        $response['data'] = $data1;
+                        $http_status = 400;
+                        return response($response,$http_status);
+                    }
+
+                    /*             * ******* check user looking profile is active or not if inactive then delete profile lock *********** */
+                    /*$check_user_looksex_profile = UserLooksexModel::where('start_time','<=',Carbon::now())->where('end_time','>=',Carbon::now())->where(['id'=>$clientId,'look_type'=>'sex'])->first();
+                    if (count($check_user_looksex_profile) > 0) {
+                    }
+                    else
+                    {
+                    }*/
+
+                    $looksex = UserLooksexdateModel::where(['user_id'=>$clientId,'profile_name'=>$data['profile_name'],'look_type'=>'sex'])->first();
+
+                    //For check exist time//
+                    $if_exist_profile = UserLooksexdateModel::where('start_time','<=',Carbon::now())->where('end_time','>=',Carbon::now())->where(['id'=>$clientId,'look_type'=>'sex'])->lists('id');
+                    if($looksex)
+                    {
+                        if (isset($data['type']) && empty($data['type'])) {
+                            $response['success'] = 1;
+                            $response['message'] = 'profile name already exists';
+                            $http_status = 400;
+                        }
+                        else
+                        {
+                            if (count($if_exist_profile) > 0) {
+                                $newTime = date("Y-m-d H:i:s", strtotime($current_date . " -1 minutes"));
+                                UserLooksexdateModel::whereIn('id',$if_exist_profile->toArray())->update(['end_time'=>$newTime]);
+                            }
+
+                            $update_userlooks = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
+
+                            $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
+                            $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
+                             $data['is_active'] = 1;
+                            $data['notification_time'] = $notification_time;
+                            $data['is_notify'] = 0;
+
+                            if($looksex->update($data))
+                            {
+                                UserLokDatesexTypeModel::where(['user_id'=>$clientId,'lookdatesex_id'=>$looksex->id])->delete();
+                                $common->saveLooksexvalue($data,$clientId,$looksex->id,'sex');
+                                $response['success'] = 1;
+                                $response['message'] = 'success';
+                                $response['data'] = $looksex->id;
+                                $http_status = 200;
+                            }
+                            else
+                            {
+                                $response['success'] = 0;
+                                $response['message'] = 'failure';
+                                $http_status = 400;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (count($if_exist_profile) > 0) {
+                            $newTime = date("Y-m-d H:i:s", strtotime($current_date . " -1 minutes"));
+                            UserLooksexdateModel::whereIn('id',$if_exist_profile->toArray())->update(['end_time'=>$newTime]);
+                        }
+
+                        $update_userlooks = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
+
+                        $data['user_id'] = $clientId;
+                        $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
+                        $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
+                         $data['is_active'] = 1;
+                        $data['notification_time'] = $notification_time;
+                        $data['is_notify'] = 0;
+                        $userLok = UserLooksexdateModel::create($data);
+                        if($userLok)
+                        {
+                            $common->saveLooksexvalue($data,$clientId,$userLok->id,'sex');
+                            $response['success'] = 1;
+                            $response['message'] = 'success';
+                            $response['data'] = $userLok->id;
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'failure';
+                            $http_status = 400;
+                        }
+                    }
+                } 
+        } catch (Exception $e) {
+            $response['success'] = 0;
+            $response['message'] = $e->getMessage();
+            $http_status = 400;
+        }
+
+        return  response()->json($response,$http_status);
+    }
 }
