@@ -305,13 +305,11 @@ class Repositary
         {
             $this->insertLookData($data['my_interest'],$userid,$looksexid,'my_interest',$type);  
         }
-
-
     }
 
     public function insertLookData($data=null,$userid=null,$looksexid=null,$type,$looktype=null)
     {
-        $myphysical =explode(',', str_replace([', ',' ,',' , '], ',', trim($data)));
+        $myphysical =explode(',', trim(str_replace([', ',' ,',' , '], ',', trim($data))));
         foreach($myphysical AS $key => $value)
         {
             $data1[$key]['user_id'] = $userid;
