@@ -2923,6 +2923,13 @@ class UserController extends Controller {
         return  response()->json($response,$http_status);
     }
 
+    /**
+     * Name: postAddSexRecord
+     * Purpose: function for insert or update the sex record
+     * created By: Lovepreet
+     * Created on :- 18 sept 2017
+     *
+     **/
     public function postAddSexRecord(Request $request,Repositary $common)
     {
         try {
@@ -3074,4 +3081,6 @@ class UserController extends Controller {
 
         return  response()->json($response,$http_status);
     }
+
+    
 }
