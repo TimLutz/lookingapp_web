@@ -77,6 +77,7 @@ class AuthController extends Controller {
                  {
                      /* Update device token and device type */
                      $userdata['device_token'] = $request->Input('device_token');
+                     $userdata['online_status'] = 1;
                      $userdata['device_type'] = $request->Input('device_type');
                      $userdata['modification_date'] = Carbon::now();
                      
@@ -142,18 +143,17 @@ class AuthController extends Controller {
               
               $response['status']   = 0;
             }else{
-            $user_id = JWTAuth::parseToken()->authenticate()->id;
-            $device_token = $request->Input('device_token');
-            $delete_device_token = Device::where('user_id',$user_id)->where('device_token',$device_token)->delete();
-            if($delete_device_token){
-              $response['status']   = 1;
-              $response['message']   = "Success";
+            if(User::where(['id'=>JWTAuth::parseToken()->authenticate()->id])->update(['online_status'=>2]))
+            {
+               $response['success']   = 1;
+               $response['message']   = "Success"; 
+               $http_status = 400;
             }
-            else{
-              $response['status']   = 0;
-              $response['message']   = "Fail";
-            }
-             
+            else
+            {
+              $data['success'] = 0;
+              $data['message'] = 'Fail'; 
+            } 
           }
 
        } catch (Exception $e) {

@@ -13,7 +13,7 @@ use Input;
 use DB;
 use Mail;
 use Hash;
-
+use Carbon\Carbon;
 use App\Http\Requests\ForgetPasswordappRequest;
 
 class PasswordController extends Controller {
@@ -33,7 +33,8 @@ class PasswordController extends Controller {
 	public function reset($token)
 	{
 		 $token = $token;
-		 $user = User::where('remember_token',$token)->first();
+		 $user = User::where('remember_token',$token)->where('reset_exp_date','>=',Carbon::now())->first();
+		
 		  if(isset($user) && !empty($user)){
 			  
 		  }else{
@@ -70,6 +71,7 @@ class PasswordController extends Controller {
 			if(isset($user) && !empty($user)){ 
 				 $user->password = Hash::make($request->password);
 				 $user->remember_token = null;
+				 $user->reset_exp_date = null;
 				$savedpassword = $user->save();
 				if($savedpassword)
 				{

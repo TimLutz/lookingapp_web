@@ -43,6 +43,7 @@ $app->get('/', function () use ($app) {
     $app->post('declain_invitation','UserController@postDeclainInvitation');
     $app->get('terms','UserController@getTermsAndCondition');
     $app->post('add_looking_sex','UserController@postAddSexRecord');
+    $app->post('view_favourite_screen','UserController@postViewFavouriteScreen');
     
 });
 
