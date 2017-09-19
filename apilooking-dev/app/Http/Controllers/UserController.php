@@ -996,7 +996,7 @@ class UserController extends Controller {
                         }
                         
                         /*******Check user sex profile of receiver************/
-                        $check_looksex_profile = UserLooksexModel::where(['user_id'=>$viewer_id])->where(function($q){
+                        $check_looksex_profile = UserLooksexdateModel::where(['user_id'=>$viewer_id,'look_type'=>'sex'])->where(function($q){
                             $q->where('start_time','<=',Carbon::now())
                               ->where('end_time','>=',Carbon::now());
                         })->first();
@@ -1019,7 +1019,7 @@ class UserController extends Controller {
                         $Userdetails['Looksex_Profile_Active'] = $check_looksex_active;
                         
                         /*******Check user profile of sender************/
-                        $check_user_looksex_profile = UserLooksexModel::where(['user_id'=>$clientId])->where(function($q){
+                        $check_user_looksex_profile = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->where(function($q){
                             $q->where('start_time','<=',Carbon::now())
                               ->where('end_time','>=',Carbon::now());
                         })->first();
@@ -1069,7 +1069,7 @@ class UserController extends Controller {
                         }
 
                         /*******Set receiver profile active or not************/
-                        $UserLookdate = UserLookdateModel::where(['user_id'=>$viewer_id])->get();
+                        $UserLookdate = UserLooksexdateModel::where(['user_id'=>$viewer_id,'look_type'=>'date'])->get();
                         if (count($UserLookdate) > 0) {
                             $check_lookdate_active = 1;
                         } else {
@@ -1078,7 +1078,7 @@ class UserController extends Controller {
                         $Userdetails['Lookdate_Profile_Active'] = $check_lookdate_active;
                         
                         /*******Set sender profile active or not************/
-                        $UserLookdate = UserLookdateModel::where(['user_id'=>$clientId])->get();
+                        $UserLookdate = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'date'])->get();
                         if (count($UserLookdate) > 0) {
                             $check_user_lookdate_active = 1;
                         } else {
@@ -2777,8 +2777,8 @@ class UserController extends Controller {
 
 
     /**
-     * Name: postDeclainInvitation
-     * Purpose: function for Decline the invitation
+     * Name: postChatMessagePushNotification
+     * Purpose: function for send notification
      * created By: Lovepreet
      * Created on :- 23 Aug 2017
      *
@@ -2837,7 +2837,7 @@ class UserController extends Controller {
                         $total_unread_message = '';
                     }*/
                     
-                    $is_active_look_date = UserLookdateModel::where(['user_id'=>$clientId])->first();
+                    $is_active_look_date = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'date'])->first();
                     
                     if ($is_active_look_date) {
                         $is_active_lookdate_profile = 1;
@@ -3085,6 +3085,13 @@ class UserController extends Controller {
         return  response()->json($response,$http_status);
     }
 
+    /**
+     * Name: postViewFavouriteScreen
+     * Purpose: function for list the favorite user
+     * created By: Lovepreet
+     * Created on :- 18 sept 2017
+     *
+     **/
     public function postViewFavouriteScreen(Request $request, Repositary $common) {
         try {
             $validator = Validator::make( $request->all(),[
@@ -3251,317 +3258,5 @@ class UserController extends Controller {
             $http_status = 400; 
         }
         return  response()->json($response,$http_status);
-
-
-        $this->autoRender = false;
-        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : ''; //this is current user
-        $browse = isset($this->request->data['browse']) ? $this->request->data['browse'] : ''; // view favourite from which section (browser,looking_date or looking_sex)
-        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
-        //$favourite_user_id = isset($this->request->data['favourite_user_id']) ? $this->request->data['favourite_user_id'] : ''; // who receive album
-        /*         * ********for filter by default distance wise sorting so we can not work on distanc sort****** */
-        $last_login = isset($this->request->data['last_login']) ? $this->request->data['last_login'] : '';
-        $mutual_favorites = isset($this->request->data['mutual_favorites']) ? $this->request->data['mutual_favorites'] : '';
-        $recently_added = isset($this->request->data['recently_added']) ? $this->request->data['recently_added'] : '';
-        $search_value = isset($this->request->data['search_value']) ? $this->request->data['search_value'] : '';
-        /*         * *********END************ */
-        if ($user_id && $browse) {
-            //get inactive user id by admin//
-            $get_unbanuser = $this->User->find('all', array('conditions' => array('User.status' => 0)));
-            $unban_user_id = Hash::extract($get_unbanuser, '{n}.User.id');
-            //===blocked by login user===//
-            $get_lock_user_data = $this->BlockedUser->find('all', array('conditions' => array('BlockedUser.user_id' => $user_id)));
-            $block_user_id = Hash::extract($get_lock_user_data, '{n}.BlockedUser.blocked_id');
-            //========blocked login user by others========//
-            $get_block_user_data = $this->BlockedUser->find('all', array('conditions' => array('BlockedUser.blocked_id' => $user_id)));
-            $block_others_user_id = Hash::extract($get_block_user_data, '{n}.BlockedUser.user_id');
-            $bock_user_id = array_merge($block_user_id, $block_others_user_id, $unban_user_id);
-            /*             * *******END************ */
-            /*             * *********login user didetails ********* */
-            $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
-            $login_user = $this->User->find('all', array('conditions' => array('User.id' => $user_id)));
-            $login_user_lat = $login_user[0]['User']['lat'];
-            $login_user_long = $login_user[0]['User']['long'];
-            $member_type = $login_user[0]['User']['member_type'];
-            $removead = $login_user[0]['User']['removead'];
-
-            //foreach($login_user as $key1=>$value1) {
-            //    $login_user[$key1]['User']['looking_profile_active'] = $this->check_profile_active($current_date,$value1['User']['id']);
-            //}
-            /*             * ***********END**** */
-            $fav_con['conditions'] = array('Favourite.user_id' => $user_id, 'Favourite.is_favourite' => 1);
-            $favourite = $this->Favourite->find('all', $fav_con);
-            // $favourite = $this->Favourite->find('all', array('conditions' => array('Favourite.user_id' => $user_id,'Favourite.is_favourite' => 1)));
-            $favourite_user_id = Hash::extract($favourite, '{n}.Favourite.favourite_user_id');
-            /*             * ********for mutual favaorite filter ******** */
-            if ($mutual_favorites) {
-                $mutual_fav_con['conditions'] = array('Favourite.favourite_user_id' => $user_id, 'Favourite.is_favourite' => 1);
-                $mutual_favourite = $this->Favourite->find('all', $mutual_fav_con);
-                $check_favourite_user_id = Hash::extract($mutual_favourite, '{n}.Favourite.user_id'); //check who favourite me
-                $favourite_user_id = array_intersect($favourite_user_id, $check_favourite_user_id);
-                //pr($favourite_user_id);die;
-            }
-
-            /*             * *********END***************** */
-            /*             * ******for search by name or token ******** */
-            if ($search_value) {
-                $options['conditions']['OR'] = array(
-                    "User.screen_name LIKE" => "%" . $search_value . "%",
-                    "User.token LIKE" => "%" . $search_value . "%",
-                );
-            }
-            //===for limit condition for filter on===//
-            //if($search_value || $recently_added || $last_login || $mutual_favorites){
-            if ($search_value) {
-                //======get limit for free user or paid user==//
-                $limit = $this->match_limit($member_type, 'Search');
-                //======End===========//
-                $options['limit'] = $limit;
-            } else {
-                //======get limit for free user or paid user==//
-                $limit = $this->match_limit($member_type, 'Favorite');
-                //======End===========//
-                $options['limit'] = $limit;
-            }
-            //echo $options['limit'];die;
-            /*             * ********END************** */
-            //pr($favourite_user_id);
-            /*             * **********unread message count ***** */
-            $option['fields'] = array('User.*', 'Profile.*', 'UserPartner.*', 'ChatUser.*');
-            $option['joins'] = array(
-                array('table' => 'chat_users',
-                    'alias' => 'ChatUser',
-                    'type' => 'INNER',
-                    'conditions' => array(
-                        'ChatUser.user_id = User.id',
-                        'AND' => array(
-                            array('ChatUser.chat_user_id' => $user_id),
-                        )
-                    )
-            ));
-            $option['conditions'] = array('User.id !=' => $user_id, "NOT" => array('User.id' => $bock_user_id));
-            $option['order'] = array('ChatUser.creation_date' => 'DESC');
-            $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
-            $chatusers = $this->User->find('all', $option);
-            $total_unread_message = 0;
-            if ($chatusers) {
-                if ($browse == 'looking') {
-                    foreach ($chatusers as $key => $value) {
-                        /*                         * ****check message sender profile active or not ********* */
-                        $is_profile_active = $this->check_profile_active($current_date, $value['ChatUser']['user_id']);
-                        if ($is_profile_active == 0) {
-                            $this->ChatUser->updateAll(
-                                    array('ChatUser.count' => 0), array('ChatUser.user_id' => $value['ChatUser']['user_id'], 'ChatUser.chat_user_id' => $value['ChatUser']['chat_user_id']));
-                        }
-                    }
-                    /*                     * ****END********* */
-                    //  if($value['ChatUser']['invite']>0){
-                    //      $invite=1;
-                    //  }else{
-                    //     $invite=0; 
-                    //  }
-                    //  if($browse=='date'){
-                    //  $is_active_look_date = $this->UserLookdate->find('first', array('conditions' => array('UserLookdate.user_id' => $value['ChatUser']['user_id'])));
-                    //  if($is_active_look_date) {
-                    //    $total_unread_message+=$value['ChatUser']['count'];
-                    //  }
-                    //  $total_unread_message+=$invite;
-                    //}else{
-                    //      $total_unread_message+=($value['ChatUser']['count']+$invite);
-                    //  }
-                }
-            }
-            /*             * **********End********* */
-            /*             * *******count user locked profie or not ******** */
-            //$profilelockcount=$this->ProfileLock->find('all', array('conditions' => array('ProfileLock.count' => 1, 'ProfileLock.lock_user_id' => $user_id)));
-            //if($profilelockcount) { 
-            //        $total_unread_message+=count($profilelockcount);                         
-            //}
-            $options['order'] = array('database_distance' => 'ASC');
-            $options['fields'] = array('User.*', '( 6371 * acos( cos( radians("' . $login_user_lat . '") ) * cos( radians( lat ) ) * cos( radians( `long` ) - radians("' . $login_user_long . '") ) + sin( radians("' . $login_user_lat . '") ) * sin( radians( lat ) ) ) ) AS database_distance', 'Profile.*', 'UserPartner.*', 'ChatUser.*', 'Favourite.*');
-            if ($browse == 'looking') {
-
-                //=== For is active checking===//
-                $if_exist_profile = $this->UserLooksex->find('all', array('conditions' => array(
-                        'and' => array(
-                            array(
-                                'UserLooksex.user_id ' => $favourite_user_id,
-                                'UserLooksex.start_time <=' => $current_date,
-                                'UserLooksex.end_time >=' => $current_date
-                            )
-                        )
-                )));
-                $looksex_user_id = Hash::extract($if_exist_profile, '{n}.UserLooksex.user_id');
-                // pr($this->UserLooksex->getDataSource()->getLog(true));die;
-                //pr($if_exist_profile);die;
-
-                /*                 * ********************** */
-                $options['joins'] = array(
-                    array('table' => 'favourites',
-                        'alias' => 'Favourite',
-                        'type' => 'INNER',
-                        'conditions' => array(
-                            'Favourite.favourite_user_id = User.id',
-                            'AND' => array(
-                                array('Favourite.user_id' => $user_id),
-                                array('User.id' => $looksex_user_id),
-                                array('Favourite.is_favourite' => 1),
-                                //array('Favourite.browse' => $browse),
-                                "NOT" => array('User.id' => $bock_user_id)
-                            )
-                        )
-                    ),
-                    array('table' => 'chat_users',
-                        'alias' => 'ChatUser',
-                        'type' => 'LEFT',
-                        'conditions' => array(
-                            'ChatUser.user_id = User.id',
-                            'AND' => array(
-                                array('ChatUser.chat_user_id' => $user_id),
-                            )
-                        )
-                    )
-                );
-            } else if ($browse == 'date') {
-                $UserLookdate = $this->UserLookdate->find('all', array('conditions' => array('UserLookdate.user_id' => $favourite_user_id)));
-                $lookdate_user_id = Hash::extract($UserLookdate, '{n}.UserLookdate.user_id');
-                $options['joins'] = array(
-                    array('table' => 'favourites',
-                        'alias' => 'Favourite',
-                        'type' => 'INNER',
-                        'conditions' => array(
-                            'Favourite.favourite_user_id = User.id',
-                            'AND' => array(
-                                array('Favourite.user_id' => $user_id),
-                                array('User.id' => $lookdate_user_id),
-                                array('Favourite.is_favourite' => 1),
-                                //array('Favourite.browse' => $browse),
-                                "NOT" => array('User.id' => $bock_user_id)
-                            )
-                        )
-                    ),
-                    array('table' => 'chat_users',
-                        'alias' => 'ChatUser',
-                        'type' => 'LEFT',
-                        'conditions' => array(
-                            'ChatUser.user_id = User.id',
-                            'AND' => array(
-                                array('ChatUser.chat_user_id' => $user_id),
-                            )
-                        )
-                ));
-                //pr($UserLookdate);die;
-            } else {
-                $options['joins'] = array(
-                    array('table' => 'favourites',
-                        'alias' => 'Favourite',
-                        'type' => 'INNER',
-                        'conditions' => array(
-                            'Favourite.favourite_user_id = User.id',
-                            'AND' => array(
-                                array('Favourite.user_id' => $user_id),
-                                array('User.id' => $favourite_user_id),
-                                array('Favourite.is_favourite' => 1),
-                                // array('Favourite.browse' => $browse),
-                                "NOT" => array('User.id' => $bock_user_id)
-                            )
-                        )
-                    ),
-                    array('table' => 'chat_users',
-                        'alias' => 'ChatUser',
-                        'type' => 'LEFT',
-                        'conditions' => array(
-                            'ChatUser.user_id = User.id',
-                            'AND' => array(
-                                array('ChatUser.chat_user_id' => $user_id),
-                            )
-                        )
-                ));
-            }
-            $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
-            $favourite = $this->User->find('all', $options);
-            foreach ($favourite as $key => $value) {
-                unset($favourite[$key][0]);
-                $favourite[$key]['User']['distance'] = $this->distance($login_user_lat, $login_user_long, $value['User']['lat'], $value['User']['long'], 'M');
-                $favourite[$key]['User']['looking_profile_active'] = $this->check_profile_active($current_date, $value['User']['id']);
-                if ($value['ChatUser']['invite'] > 0) {
-                    $invite = 1;
-                } else {
-                    $invite = 0;
-                }
-                $total_unread_message+=($value['ChatUser']['count'] + $invite);
-            }
-            // pr($this->User->getDataSource()->getLog(true));die;
-            //pr($this->User->getDataSource()->getLog(true));die;
-            //pr($favourite);die;
-            /*             * ******for give user looksex data******** */
-            $user_looksex = $this->UserLooksex->find('first', array('conditions' => array(
-                    'and' => array(
-                        array(
-                            'UserLooksex.user_id ' => $user_id,
-                            'UserLooksex.start_time <=' => $current_date,
-                            'UserLooksex.end_time >=' => $current_date
-                        )
-                    )
-            )));
-            if ($user_looksex) {
-                $data['userlooksex_data'] = $user_looksex['UserLooksex'];
-            }
-            /*             * **********END**************** */
-            if ($favourite) {
-                if ($recently_added) {
-                    $favourite = Set::sort($favourite, '{n}.Favourite.creation_date', 'desc');
-                } else if ($last_login) {
-                    $favourite = Set::sort($favourite, '{n}.User.modification_date', 'desc');
-                } else {
-                    $favourite = Set::sort($favourite, '{n}.User.distance', 'asc');
-                }
-
-                /*                 * ********check user view my profile ********* */
-                $is_view = $this->check_view($user_id);
-                /*                 * ********END************ */
-                /*                 * ******check any one share album with me******** */
-                $is_share = $this->check_sharealbum($user_id);
-                /*                 * ******End********* */
-                /*                 * ******count total user view my profile******** */
-                $count_view = $this->count_view($user_id);
-                /*                 * ******End********* */
-                /*                 * ******count total user share album with me******** */
-                $count_sharealbum = $this->count_sharealbum($user_id);
-                $total_view_and_share = $count_view + $count_sharealbum;
-                /*                 * ******End********* */
-                /*                 * *****check profile active ********* */
-                $is_profile_active = $this->check_profile_active($current_date, $this->request->data['user_id']);
-                /*                 * ********END***************** */
-
-                /*                 * *****get the max accuricy number ******* */
-                $accuracy_value = Hash::extract($favourite, '{n}.User.accuracy');
-                //pr($accuracy_value);die;
-                $accuracy_max_value = (int) max($accuracy_value);
-                /*                 * **********END*************** */
-                $data['success'] = 1;
-
-                $data['msg'] = 'success';
-                $data['is_share_album'] = $is_share;
-                $data['is_viewed'] = $is_view;
-                $data['total_unread_message'] = $total_unread_message;
-                $data['total_view_and_share'] = $total_view_and_share;
-                $data['user_looking_profile_active'] = $is_profile_active;
-                $data['accuracy'] = $accuracy_max_value;
-                $data['login_user_member_type'] = $member_type;
-                $data['login_user_removead'] = $removead;
-                $data['user_data'] = $favourite;
-                $data['path'] = PIC_PATH;
-            } else {
-                $data['success'] = 2;
-                $data['login_user_member_type'] = $member_type;
-                $data['login_user_removead'] = $removead;
-                $data['msg'] = 'No data found';
-                $data['user_looking_profile_active'] = $this->check_profile_active($current_date, $this->request->data['user_id']);
-            }
-        } else {
-            $data['success'] = 0;
-            $data['msg'] = 'user id or browse  not found';
-        }
-        echo json_encode($data);
     }
 }
