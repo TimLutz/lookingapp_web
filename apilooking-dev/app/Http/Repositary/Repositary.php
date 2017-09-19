@@ -16,7 +16,7 @@ use DB;
 use Mail; 
 use PushNotification;
 use Carbon\Carbon;
-
+use App\Models\UserLooksexdateModel;
 class Repositary
 {
 	/*==================================================================================================
@@ -131,7 +131,7 @@ class Repositary
 
     public function check_profile_active($currentDate=null,$id=null)
     {
-    	$if_exist_profile = UserLooksexModel::where('user_id',$id)
+    	$if_exist_profile = UserLooksexdateModel::where(['user_id'=>$id,'look_type'=>'sex'])
     										  ->where('start_time','<=',$currentDate)
     										  ->where('end_time','>=',$currentDate)
     										  ->get();
