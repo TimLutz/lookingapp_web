@@ -164,7 +164,7 @@ class AdminPasswordController extends Controller {
 		try 
 		{
 			$template=EmailTemplate::find('24');
-			print_r(Input::get('email')); die;
+			//print_r(Input::get('email')); die;
 		    /*$link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";*/
 		    $url = url(env('adminurl').'/password/reset/'.$token);
 		    $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
@@ -175,7 +175,7 @@ class AdminPasswordController extends Controller {
 			//Send Mail
 			return Mail::send('emails.verify', array('content'=>$body), function($m)use($template)
 			{
-				$m->to(Input::get('email'))
+				$m->to(trim(Input::get('email')))
 					->subject($template->subject);
 			});
 		}
