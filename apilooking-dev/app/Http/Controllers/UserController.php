@@ -1122,7 +1122,7 @@ class UserController extends Controller {
                             $Userdetails['User_Invitation'] = $chat_invitation->toArray();
                         }*/
                         $chat_invitation = ChatroomModel::where(function($q) use ($clientId,$viewer_id){
-                            $q->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id])
+                            $q->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id]);
                           //  ->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId]);
                         })->first();
                         if ($chat_invitation) {
@@ -1136,7 +1136,7 @@ class UserController extends Controller {
                             $Userdetails['Viewer_Invitation'] = $chat_invitation_viewer->toArray();
                         }*/
                         $chat_invitation_viewer = ChatroomModel::where(function($q) use ($clientId,$viewer_id){
-                            $q->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId])
+                            $q->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId]);
                           //  ->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id]);
                         })->first();
                         if ($chat_invitation_viewer) {
