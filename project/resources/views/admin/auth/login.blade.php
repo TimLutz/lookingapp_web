@@ -117,7 +117,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	
 </div>
 <div class="copyright">
-	 2017 © LookingApp.
+	 © 2015 Looking
 </div>
 <!-- END LOGIN -->
 <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
