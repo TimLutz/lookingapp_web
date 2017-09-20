@@ -112,7 +112,7 @@
 	
 </div>
 <div class="copyright">
-	 2016 © FrontlineApp.
+	 2017 © LookingApp.
 </div>
 <!-- END LOGIN -->
 <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
