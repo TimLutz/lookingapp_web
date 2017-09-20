@@ -2907,7 +2907,7 @@ class UserController extends Controller {
                             {
                                 $notification = ['badge'=>(int) $total_unread_message,'type'=>'chat message','sound'=>'default','count_unread_msg'=>$total_unread_message,'sender_id'=>$clientId,'receiver_id'=>$data['receiver_id'],'content-available'=>1,'message'=>$message];
                             } 
-
+//print_r($notification); die;
                             $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
                         }
                         
