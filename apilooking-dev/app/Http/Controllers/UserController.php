@@ -2891,7 +2891,7 @@ class UserController extends Controller {
                             if ($message == 'send location') {
                                 $message = $data['message'];
                                 $msg = 'Location received';
-                            } else if ($message == 'Detail profile unlocked') {
+                            } elseif($message == 'Detail profile unlocked') {
                                 $message = $data['message'];
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' unlocked ' . ((isset($data['browse']) && $data['browse']) ? $data['browse'] : '') . ' profile';
                             } else {
