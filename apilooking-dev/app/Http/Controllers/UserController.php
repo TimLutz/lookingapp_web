@@ -891,8 +891,6 @@ class UserController extends Controller {
                     $data = $request->all();
                     $viewer_id = $data['viewer_user_id'];
 
-                    $this->addChatUser($viewer_id);
-
                     /*******Add or update view user************/
                     $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
                     if ($clientId == $viewer_id) {
@@ -3290,46 +3288,4 @@ class UserController extends Controller {
         return  response()->json($response,$http_status);
     }
 
-    public function addChatUser($data1=null)
-    {
-        try { 
-
-            $clientId = JWTAuth::parseToken()->authenticate()->id;
-            $data['chat_user_id'] = $data1;
-            
-            $chat_users = ChatroomModel::where(function($q) use($clientId,$data){
-                $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['chat_user_id']])
-                  ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['chat_user_id']]);  
-            })->first();
-            if(count($chat_users)==0)
-            {
-                $data['from_user'] = $clientId;
-                $data['to_user'] = $data['chat_user_id'];
-                $data['invite'] = 0;
-                if(ChatroomModel::create($data))
-                {
-                    $response['success'] = 1;
-                    $response['message'] = 'Success';
-                    $http_status = 200;
-                }
-                else
-                {
-                    $response['success'] = 0;
-                    $response['message'] = 'unable to save into database';
-                    $http_status = 400;
-                }
-            }
-            else
-            {
-                $response['success'] = 0;
-                $response['message'] = 'Already save into databse';
-                $http_status = 400;
-            }
-        } catch (Exception $e) {
-            $response['message']    = $e->getMessage();
-            $response['status']     = 0;
-            $http_status = 400;
-        }
-        return response()->json($response,$http_status);
-    }
 }
