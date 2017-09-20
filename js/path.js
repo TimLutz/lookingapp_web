@@ -1,7 +1,7 @@
-path = "http://localhost/lookingApp/";
-//	path = "http://lookingapp1.debutinfotech.com/";
+//path = "http://localhost/lookingApp/";
+	path = "http://lookingapp1.debutinfotech.com/";
 	
-	path = "http://lookingapp.debutinfotech.com/lookingapp_web/app/webroot/QA/";
+//	path = "http://lookingapp.debutinfotech.com/lookingapp_web/app/webroot/QA/";
 	//path = "http://lookingapp.debutinfotech.com/lookingapp_web/app/webroot/beta_verson/";
 
 
