@@ -2429,7 +2429,7 @@ class UserController extends Controller {
      * Created on :- 12 Aug 2017
      *
      **/
-    public function postAddChatUser(Request $request,$data1=null) {
+    public function postAddChatUser(Request $request) {
         try { 
 
             $clientId = JWTAuth::parseToken()->authenticate()->id;
@@ -2452,10 +2452,6 @@ class UserController extends Controller {
             }else
             {
                 $data = $request->all();
-                if(isset($data1) && !empty($data1))
-                {
-                    $data['chat_user_id'] = $data1;
-                }
                 $chat_users = ChatroomModel::where(function($q) use($clientId,$data){
                     $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['chat_user_id']])
                       ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['chat_user_id']]);  
