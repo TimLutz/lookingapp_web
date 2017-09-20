@@ -2443,10 +2443,12 @@ class UserController extends Controller {
                     $data['from_user'] = $clientId;
                     $data['to_user'] = $data['chat_user_id'];
                     $data['invite'] = 0;
-                    if(ChatroomModel::create($data))
+                    $chatData  = ChatroomModel::create($data);
+                    if($chatData)
                     {
                         $response['success'] = 1;
                         $response['message'] = 'Success';
+                        $response['data'] = $chatData->id;
                         $http_status = 200;
                     }
                     else
