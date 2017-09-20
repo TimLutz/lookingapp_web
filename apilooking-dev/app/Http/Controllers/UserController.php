@@ -2884,8 +2884,8 @@ class UserController extends Controller {
                         /***** Send Pushnotification   *****/    
                         if ($userdetails->online_status == 1) {
                             /*                         * ********* send notification for ios ************* */
-                         //   $device_token = $userdetails->device_token;
-                            $device_token = 'e9e7b89b26a15b288f37bf8f90b65dc29e077c63a95acc5caebbdc2eaac2057f';
+                            $device_token = $userdetails->device_token;
+                        //    $device_token = 'e9e7b89b26a15b288f37bf8f90b65dc29e077c63a95acc5caebbdc2eaac2057f';
                             //$device_token = $userdetails->device_token; 
                             $message = isset($data['message']) && !empty($data['message']) ? $data['message'] : '';
                             if ($message == 'send location') {
