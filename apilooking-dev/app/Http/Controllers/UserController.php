@@ -608,15 +608,15 @@ class UserController extends Controller {
                         //active before one hour
                         if($finalArr['online'] == "Recently")
                         {
+                            $user = $user->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
                            // $user = $user->where(array('online_status'=>2))->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
-                            $user = $user->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
                         //    print_r($user->get());die;
                         }
                         //active before more than 1 hour
-                        else if($finalArr['online'] == "Right Now")
+                        elseif($finalArr['online'] == "Right Now")
                         {
+                            $user = $user->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
                          //   $user = $user->where(array('online_status'=>2))->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
-                            $user = $user->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
                         }
                     }
                     
