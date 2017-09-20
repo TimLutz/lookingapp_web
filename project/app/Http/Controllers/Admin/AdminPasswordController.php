@@ -164,10 +164,10 @@ class AdminPasswordController extends Controller {
 		try 
 		{
 			$template=EmailTemplate::find('24');
-			
+			print_r(Input::get('email')); die;
 		    /*$link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";*/
 		    $url = url(env('adminurl').'/password/reset/'.$token);
-		   echo $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>"; die;
+		    $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
 			$find=array('@click here@');
 			$values=array($link); 
 			$body=str_replace($find,$values,$template->content);
