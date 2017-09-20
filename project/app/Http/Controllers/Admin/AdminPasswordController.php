@@ -206,7 +206,8 @@ class AdminPasswordController extends Controller {
 			}
 			else
 			{
-				abort(404);
+				flash()->error('Link has been expired.');
+				return Redirect(getenv('adminurl').'/auth/login');
 			}
 		}
 		catch (\ErrorException $e) 
