@@ -324,4 +324,16 @@ class Repositary
         return UserLokDatesexTypeModel::insert($data1);    
     }
 
+    
+
+
+    /*
+     * Added on : 28 aug 2017, Lovepreet
+     * DESC : to get difference between current time and passed value
+     * */
+    public function check_difference_in_hours($startTime){
+        $currentTime = Carbon::now();
+        $start_time = Carbon::parse($startTime);
+        return $start_time->diffInHours($currentTime);
+    }
 }

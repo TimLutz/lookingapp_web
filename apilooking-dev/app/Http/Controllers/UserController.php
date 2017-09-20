@@ -58,6 +58,8 @@ class UserController extends Controller {
                 ->to('c0dab333a984e0f44ff513eee6ea98bdc838be92a5d6fd329aac22f2f4bd47e3')
                 ->send('Testing lokinghfghfgh'); die;*/
       $this->middleware('jwt.auth', ['except' => ['postLogin','ForgetPassword','getTermsAndCondition']]);
+
+      User::where(['id'=>JWTAuth::parseToken()->authenticate()->id])->update(['last_seen'=>Carbon::now()]);
     }
     
      /**
@@ -601,17 +603,20 @@ class UserController extends Controller {
                     }
                     /********End*********/
 
-                    if(isset($finalArr['online']) && $finalArr['online_status'] != 'Not Set')
+                    if(isset($finalArr['online']) && $finalArr['online'] != 'Not Set')
                     {
                         //active before one hour
-                        if($finalArr['online_status'] == 1)
+                        if($finalArr['online'] == "Recently")
                         {
-                            $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now())->where('updated_at','>=',Carbon::now()->subHours(1));
+                           // $user = $user->where(array('online_status'=>2))->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
+                            $user = $user->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
+                        //    print_r($user->get());die;
                         }
                         //active before more than 1 hour
-                        else if($finalArr['online_status'] == 2)
+                        else if($finalArr['online'] == "Right Now")
                         {
-                            $user = $user->where(array('online_status'=>2))->where('updated_at','<=',Carbon::now()->subHours(1))->where('updated_at','>=',Carbon::now()->subHours(24));
+                         //   $user = $user->where(array('online_status'=>2))->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
+                            $user = $user->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
                         }
                     }
                     
@@ -663,7 +668,7 @@ class UserController extends Controller {
 
                     /******** Calculates total no. of unread message ******** */
                     foreach ($user_data as $key => $value) {
-                        if(count($value['ChatUsers']))
+                        /*if(count($value['ChatUsers']))
                         {
                             foreach($value['ChatUsers'] As $k => $val)
                             {
@@ -674,7 +679,7 @@ class UserController extends Controller {
 
                                 $total_unread_message+=($value->count + $invite);
                             }
-                        }
+                        }*/
                         $accuracy_value[] = $value['accuracy'];
                     }
                     /********End******** */
@@ -738,6 +743,27 @@ class UserController extends Controller {
                             $UserData[$key1]['photo_change'] = $value1->photo_change;
                             $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
                             $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                            
+                            if(!empty($value1->last_seen))
+                            {
+                                $lastseen = $common->check_difference_in_hours($value1->last_seen);
+                                if($lastseen<1)
+                                {
+                                    $UserData[$key1]['last_seen'] = 0;
+                                }
+                                else if($lastseen>=1 && $lastseen<24)
+                                {
+                                    $UserData[$key1]['last_seen'] = 1;
+                                }
+                                else
+                                {
+                                    $UserData[$key1]['last_seen'] = 2;
+                                }
+                            }
+                            else
+                            {
+                                $UserData[$key1]['last_seen'] = 2;
+                            }
                         }
                     } 
 
@@ -783,6 +809,26 @@ class UserController extends Controller {
                             $UserData1[$key]['photo_change'] = $value->photo_change;
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                            if(!empty($value->last_seen))
+                            {
+                                $lastseen = $common->check_difference_in_hours($value->last_seen);
+                                if($lastseen<1)
+                                {
+                                    $UserData1[$key]['last_seen'] = 0;
+                                }
+                                else if($lastseen>=1 && $lastseen<24)
+                                {
+                                    $UserData1[$key]['last_seen'] = 1;
+                                }
+                                else
+                                {
+                                    $UserData1[$key]['last_seen'] = 2;
+                                }
+                            }
+                            else
+                            {
+                                $UserData1[$key]['last_seen'] = 2;
+                            }
                         }
                         
                     }
@@ -868,6 +914,8 @@ class UserController extends Controller {
                     $clientId = JWTAuth::parseToken()->authenticate()->id;
                     $data = $request->all();
                     $viewer_id = $data['viewer_user_id'];
+
+                    $this->addChatUser($viewer_id);
 
                     /*******Add or update view user************/
                     $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
@@ -2381,7 +2429,7 @@ class UserController extends Controller {
      * Created on :- 12 Aug 2017
      *
      **/
-    public function postAddChatUser(Request $request) {
+    public function postAddChatUser(Request $request,$data1=null) {
         try { 
 
             $clientId = JWTAuth::parseToken()->authenticate()->id;
@@ -2404,14 +2452,16 @@ class UserController extends Controller {
             }else
             {
                 $data = $request->all();
+                if(isset($data1) && !empty($data1))
+                {
+                    $data['chat_user_id'] = $data1;
+                }
                 $chat_users = ChatroomModel::where(function($q) use($clientId,$data){
                     $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['chat_user_id']])
                       ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['chat_user_id']]);  
                 })->first();
                 if(count($chat_users)==0)
                 {
-                    
-
                     $data['from_user'] = $clientId;
                     $data['to_user'] = $data['chat_user_id'];
                     $data['invite'] = 0;
@@ -3258,5 +3308,48 @@ class UserController extends Controller {
             $http_status = 400; 
         }
         return  response()->json($response,$http_status);
+    }
+
+    public function addChatUser($data1=null)
+    {
+        try { 
+
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $data['chat_user_id'] = $data1;
+            
+            $chat_users = ChatroomModel::where(function($q) use($clientId,$data){
+                $q->OrWhere(['from_user'=>$clientId,'to_user'=>$data['chat_user_id']])
+                  ->OrWhere(['to_user'=>$clientId,'from_user'=>$data['chat_user_id']]);  
+            })->first();
+            if(count($chat_users)==0)
+            {
+                $data['from_user'] = $clientId;
+                $data['to_user'] = $data['chat_user_id'];
+                $data['invite'] = 0;
+                if(ChatroomModel::create($data))
+                {
+                    $response['success'] = 1;
+                    $response['message'] = 'Success';
+                    $http_status = 200;
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'unable to save into database';
+                    $http_status = 400;
+                }
+            }
+            else
+            {
+                $response['success'] = 0;
+                $response['message'] = 'Already save into databse';
+                $http_status = 400;
+            }
+        } catch (Exception $e) {
+            $response['message']    = $e->getMessage();
+            $response['status']     = 0;
+            $http_status = 400;
+        }
+        return response()->json($response,$http_status);
     }
 }
