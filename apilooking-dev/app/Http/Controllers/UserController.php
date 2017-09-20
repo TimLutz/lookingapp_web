@@ -1585,9 +1585,9 @@ class UserController extends Controller {
                         }
                         else if($chat_count_message1->invite==1)
                         {
-                            $response['errors']     = 'You are already connected.';
+                            $response['message']     = 'You are already connected.';
                             $response['success']     = 1;
-                            $response['data']     = $chat_count_message1->1;
+                            $response['data']     = $chat_count_message1->id;
                             $http_status=400;
                             return response()->json($response,$http_status);
                         }
@@ -1606,9 +1606,9 @@ class UserController extends Controller {
                     {
                         if($chat_count_message->invite==1)
                         {
-                            $response['errors']     = 'You are already connected.';
+                            $response['message']     = 'You are already connected.';
                             $response['success']     = 1;
-                            $response['data']     = $chat_count_message->1;
+                            $response['data']     = $chat_count_message->id;
                             $http_status=400;
                             return response()->json($response,$http_status);
                         }
@@ -1618,9 +1618,9 @@ class UserController extends Controller {
                         }
                         else
                         {
-                            $response['errors']     = 'invitation already send.';
+                            $response['message']     = 'invitation already send.';
                             $response['success']     = 1;
-                            $response['data']     = $chat_count_message->1;
+                            $response['data']     = $chat_count_message->id;
                             $http_status=400;
                             return response()->json($response,$http_status);
                         }
