@@ -2462,6 +2462,7 @@ class UserController extends Controller {
                 {
                     $response['success'] = 0;
                     $response['message'] = 'Already save into databse';
+                    $response['data'] = $chat_users->id;
                     $http_status = 400;
                 }
             }
