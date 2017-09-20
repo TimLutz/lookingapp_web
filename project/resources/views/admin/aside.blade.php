@@ -58,14 +58,14 @@
 					</a>
 					<ul class="sub-menu">
 						<li class="@if($active == 'current') active @endif">
-							<!-- <a href="javascript:void(0)"> -->
-							<a href="{{ url(getenv('adminurl').'/reports') }}">
+							<a href="javascript:void(0)">
+							<!-- <a href="{{ url(getenv('adminurl').'/reports') }}"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Current Users</a>
 						</li>
 						<li class="@if($active == 'Archive') active @endif">
-							<!-- <a href="javascript:void(0)"> -->
-							<a href="{{ url(getenv('adminurl').'/reports/archiveindex') }}">
+							<a href="javascript:void(0)">
+							<!-- <a href="{{ url(getenv('adminurl').'/reports/archiveindex') }}"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Archived Users</a>
 						</li>
@@ -81,8 +81,8 @@
 					</a>
 				</li>
 				<li class="@if(isset($active) && $active == 'profiletext') active @endif">
-					<a href="{{ url(getenv('adminurl').'/profiletext') }}">
-					<!-- <a href="javascript:void(0)"> -->
+					<!-- <a href="{{ url(getenv('adminurl').'/profiletext') }}"> -->
+					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
 					Profile Text </span>
@@ -98,14 +98,14 @@
 					</a>
 					<ul class="sub-menu">
 						<li class="@if($active == 'free') active @endif">
-							<!-- <a href="javascript:void(0)"> -->
-							<a href="{{ url(getenv('adminurl').'/userrestriction') }}">
+							<a href="javascript:void(0)">
+							<!-- <a href="{{ url(getenv('adminurl').'/userrestriction') }}"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Free Users</a>
 						</li>
 						<li class="@if($active == 'paid') active @endif">
-							<!-- <a href="javascript:void(0)"> -->
-							<a href="{{ url(getenv('adminurl').'/userrestriction/paid') }}">
+							<a href="javascript:void(0)">
+							<!-- <a href="{{ url(getenv('adminurl').'/userrestriction/paid') }}"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Paid Users</a>
 						</li>
