@@ -167,7 +167,7 @@ class AdminPasswordController extends Controller {
 			
 		    /*$link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";*/
 		    $url = env('adminurl').'/reset-password/'.$token;
-		    $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
+		   echo $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>"; die;
 			$find=array('@click here@');
 			$values=array($link); 
 			$body=str_replace($find,$values,$template->content);
