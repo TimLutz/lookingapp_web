@@ -334,6 +334,23 @@ class Repositary
     public function check_difference_in_hours($startTime){
         $currentTime = Carbon::now();
         $start_time = Carbon::parse($startTime);
-        return $start_time->diffInHours($currentTime);
+        //return $start_time->diffInHours($currentTime);
+        $start_time = $start_time->diffInHours($currentTime);
+
+        
+        if($start_time<1)
+        {
+            return 0;
+        }
+        else if($start_time>=1 && $start_time<24)
+        {
+            return 1;
+        }
+        else
+        {
+            return 2;
+        }
+        
+
     }
 }

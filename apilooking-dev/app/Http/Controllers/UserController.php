@@ -746,19 +746,7 @@ class UserController extends Controller {
                             
                             if(!empty($value1->last_seen))
                             {
-                                $lastseen = $common->check_difference_in_hours($value1->last_seen);
-                                if($lastseen<1)
-                                {
-                                    $UserData[$key1]['last_seen'] = 0;
-                                }
-                                else if($lastseen>=1 && $lastseen<24)
-                                {
-                                    $UserData[$key1]['last_seen'] = 1;
-                                }
-                                else
-                                {
-                                    $UserData[$key1]['last_seen'] = 2;
-                                }
+                                $UserData[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
                             }
                             else
                             {
@@ -811,19 +799,7 @@ class UserController extends Controller {
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
                             if(!empty($value->last_seen))
                             {
-                                $lastseen = $common->check_difference_in_hours($value->last_seen);
-                                if($lastseen<1)
-                                {
-                                    $UserData1[$key]['last_seen'] = 0;
-                                }
-                                else if($lastseen>=1 && $lastseen<24)
-                                {
-                                    $UserData1[$key]['last_seen'] = 1;
-                                }
-                                else
-                                {
-                                    $UserData1[$key]['last_seen'] = 2;
-                                }
+                                $UserData1[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
                             }
                             else
                             {
@@ -977,6 +953,14 @@ class UserController extends Controller {
                         $Userdetails['Viewer_Invitation'] = array();
                         $Userdetails['Lookdate_Profile_Active'] = array();
                         $Userdetails['User_Lookdate_Profile_Active'] = array();
+                        if(!empty($profile->last_seen))
+                        {
+                            $Userdetails['last_seen'] = $common->check_difference_in_hours($profile->last_seen);
+                        }
+                        else
+                        {
+                            $Userdetails['last_seen'] = 2;
+                        }
 
                         /*******Sharealbum by sender************/
                         $sharealbum = ShareAlbumModel::where(array('sender_id'=>$clientId,'receiver_id'=>$viewer_id,'is_received'=>1))->first();
