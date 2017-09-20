@@ -73,8 +73,8 @@
 				</li>
 				
 				<li class="@if(isset($active) && $active == 'photos') active @endif">
-					<a href="{{ url(getenv('adminurl').'/photos') }}">
-					<!-- <a href="javascript:void(0)"> -->
+					<!-- <a href="{{ url(getenv('adminurl').'/photos') }}"> -->
+					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
 					Photos </span>
