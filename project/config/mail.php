@@ -56,8 +56,8 @@ return [
     */
 
     //'from' => ['address' => null, 'name' => null],
-    'from' => ['address' => 'tdemo180@gmail.com', 'name' => 'Looking App'],
-
+    'from' => ['address' => 'lookingapptesting@gmail.com', 'name' => 'Looking App'],
+ 
     /*
     |--------------------------------------------------------------------------
     | E-Mail Encryption Protocol
@@ -84,7 +84,7 @@ return [
     */
 
     //'username' => env('MAIL_USERNAME'),
-    'username' => 'tdemo180@gmail.com',
+    'username' => 'lookingapptesting@gmail.com',
 
     /*
     |--------------------------------------------------------------------------

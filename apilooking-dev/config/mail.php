@@ -55,7 +55,7 @@ return [
     */
 
     'from' => ['address' => 'lookingapptesting@gmail.com', 'name' => 'Looking App'],
-
+ 
     /*
     |--------------------------------------------------------------------------
     | E-Mail Encryption Protocol
