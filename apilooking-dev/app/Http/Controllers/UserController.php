@@ -1586,7 +1586,8 @@ class UserController extends Controller {
                         else if($chat_count_message1->invite==1)
                         {
                             $response['errors']     = 'You are already connected.';
-                            $response['success']     = 0;
+                            $response['success']     = 1;
+                            $response['data']     = $chat_count_message1->1;
                             $http_status=400;
                             return response()->json($response,$http_status);
                         }
@@ -1606,7 +1607,8 @@ class UserController extends Controller {
                         if($chat_count_message->invite==1)
                         {
                             $response['errors']     = 'You are already connected.';
-                            $response['success']     = 0;
+                            $response['success']     = 1;
+                            $response['data']     = $chat_count_message->1;
                             $http_status=400;
                             return response()->json($response,$http_status);
                         }
@@ -1617,7 +1619,8 @@ class UserController extends Controller {
                         else
                         {
                             $response['errors']     = 'invitation already send.';
-                            $response['success']     = 0;
+                            $response['success']     = 1;
+                            $response['data']     = $chat_count_message->1;
                             $http_status=400;
                             return response()->json($response,$http_status);
                         }
@@ -2397,10 +2400,7 @@ class UserController extends Controller {
             $Userdetails['chat_history_limit'] = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'chat_history');
             $response['data'] = $Userdetails;
             $http_status = 200;
-        }    
-
-          
-
+        }  
         return response()->json($response,$http_status);
     }
 
@@ -2460,7 +2460,7 @@ class UserController extends Controller {
                 }
                 else
                 {
-                    $response['success'] = 0;
+                    $response['success'] = 1;
                     $response['message'] = 'Already save into databse';
                     $response['data'] = $chat_users->id;
                     $http_status = 400;
