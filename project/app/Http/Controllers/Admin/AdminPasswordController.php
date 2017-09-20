@@ -161,11 +161,13 @@ class AdminPasswordController extends Controller {
 
 	public function emailResetLink($user, $token)
 	{
-		try
+		try 
 		{
 			$template=EmailTemplate::find('24');
 			
-		    $link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";
+		    /*$link="<a href='". url(getenv('adminurl').'/password/reset/'.$token)."'>Click here</a>";*/
+		    $url = env('adminurl').'/reset-password/'.$token;
+		    $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
 			$find=array('@click here@');
 			$values=array($link); 
 			$body=str_replace($find,$values,$template->content);
