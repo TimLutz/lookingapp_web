@@ -3003,6 +3003,7 @@ class UserController extends Controller {
                 }else
                 {
                     $data = $request->all();
+                    Log::info('Showing user profile for user: '.json_encode($request->all()));
                     $clientId = JWTAuth::parseToken()->authenticate()->id;
                     //===for calculate notification time calculate===//
                     $actual_date = date('Y-m-d H:i:s', strtotime($data['end_time']));
