@@ -3004,6 +3004,7 @@ class UserController extends Controller {
                 {
                     $data = $request->all();
                     Log::info('Showing user profile for user: '.json_encode($request->all()));
+                    $type = isset($data['type']) ? $data['type'] : '';
                     $clientId = JWTAuth::parseToken()->authenticate()->id;
                     //===for calculate notification time calculate===//
                     $actual_date = date('Y-m-d H:i:s', strtotime($data['end_time']));
@@ -3043,7 +3044,7 @@ class UserController extends Controller {
                     $if_exist_profile = UserLooksexdateModel::where('start_time','<=',Carbon::now())->where('end_time','>=',Carbon::now())->where(['id'=>$clientId,'look_type'=>'sex'])->lists('id');
                     if($looksex)
                     {
-                        if (empty($data['type'])) {
+                        if (empty($type)) {
                             $response['success'] = 3;
                             $response['message'] = 'profile name already exists';
                             $http_status = 200;
