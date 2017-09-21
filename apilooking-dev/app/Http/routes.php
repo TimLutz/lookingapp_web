@@ -44,6 +44,7 @@ $app->get('/', function () use ($app) {
     $app->get('terms','UserController@getTermsAndCondition');
     $app->post('add_looking_sex','UserController@postAddSexRecord');
     $app->post('view_favourite_screen','UserController@postViewFavouriteScreen');
+    $app->post('view_chat_users','UserController@postViewChatusers');
     
 });
 

@@ -2982,16 +2982,15 @@ class UserController extends Controller {
                     ],
                     [
                         'start_time.required' => 'Start time is required.',
-                        'end_time.required'  => 'End time is required.',
-                        'profile_name.required' => 'Profile name is required.',
-                        'my_physical_appearance.required' => 'My physical appearance is required.',
-                        'his_physical_appearance.required' => 'His physical appearance is required.',
-                        'my_sextual_preferences.required' => 'My sextual preferences is required.',
-                        'his_sextual_preferences.required' => 'His sextual preferences is required.',
-                        'my_social_habits.required' => 'My social habits is required.',
-                        'his_social_habits.required' => 'His social habits is required.',
+                        'profile_name.required' => 'Please enter your profile name.',
+                        'my_physical_appearance.required' => 'Please enter your Physical Appearance.',
+                        'his_physical_appearance.required' => 'Please enter His Physical Appearance.',
+                        'my_sextual_preferences.required' => 'Please enter Your Sexual Preference.',
+                        'his_sextual_preferences.required' => 'Please enter His Sexual Preference.',
+                        'my_social_habits.required' => 'Please enter Your Social Habits.',
+                        'his_social_habits.required' => 'Please enter His Social Habits.',
                         'description.required' => 'Description is required.',
-                        'duration.required' => 'Duration is required.',
+                        'duration.required' => 'Please enter your duration.',
                         'type.required'=> 'Type is required.'
                     ]
                 );
@@ -3034,6 +3033,11 @@ class UserController extends Controller {
 
                     $looksex = UserLooksexdateModel::where(['user_id'=>$clientId,'profile_name'=>$data['profile_name'],'look_type'=>'sex'])->first();
 
+                    $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
+                    $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
+                     $data['is_active'] = 1;
+                    $data['notification_time'] = $notification_time;
+                    $data['is_notify'] = 0;
                     //For check exist time//
                     $if_exist_profile = UserLooksexdateModel::where('start_time','<=',Carbon::now())->where('end_time','>=',Carbon::now())->where(['id'=>$clientId,'look_type'=>'sex'])->lists('id');
                     if($looksex)
@@ -3052,11 +3056,6 @@ class UserController extends Controller {
 
                             $update_userlooks = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
 
-                            $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
-                            $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
-                             $data['is_active'] = 1;
-                            $data['notification_time'] = $notification_time;
-                            $data['is_notify'] = 0;
 
                             if($looksex->update($data))
                             {
@@ -3085,11 +3084,6 @@ class UserController extends Controller {
                         $update_userlooks = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
 
                         $data['user_id'] = $clientId;
-                        $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
-                        $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
-                         $data['is_active'] = 1;
-                        $data['notification_time'] = $notification_time;
-                        $data['is_notify'] = 0;
                         $userLok = UserLooksexdateModel::create($data);
                         if($userLok)
                         {
@@ -3289,6 +3283,179 @@ class UserController extends Controller {
             $http_status = 400; 
         }
         return  response()->json($response,$http_status);
+    }
+
+    /**
+     * Name: postViewChatusers
+     * Purpose: function for list the chat user
+     * created By: Lovepreet
+     * Created on :- 21 sept 2017
+     *
+     **/
+    public function postViewChatusers(Request $request,Repositary $common)
+    {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $data = $request->all();
+        $is_view = $is_share = $is_profile_active = $total_unread_message = $accuracy_max_value =  0;
+        $accuracy_value = $block_id = $read_message_user = $unread_message_chatusers = $Userdetails['User_Profile_Lock'] = [];
+         
+        $current_date = Carbon::now();
+        $user =User::where('status','!=',0)->where(['role'=>2])->where('id','!=',$clientId);
+
+        $favoriteId = [];
+        $sentInvite = '';
+        if (isset($data['favourites']))
+        {
+                $favourite = Favourite::where(['user_id'=>$clientId,'is_favourite'=>1])->lists();
+                $user = $user->whereIn('id',$favourite);
+        } 
+        elseif(isset($data['sent_invite']))
+        {
+            //only for looking as per client requirement
+            $sentInvite = 1;
+        } elseif(isset($data['received_invite'])) 
+        {
+            $sentInvite = 1;
+            //only for browse and dating as per client requirement
+        }
+
+        /******Blocked User********/
+        $block_user_id = BlockUserModel::where(function($q) use ($clientId){
+            $q->orWhere(array('blocked_id'=>$clientId))
+              ->orWhere(array('user_id'=>$clientId))
+              ->select('id');
+        })
+        ->select('id','user_id','blocked_id')
+        ->get();
+
+        foreach($block_user_id As $k =>$value)
+        {
+            if($value['user_id']==$clientId)
+                $block_id[] = $value['blocked_id'];
+
+            if($value['blocked_id'] == $clientId)
+                $block_id[] = $value['user_id'];
+        }
+
+        if (isset($data['search_value'])) {
+            $user = $user->where(function($q) use ($data){
+                $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
+                  ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
+            });
+        }
+
+        $looksex_user_id = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->lists('user_id');
+
+        //pending looking sex and dating functionality
+
+        $user_data = $user->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity']);
+
+        $user_data = $user_data->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
+            if(!empty($sentInvite))
+            {
+                $query->where(['invite'=>1]);
+            }
+            $query->where(['to_user'=>$clientId])
+            ->orderBy('created_at','DESC');
+        })->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite){
+            if(!empty($sentInvite))
+            {
+                $query1->where(['invite'=>1]);
+            }
+            $query1->where(['from_user'=>$clientId])
+            ->orderBy('created_at','DESC');
+        });                
+
+        $user_data = $user_data->where(['registration_status'=>3])
+                ->whereNotIn('id',$block_id)
+                ->get();
+
+        
+        foreach ($user_data as $key => $value) {
+            $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['id']);
+            /*if ($value['ChatUser']['invite'] > 0) {
+                $invite = 1;
+            } else {
+                $invite = 0;
+            }*/
+            
+
+            /** *****sort by unread message ******** */
+            /*if ($value['ChatUser']['count'] > 0 || $value['ChatUser']['invite'] > 0) {
+                $unread_message_chatusers[] = $chatusers[$key];
+            } else {
+                $read_message_user[] = $chatusers[$key];
+            }*/
+        }  
+          
+
+        /************* check user  alredy lock the view profile user ************ */
+        $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>isset($data['lock_user_id'])?$data['lock_user_id']:'','is_locked'=>1])->first();
+
+        if ($lock_profile) {
+            $Userdetails['User_Profile_Lock'] = $lock_profile;
+        }  
+
+
+        if (count($user_data)) {
+
+            /** ********check user view my profile ********* */
+            $is_view = $common->check_view($clientId);
+            /** ********END************ */
+
+            /** ******check any one share album with me******** */
+            $is_share = $common->check_sharealbum($clientId);
+            /** ******End********* */
+
+            /** ******count total user view my profile******** */
+            $count_view = $common->count_view($clientId);
+            /** ******End********* */
+
+            /** ******count total user share album with me******** */
+            $count_sharealbum = $common->count_sharealbum($clientId);
+            $total_view_and_share = $count_view + $count_sharealbum;
+            /** ******End********* */
+
+            /*                 * *****check profile active ********* */
+            $is_profile_active = $common->check_profile_active(Carbon::now(), $clientId);
+            /** ********END***************** */
+
+            /******** Calculates total no. of unread message ******** */
+            foreach ($user_data as $key => $value) {
+                $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['id']);
+                $accuracy_value[] = $value['accuracy'];
+            }
+            /********End******** */
+
+            /********Get Maximum accuracy for the users.******** */
+            if(count($accuracy_value))
+            {
+               $accuracy_max_value = (int) max($accuracy_value);
+            }
+            /********End******** */
+
+            $user_looksexdata = array();
+            $user_looksex = UserLooksexdateModel::where([
+                                                    'user_id'=>$clientId,
+                                                    'look_type'=>'sex'])
+                                                ->where('start_time','<=',Carbon::now())
+                                                ->where('end_time','>=',Carbon::now())
+                                                ->first();
+            
+            if ($user_looksex) {
+                $user_looksexdata = $user_looksex->toArray();
+            }
+            $response['success'] = 1;
+            $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'unread_message_grid'=>$unread_message_chatusers,'read_message_grid'=>$read_message_user,'profile_lock'=>$Userdetails['User_Profile_Lock']];
+            $http_status = 200;
+
+        } else {
+            $response['success'] = 0;
+            $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
+            $response['message'] =  'No record found';
+            $http_status = 400;
+        }            
+        return response()->json($response,$http_status);
     }
 
 }
