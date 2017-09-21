@@ -3020,7 +3020,7 @@ class UserController extends Controller {
                         $response['message']     = 'Success';
                         $response['success']     = 1;
                         $response['data'] = $data1;
-                        $http_status = 400;
+                        $http_status = 200;
                         return response($response,$http_status);
                     }
 
@@ -3044,9 +3044,9 @@ class UserController extends Controller {
                     if($looksex)
                     {
                         if (isset($data['type']) && empty($data['type'])) {
-                            $response['success'] = 1;
+                            $response['success'] = 3;
                             $response['message'] = 'profile name already exists';
-                            $http_status = 400;
+                            $http_status = 200;
                         }
                         else
                         {
