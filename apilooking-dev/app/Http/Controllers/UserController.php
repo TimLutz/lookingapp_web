@@ -473,7 +473,7 @@ class UserController extends Controller {
                 $is_view = $is_share = $is_profile_active = $total_unread_message =  0;
                 $filter_cache =[];
                 $block_id = [];
-                $type = isset($data['type'])?$data['type']:''; 
+               // $type = isset($data['type'])?$data['type']:''; 
                 $user =User::where('status','!=',0)->where('role',2);
                 $user2 =User::where('status','!=',0)->where('role',2);        
                 /******Blocked User********/
