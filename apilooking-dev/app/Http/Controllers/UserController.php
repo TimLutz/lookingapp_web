@@ -3074,6 +3074,7 @@ class UserController extends Controller {
                             {
                                 $response['success'] = 0;
                                 $response['message'] = 'failure';
+                                $response['data'] = $data1;
                                 $http_status = 400;
                             }
                         }
@@ -3102,6 +3103,7 @@ class UserController extends Controller {
                         {
                             $response['success'] = 0;
                             $response['message'] = 'failure';
+                            $response['data'] = $data1;
                             $http_status = 400;
                         }
                     }
