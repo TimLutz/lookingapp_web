@@ -466,13 +466,14 @@ class UserController extends Controller {
                     $response['success']     = 0;
                     $http_status=422;
                 }else{
-
+                    
                 $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $data = $request->all();
                 $current_date = Carbon::now();
                 $is_view = $is_share = $is_profile_active = $total_unread_message =  0;
                 $filter_cache =[];
                 $block_id = [];
-                
+                $type = isset($data['type'])?$data['type']:''; 
                 $user =User::where('status','!=',0)->where('role',2);
                 $user2 =User::where('status','!=',0)->where('role',2);        
                 /******Blocked User********/
@@ -494,12 +495,7 @@ class UserController extends Controller {
                 }
                 /******End********/
 
-                //======get limit for free user or paid user==//
-                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type,'Match');
-                $limit = $limit - 1;
-
                 /********Search Filters*********/
-                $data = $request->all();
                 $finalArr = [];
                 if(count($data))
                 {
@@ -516,6 +512,11 @@ class UserController extends Controller {
                         $q->orWhere('screen_name','like','%'.$finalArr['search_value'].'%')
                           ->orWhere('profile_id','like','%'.$finalArr['search_value'].'%');
                     }); 
+                    $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Search');
+                }
+                else
+                {
+                    $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
                 }
                 /********End*********/
                 Log::info('Showing user profile for user: '.json_encode($finalArr));
@@ -626,18 +627,64 @@ class UserController extends Controller {
                     }
                 }    
 
+                if ($type == 'looking') {
+                /*                 * *******userlook date profile ************* */
+                $if_exist_looking_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['user_id'=>$clientId,'look_type'=>'sex'])->first();
+                /*                 * ********End************** */
+
+                /******Get result for all User with chat, profile of user********/
+                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType']);
+                $user_data = $user->whereHas('UserLooKSexType',function($q){
+
+                })
+                                    ->where(['registration_status'=>3])
+                                    ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+
+               
+                //pr($options);die;
+                
+                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
+                //pr($user_data);die;
+                $total_unread_message = 0;
+                if ($user_data) {
+                    foreach ($user_data as $key => $value) {
+                        unset($user_data[$key][0]);
+                        $user_data[$key]['distance'] = $this->distance($login_user_lat, $login_user_long, $value['User']['lat'], $value['User']['long'], 'M');
+                        $user_data[$key]['looking_profile_active'] = $this->check_profile_active($current_date, $value['User']['id']);
+                        
+                    }
+                }
+                /*                 * ********End*********** */
+                //***************for filter chache**********//
+                /*$if_exist_save_filter = $this->MatchesFilterValue->find('first', array('conditions' => array(
+                        'MatchesFilterValue.user_id ' => $user_id,
+                        'MatchesFilterValue.type ' => 'looking'
+                )));
+                if ($if_exist_save_filter) {
+                    $filter_cache = $if_exist_save_filter['MatchesFilterValue'];
+                }*/
+            }
+            else
+            {
                 /******Get result for all User with chat, profile of user********/
                 $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                                     ->where(['registration_status'=>3])
                                     ->whereNotIn('id',$block_id)
                                     //->where('id','!=',$clientId)
                                     ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
-                $user_data = $user_data->limit($limit)
-                ->orderBy('distance','ASC')
-                ->get(); 
+                /******End*****/
+            }
 
-                $UserData = array();  
-                $UserData1 = array();  
+
+            $user_data = $user_data->limit($limit)
+            ->orderBy('distance','ASC')
+            ->get(); 
+
+            $UserData = array();  
+            $UserData1 = array();  
                  
 
                 
@@ -728,7 +775,7 @@ class UserController extends Controller {
                             $UserData[$key1]['chat_users'] = $value1->ChatUsers;
                             $UserData[$key1]['userpartner'] = $value1->Userpartner;
                             $UserData[$key1]['user_identity'] = $value1->UserIdentity;
-                            $UserData[$key1]['distance'] = $value1->UserIdentity;
+                            $UserData[$key1]['distance'] = $value1->distance;
                             $UserData[$key1]['country'] = $value1->country;
                             $UserData[$key1]['city'] = $value1->city;
                             $UserData[$key1]['status'] = $value1->status;
@@ -3277,10 +3324,10 @@ class UserController extends Controller {
                         $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
                         $http_status = 200;
                     } else {
-                        $response['success'] = 0;
+                        $response['success'] = 1;
                         $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
                         $response['message'] =  'No record found';
-                        $http_status = 400;
+                        $http_status = 200;
                     }
                      
                 }

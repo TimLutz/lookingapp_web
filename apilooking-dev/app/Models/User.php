@@ -71,6 +71,10 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 		return $this->hasMany('App\Models\ChatroomModel','to_user');
 	}
 
+	public function UserLooKSexType()
+	{
+		return $this->hasMany('App\Models\UserLooksexdateModel')->where(['look_type'=>'sex']);
+	}
 	/*public static function getDistanceAttribute()
 	{
 
