@@ -627,48 +627,7 @@ class UserController extends Controller {
                     }
                 }    
 
-                if ($type == 'looking') {
-                /*                 * *******userlook date profile ************* */
-                $if_exist_looking_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['user_id'=>$clientId,'look_type'=>'sex'])->first();
-                /*                 * ********End************** */
-
-                /******Get result for all User with chat, profile of user********/
-                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType']);
-                $user_data = $user->whereHas('UserLooKSexType',function($q){
-
-                })
-                                    ->where(['registration_status'=>3])
-                                    ->whereNotIn('id',$block_id)
-                                    //->where('id','!=',$clientId)
-                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
-
-
-               
-                //pr($options);die;
                 
-                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
-                //pr($user_data);die;
-                $total_unread_message = 0;
-                if ($user_data) {
-                    foreach ($user_data as $key => $value) {
-                        unset($user_data[$key][0]);
-                        $user_data[$key]['distance'] = $this->distance($login_user_lat, $login_user_long, $value['User']['lat'], $value['User']['long'], 'M');
-                        $user_data[$key]['looking_profile_active'] = $this->check_profile_active($current_date, $value['User']['id']);
-                        
-                    }
-                }
-                /*                 * ********End*********** */
-                //***************for filter chache**********//
-                /*$if_exist_save_filter = $this->MatchesFilterValue->find('first', array('conditions' => array(
-                        'MatchesFilterValue.user_id ' => $user_id,
-                        'MatchesFilterValue.type ' => 'looking'
-                )));
-                if ($if_exist_save_filter) {
-                    $filter_cache = $if_exist_save_filter['MatchesFilterValue'];
-                }*/
-            }
-            else
-            {
                 /******Get result for all User with chat, profile of user********/
                 $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                                     ->where(['registration_status'=>3])
@@ -676,15 +635,15 @@ class UserController extends Controller {
                                     //->where('id','!=',$clientId)
                                     ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
                 /******End*****/
-            }
+            
 
 
-            $user_data = $user_data->limit($limit)
-            ->orderBy('distance','ASC')
-            ->get(); 
+                $user_data = $user_data->limit($limit)
+                ->orderBy('distance','ASC')
+                ->get(); 
 
-            $UserData = array();  
-            $UserData1 = array();  
+                $UserData = array();  
+                $UserData1 = array();  
                  
 
                 
