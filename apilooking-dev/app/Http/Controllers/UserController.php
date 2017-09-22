@@ -3047,6 +3047,7 @@ class UserController extends Controller {
                         if (empty($type)) {
                             $response['success'] = 3;
                             $response['message'] = 'profile name already exists';
+                            $response['data'] = $data1;
                             $http_status = 200;
                         }
                         else
@@ -3065,7 +3066,8 @@ class UserController extends Controller {
                                 $common->saveLooksexvalue($data,$clientId,$looksex->id,'sex');
                                 $response['success'] = 1;
                                 $response['message'] = 'success';
-                                $response['data'] = $looksex->id;
+                                $data1['id'] = $looksex->id;
+                                $response['data'] = $data1;
                                 $http_status = 200;
                             }
                             else
@@ -3092,7 +3094,8 @@ class UserController extends Controller {
                             $common->saveLooksexvalue($data,$clientId,$userLok->id,'sex');
                             $response['success'] = 1;
                             $response['message'] = 'success';
-                            $response['data'] = $userLok->id;
+                            $data['data1'] = $userLok->id;
+                            $response['data'] = $data1;
                             $http_status = 200;
                         }
                         else
