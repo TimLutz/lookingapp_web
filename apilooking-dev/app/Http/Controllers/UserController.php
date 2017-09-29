@@ -2075,12 +2075,12 @@ class UserController extends Controller {
                 /*******Get album of logged in user************/
                 $album = UseralbumModel::where(['user_id'=>$clientId])->get();
 
-                if ($album) {
+                if (count($album)) {
                     /*******Get sharealbum information to the user************/
                     $sharealbum = ShareAlbumModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
 
                     $data['sender_id'] = $clientId;
-                    if ($sharealbum) {
+                    if (count($sharealbum)) {
                         if ($sharealbum['is_received'] == 1) {
                             $is_received = 2;
                             $is_view = 0;
