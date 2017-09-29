@@ -353,4 +353,79 @@ class Repositary
         
 
     }
+
+    public function calculatepercentage($hisprofile=null,$myprofile=null)
+    {
+        if(count($hisprofile) && count($myprofile))
+        {
+            $his_physical = $his_sextual = $his_social = $my_physical = $my_sextual = $my_social = [];
+            foreach($hisprofile->toArray() AS $val)
+            {
+                if($val['type']=='his_physical_appearance')
+                    $his_physical[] = $val['name'];
+
+                if($val['type']=='his_sextual_preferences')
+                    $his_sextual[] = $val['name'];
+
+                if($val['type']=='his_social_habits')
+                    $his_social[] = $val['name'];
+            }
+            foreach($myprofile->toArray() AS $val)
+            {
+                if($val['type']=='my_physical_appearance')
+                    $my_physical[] = $val['name'];
+
+                if($val['type']=='my_sextual_preferences')
+                    $my_sextual[] = $val['name'];
+
+                if($val['type']=='my_social_habits')
+                    $my_social[] = $val['name'];
+            }
+
+            $result = round((100/count($his_physical)) * count(array_intersect($his_physical, $my_physical))); 
+            $result1 = round((100/count($his_sextual)) * count(array_intersect($his_sextual, $my_sextual))); 
+            $result2 = round((100/count($his_social)) * count(array_intersect($his_social, $my_social)));
+
+            return $total = $result+$result1+$result2;
+
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+
+    /*     * ****percentage count for look sex profile *********** */
+
+    public function percentage($his, $my) {
+        $this->autoRender = false;
+        //echo $his;
+        $his = explode(',', $his);
+        $his_percent_permatch = 100 / count($his);
+        //pr($his_percent_permatch);die;
+        $match = 0;
+        $my = explode(',', $my);
+        //pr($his);
+        //pr($my);
+
+        $result = array_intersect($his, $my);
+        $match = count($result);
+        //foreach ($his as $key => $value) {
+        //                    foreach ($my as $key1 => $value1) {
+        //                        //echo trim(strtolower($value1));
+        //                        if (trim(strtolower($value)) == trim(strtolower($value1))) {
+        //                            $match++;
+        //                            
+        //                            //pr($value);
+        //                            //$traits[]=trim($value);
+        //                            //$Userdetails['traits'] = implode(',',$Userdetails['traits']);
+        //                           //$Userdetails['traits'] = Hash::extract($Userdetails['traits'], '{n}.traits');
+        //                        }
+        //                    }
+        //                }
+
+        $percentage = round($his_percent_permatch * $match);
+        return($percentage);
+    }
 }

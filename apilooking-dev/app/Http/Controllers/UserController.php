@@ -18,7 +18,7 @@ use App\Models\ChatModel;
 use App\Models\UserLookdateModel; 
 use App\Models\UseralbumModel; 
 use App\Models\PhraseModel; 
-use App\Models\FlagModel; 
+use App\Models\FlagModel;  
 use App\Models\Page; 
 use App\Models\EmailTemplate;
 use JWTAuth;
@@ -466,13 +466,14 @@ class UserController extends Controller {
                     $response['success']     = 0;
                     $http_status=422;
                 }else{
-
+                    
                 $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $data = $request->all();
                 $current_date = Carbon::now();
                 $is_view = $is_share = $is_profile_active = $total_unread_message =  0;
                 $filter_cache =[];
                 $block_id = [];
-                
+                $type = isset($data['type'])?$data['type']:''; 
                 $user =User::where('status','!=',0)->where('role',2);
                 $user2 =User::where('status','!=',0)->where('role',2);        
                 /******Blocked User********/
@@ -494,13 +495,7 @@ class UserController extends Controller {
                 }
                 /******End********/
 
-                //======get limit for free user or paid user==//
-                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type,'Match');
-                $limit = $limit - 1;
-                
-
                 /********Search Filters*********/
-                $data = $request->all();
                 $finalArr = [];
                 if(count($data))
                 {
@@ -517,6 +512,11 @@ class UserController extends Controller {
                         $q->orWhere('screen_name','like','%'.$finalArr['search_value'].'%')
                           ->orWhere('profile_id','like','%'.$finalArr['search_value'].'%');
                     }); 
+                    $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Search');
+                }
+                else
+                {
+                    $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
                 }
                 /********End*********/
                 Log::info('Showing user profile for user: '.json_encode($finalArr));
@@ -621,24 +621,66 @@ class UserController extends Controller {
                         }
                     }
                     
-                    $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
+                    
+                }    
+
+                if ($type == 'looking') {
+                /*                 * *******userlook date profile ************* */
+                $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['user_id'=>$clientId,'look_type'=>'sex'])->first();
+                /*                 * ********End************** */
+
+                /******Get result for all User with chat, profile of user********/
+                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                    $q1->with(['Userdatesextype'])->get();
+                }]);
+                $user_data = $user->whereHas('UserLooKSexType',function($q){
+
+                })
+                                    ->where(['registration_status'=>3])
+                                    ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                        $user_data = $user_data->limit($limit)
+                      //  ->orderBy('distance','ASC')
+                        ->get();               
+               
+                //pr($options);die;
+                
+                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
+                //pr($user_data);die;
+                $total_unread_message = 0;
+                
+                /*                 * ********End*********** */
+                //***************for filter chache**********//
+                $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'looking'])->first();
                     if ($if_exist_save_filter) {
                         $filter_cache = $if_exist_save_filter;
                     }
-                }    
-
+            }
+            else
+            {
                 /******Get result for all User with chat, profile of user********/
                 $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                                     ->where(['registration_status'=>3])
                                     ->whereNotIn('id',$block_id)
                                     //->where('id','!=',$clientId)
                                     ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
                 $user_data = $user_data->limit($limit)
                 ->orderBy('distance','ASC')
                 ->get(); 
+                /******End*****/
+                $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'browse'])->first();
+                if ($if_exist_save_filter) {
+                    $filter_cache = $if_exist_save_filter;
+                }
+            }
 
-                $UserData = array();  
-                $UserData1 = array();  
+
+
+            $UserData = array();  
+            $UserData1 = array();  
                  
 
                 
@@ -703,10 +745,36 @@ class UserController extends Controller {
                     }
                     if($arrKey)
                     {
-                        $loggedInUser = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
-                        ->where(['id'=>$clientId])
-                        ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"))
-                        ->get();
+                        if($type=='looking')
+                        {
+                            $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                    $q1->with(['Userdatesextype'])->get();
+                }]);
+                $user_data = $user->whereHas('UserLooKSexType',function($q){
+
+                })
+                                    ->where(['registration_status'=>3])
+                                    ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                                $user2 = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                                        $q1->with(['Userdatesextype'])->get();
+                                    }]);
+                                    $loggedInUser = $user2->whereHas('UserLooKSexType',function($q){
+
+                                    })
+                                    ->where(['id'=>$clientId])
+                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                        }
+                        else
+                        {
+                            $loggedInUser = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+                            ->where(['id'=>$clientId])
+                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                            
+                        }
+                        $loggedInUser = $loggedInUser->get();
                         //print_r($loggedInUser); die;
                          foreach ($loggedInUser as $key1 => $value1) {
                             $UserData[$key1]['id'] = $value1->id;
@@ -729,7 +797,7 @@ class UserController extends Controller {
                             $UserData[$key1]['chat_users'] = $value1->ChatUsers;
                             $UserData[$key1]['userpartner'] = $value1->Userpartner;
                             $UserData[$key1]['user_identity'] = $value1->UserIdentity;
-                            $UserData[$key1]['distance'] = $value1->UserIdentity;
+                            $UserData[$key1]['distance'] = $value1->distance;
                             $UserData[$key1]['country'] = $value1->country;
                             $UserData[$key1]['city'] = $value1->city;
                             $UserData[$key1]['status'] = $value1->status;
@@ -744,6 +812,15 @@ class UserController extends Controller {
                             $UserData[$key1]['photo_change'] = $value1->photo_change;
                             $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
                             $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                             if(isset($value['UserLooKSexType']))
+                            {
+                               foreach($value['UserLooKSexType'] AS $val)
+                                {
+                                    $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                    $UserData[$key]['percentage'] = $percentage ;
+                                }
+                            }
+                         //   $UserData[$key1]['UserLooKSexType'] = $value1->UserLooKSexType;
                             
                             if(!empty($value1->last_seen))
                             {
@@ -762,7 +839,7 @@ class UserController extends Controller {
 
 
                         if($value->id!=$clientId)
-                        {    
+                        {   
                             $UserData1[$key]['id'] = $value->id;
                             $UserData1[$key]['screen_name'] = $value->screen_name;
                             $UserData1[$key]['profile_id'] = $value->profile_id;
@@ -798,6 +875,14 @@ class UserController extends Controller {
                             $UserData1[$key]['photo_change'] = $value->photo_change;
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                            if(isset($value['UserLooKSexType']))
+                            {
+                               foreach($value['UserLooKSexType'] AS $val)
+                                {
+                                    $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                    $UserData1[$key]['percentage'] = $percentage ;
+                                }
+                            }
                             if(!empty($value->last_seen))
                             {
                                 $UserData1[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
@@ -1318,24 +1403,29 @@ class UserController extends Controller {
                
                 $Favorite = FavouriteModel::where(['user_id'=>$clientId,'favourite_user_id'=>$data['favourite_user_id']])->first();
 
-                    if ($Favorite) {
-                        /** ****** if is_favourite=1 then set is_favourite=2 means unfavourite and if  is_favourite=2 then set is_favourite=1 means favourite*** */
-                       
-                        if ($Favorite['is_favourite'] == 1) {
-                            $is_favourite = 2;
-                        } else {
-                            $is_favourite = 1;
-                        }
-                        /** ******** un favourite **************** */
-                        $data['user_id'] = $clientId;
-                        $data['is_favourite'] = $is_favourite;
+                $data['user_id'] = $clientId;
+                $data['is_favourite'] = 1;
+                $data['updated_at'] = Carbon::now();
+                $data['is_favourite'] = 1;
+                $data['id'] = 1;
+                if($Favorite)
+                {
+                    if ($Favorite['is_favourite'] == 1) {
+                        $is_favourite = 2;
                     } else {
-                        $data['user_id'] = $clientId;
-                        $data['is_favourite'] = 1;
+                        $is_favourite = 1;
                     }
-                if ($Favorite['is_favourite'] == 1) {
-                   
+                    $data['is_favourite'] = $is_favourite;
+                    $data['id'] = $Favorite->id; 
+                }
+                else
+                {
+                    $data['created_at'] = Carbon::now();
+                }
+                if($data['is_favourite'] == 1)
+                {
                     $count_favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1,'browse'=>$data['browse']])->count();
+
                     if ($count_favourite >= $limit) {
                         $response['success'] = 0;
                         $response['message'] = 'You have reached your Favorite limit of ' . number_format($limit) . ' guys. Please remove a Favorite if you would like to add a new one.';
@@ -1344,40 +1434,19 @@ class UserController extends Controller {
                     }
                 }
 
-                if($error==0)
+
+                if(FavouriteModel::updateOrCreate(['id'=>$data['id']],$data))
                 {
-                    if($Favorite)
-                    {
-                        if($Favorite->update($data))
-                        {
-                            $response['success'] = 1;
-                            $response['message'] = 'Success';
-                            $http_status = 200;
-                        }
-                        else
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'unable to save into database';
-                            $http_status = 200;  
-                        }
-                    }
-                    else
-                    {
-                        if(FavouriteModel::create($data))
-                        {
-                            $response['success'] = 1;
-                            $response['message'] = 'Success';
-                            $http_status = 200;
-                        }
-                        else
-                        {
-                            $response['success'] = 0;
-                            $response['message'] = 'unable to save into database';
-                            $http_status = 400;  
-                        }
-                    }
+                    $response['success'] = 1;
+                    $response['message'] = 'Success';
+                    $http_status = 200;
                 }
-                
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'unable to save into database';
+                    $http_status = 200;     
+                }
             }
 
         } catch (Exception $e) {
@@ -1827,58 +1896,40 @@ class UserController extends Controller {
                     $browse = $data['browse'];
                 }
                 
+                $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']]);
+
                 if ($browse == 'looking') 
                 {
-                    $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where('browse','looking')->first();
-                    if($lock_profile)
-                    {
-                        if ($lock_profile['is_locked'] == 1) {
-
-                            $is_locked = 2;
-                            $count = 0;
-                        } else {
-                            $is_locked = 1;
-                            $count = 1;
-                        }
-                        /************* lock unlock profile details ************ */
-                        $data['user_id'] = $clientId;
-                        $data['is_locked'] = $is_locked;
-                        $data['count'] = $count;
-                        $data['id'] = $lock_profile->id;
-                    }
-                    else
-                    {
-                        $data['user_id'] = $clientId;
-                        $data['is_locked'] = 1;
-                        $data['count'] = 1;
-                        $data['id'] = ''; 
-                    }
+                    $lock_profile = $lock_profile->where('browse','looking');
                 }
                 else
                 {
-                    $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>$data['lock_user_id']])->where('browse','!=','looking')->first();
-                    if($lock_profile)
-                    {
-                        if ($lock_profile['is_locked'] == 1) {
-                            $is_locked = 2;
-                            $count = 0;
-                        } else {
-                            $is_locked = 1;
-                            $count = 1;
-                        }
-                        /************* lock unlock profile details ************ */
-                        $data['user_id'] = $clientId;
-                        $data['is_locked'] = $is_locked;
-                        $data['count'] = $count;
-                        $data['id'] = $lock_profile->id;
+                    $lock_profile = $lock_profile->where('browse','!=','looking');
+                }
+
+                $lock_profile = $lock_profile->first();
+
+
+                $data['user_id'] = $clientId;
+                $data['is_locked'] = 1;
+                $data['count'] = 1;
+                $data['id'] = '';
+
+                if($lock_profile)
+                {
+                    if ($lock_profile['is_locked'] == 1) {
+                        $is_locked = 2;
+                        $count = 0;
+                    } else {
+                        $is_locked = 1;
+                        $count = 1;
                     }
-                    else
-                    {
-                        $data['user_id'] = $clientId;
-                        $data['is_locked'] = 1;
-                        $data['count'] = 1;
-                        $data['id'] = '';
-                    }
+
+                    /************* lock unlock profile details ************ */
+                    
+                    $data['is_locked'] = $is_locked;
+                    $data['count'] = $count;
+                    $data['id'] = $lock_profile->id;
                 }
 
                 if(ProfileLockModel::updateOrCreate(['id'=>$data['id']],$data))  
@@ -3218,7 +3269,7 @@ class UserController extends Controller {
                     if (isset($data['recently_added'])) {
 
                         } else if (isset($data['last_login'])) {
-                          $user_data =  $user_data->orderBy('created_at','DESC');
+                          $user_data =  $user_data->orderBy('updated_at','DESC');
                         } else {
                           $user_data =  $user_data->orderBy('distance','ASC');
                         }
@@ -3278,10 +3329,10 @@ class UserController extends Controller {
                         $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
                         $http_status = 200;
                     } else {
-                        $response['success'] = 0;
+                        $response['success'] = 1;
                         $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
                         $response['message'] =  'No record found';
-                        $http_status = 400;
+                        $http_status = 200;
                     }
                      
                 }
@@ -3314,7 +3365,8 @@ class UserController extends Controller {
         $sentInvite = '';
         if (isset($data['favourites']))
         {
-                $favourite = Favourite::where(['user_id'=>$clientId,'is_favourite'=>1])->lists();
+                $favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
+                
                 $user = $user->whereIn('id',$favourite);
         } 
         elseif(isset($data['sent_invite']))
@@ -3465,5 +3517,4 @@ class UserController extends Controller {
         }            
         return response()->json($response,$http_status);
     }
-
 }
