@@ -135,7 +135,7 @@ class UserController extends Controller {
                 }   
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400; 
         }
 		
@@ -243,7 +243,7 @@ class UserController extends Controller {
                 }
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400; 
         }
         return response()->json($response,$http_status);
@@ -325,7 +325,7 @@ class UserController extends Controller {
             }
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400; 
         }
         return response()->json($response,$http_status);
@@ -430,7 +430,7 @@ class UserController extends Controller {
             }
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400; 
         }
         return response()->json($response,$http_status);
@@ -938,7 +938,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400; 
         }
        
@@ -1295,7 +1295,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;    
         }    
 
@@ -1360,7 +1360,7 @@ class UserController extends Controller {
             }
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400; 
         }
         return response()->json($response,$http_status);
@@ -1451,7 +1451,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -1600,7 +1600,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -1776,7 +1776,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -1855,7 +1855,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -1947,7 +1947,7 @@ class UserController extends Controller {
             } 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -2033,7 +2033,7 @@ class UserController extends Controller {
             }    
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -2107,7 +2107,7 @@ class UserController extends Controller {
                             $count_sharealbum_per_day  = ShareAlbumModel::where(['sender_id'=>$clientId,'is_received'=>1])->whereBetween('created_at',array(carbon::today(),carbon::now()))->count();
                             
                             if ($count_sharealbum_per_day >= $limit) {
-                                $response['success'] = 1;
+                                $response['success'] = 3;
                                 $response['message'] = 'You have reached your Album Shares limit of ' . number_format($limit) . ' guys per day.';
                                 $http_status = 400;
                                 $is_share_count = 0;
@@ -2173,7 +2173,7 @@ class UserController extends Controller {
                 } 
                 else
                 {
-                    $response['success'] = 0;
+                    $response['success'] = 4;
                     $response['message'] = 'Please add some images';
                     $http_status = 400;
                 }
@@ -2181,7 +2181,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -2521,7 +2521,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         return response()->json($response,$http_status);
@@ -2580,7 +2580,7 @@ class UserController extends Controller {
             } 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
           
@@ -2615,7 +2615,7 @@ class UserController extends Controller {
             }
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
        
@@ -2679,7 +2679,7 @@ class UserController extends Controller {
                 }   
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         
@@ -2724,7 +2724,7 @@ class UserController extends Controller {
 
             } catch (Exception $e) {
                 $response['message']    = $e->getMessage();
-                $response['status']     = 0;
+                $response['success']     = 0;
                 $http_status = 400;
             }
         
@@ -2791,7 +2791,7 @@ class UserController extends Controller {
 
         } catch (Exception $e) {
             $response['message']    = $e->getMessage();
-            $response['status']     = 0;
+            $response['success']     = 0;
             $http_status = 400;
         }
         
