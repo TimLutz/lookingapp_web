@@ -3258,8 +3258,9 @@ class UserController extends Controller {
                     $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data){
                             $q1->where(['user_id'=>$clientId]);
                             if (isset($data['recently_added'])) {
-                                $q1 =  $q1->orderBy('created_at','DESC');
+                                $q1 =  $q1->orderBy('updated_at','DESC');
                             }
+
                     }])
                                 ->where(['registration_status'=>3])
                                 ->whereIn('id',$favourite_user_id)
