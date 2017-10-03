@@ -3260,7 +3260,6 @@ class UserController extends Controller {
                             if (isset($data['recently_added'])) {
                                 $q1 =  $q1->orderBy('created_at','DESC');
                             }
-
                     }])
                                 ->where(['registration_status'=>3])
                                 ->whereIn('id',$favourite_user_id)
@@ -3270,7 +3269,7 @@ class UserController extends Controller {
                     $user_data = $user_data->limit($limit);
 
                     if (isset($data['recently_added'])) {
-
+                        die('here');
                         } else if (isset($data['last_login'])) {
                           $user_data =  $user_data->orderBy('updated_at','DESC');
                         } else {
