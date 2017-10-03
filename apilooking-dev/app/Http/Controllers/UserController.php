@@ -624,46 +624,7 @@ class UserController extends Controller {
                     
                 }    
 
-                if ($type == 'looking') {
-                /*                 * *******userlook date profile ************* */
-                $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['user_id'=>$clientId,'look_type'=>'sex'])->first();
-                /*                 * ********End************** */
-
-                /******Get result for all User with chat, profile of user********/
-                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
-                    $q1->with(['Userdatesextype'])->get();
-                }]);
-                $user_data = $user->whereHas('UserLooKSexType',function($q){
-
-                })
-                                    ->where(['registration_status'=>3])
-                                    ->whereNotIn('id',$block_id)
-                                    //->where('id','!=',$clientId)
-                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
-
-                        $user_data = $user_data->limit($limit)
-                      //  ->orderBy('distance','ASC')
-                        ->get();               
-               
-                //pr($options);die;
                 
-                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
-                //pr($user_data);die;
-                $total_unread_message = 0;
-                
-                /*                 * ********End*********** */
-                //***************for filter chache**********//
-                $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'looking'])->first();
-                    if ($if_exist_save_filter) {
-                        $filter_cache = $if_exist_save_filter;
-                    }
-            }
-            else if($type == 'sex')
-             {
-
-             }   
-            else
-            {
                 /******Get result for all User with chat, profile of user********/
                 $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                                     ->where(['registration_status'=>3])
@@ -679,7 +640,7 @@ class UserController extends Controller {
                 if ($if_exist_save_filter) {
                     $filter_cache = $if_exist_save_filter;
                 }
-            }
+            
 
 
 
@@ -749,35 +710,12 @@ class UserController extends Controller {
                     }
                     if($arrKey)
                     {
-                        if($type=='looking')
-                        {
-                            $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
-                    $q1->with(['Userdatesextype'])->get();
-                }]);
-                $user_data = $user->whereHas('UserLooKSexType',function($q){
-
-                })
-                                    ->where(['registration_status'=>3])
-                                    ->whereNotIn('id',$block_id)
-                                    //->where('id','!=',$clientId)
-                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
-
-                                $user2 = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
-                                        $q1->with(['Userdatesextype'])->get();
-                                    }]);
-                                    $loggedInUser = $user2->whereHas('UserLooKSexType',function($q){
-
-                                    })
-                                    ->where(['id'=>$clientId])
-                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
-                        }
-                        else
-                        {
+                        
                             $loggedInUser = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                             ->where(['id'=>$clientId])
                             ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
                             
-                        }
+                        
                         $loggedInUser = $loggedInUser->get();
                         //print_r($loggedInUser); die;
                          foreach ($loggedInUser as $key1 => $value1) {
@@ -3508,24 +3446,6 @@ class UserController extends Controller {
             foreach ($user_data as $key => $value) {
                 $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['id']);
                 $accuracy_value[] = $value['accuracy'];
-
-                /*if ($value->ChatroomModel > 0 || $value['ChatUser']['invite'] > 0) {
-                        $unread_message_chatusers[] = $chatusers[$key];
-                    } else {
-                        $read_message_user[] = $chatusers[$key];
-                    }*/
-
-                if(isset($value->ChatToUser))
-                {
-                    if($value->chat_to_user['invite'] > 0)
-                    {
-                        $unread_message_chatusers[] = $user_data[$key];
-                    }
-                    else
-                    {
-                         $read_message_user[] = $user_data[$key];
-                    }
-                }        
             }
             /********End******** */
 
@@ -3548,7 +3468,7 @@ class UserController extends Controller {
                 $user_looksexdata = $user_looksex->toArray();
             }
             $response['success'] = 1;
-            $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'userlooksex_data' => $user_looksexdata, /*'user' => $user_data,*/'unread_message_grid'=>$unread_message_chatusers,'read_message_grid'=>$read_message_user,'profile_lock'=>$Userdetails['User_Profile_Lock']];
+            $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'unread_message_grid'=>$unread_message_chatusers,'read_message_grid'=>$read_message_user,'profile_lock'=>$Userdetails['User_Profile_Lock']];
             $http_status = 200;
 
         } else {
