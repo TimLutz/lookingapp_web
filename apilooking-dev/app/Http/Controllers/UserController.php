@@ -658,6 +658,10 @@ class UserController extends Controller {
                         $filter_cache = $if_exist_save_filter;
                     }
             }
+            else if($type == 'sex')
+             {
+
+             }   
             else
             {
                 /******Get result for all User with chat, profile of user********/
@@ -3315,6 +3319,7 @@ class UserController extends Controller {
                             {
                                 $user_data[$key]['last_seen'] = 2;
                             }
+                            $user_data[$key]['looking_profile_active'] = $common->check_profile_active(Carbon::now(), $value->id);;
                         }
                         /********End******** */
 
@@ -3528,86 +3533,4 @@ class UserController extends Controller {
         }            
         return response()->json($response,$http_status);
     }
-
-
-    /**
-     * Name: postViewChatusers
-     * Purpose: function for list the chat user
-     * created By: Lovepreet
-     * Created on :- 21 sept 2017
-     *
-     **/
-
-    /*public function postViewLookingSex(Request $request) {
-        try {
-            $clientId = JWTAuth::parseToken()->authenticate()->id;
-            $current_date = Carbon::now();     
-        } catch (Exception $e) {
-            
-        }
-
-
-        $this->autoRender = false;
-        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
-        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
-        if ($user_id) {
-            //===login userdetails===//
-            $login_user_member = $this->User->find('first', array('conditions' => array('User.id' => $user_id)));
-            $login_user_member_type = $login_user_member['User']['member_type'];
-            $login_user_removead = $login_user_member['User']['removead'];
-            $login_user_is_trial = $login_user_member['User']['is_trial'];
-            if ($login_user_member_type == 0) {
-                $data['success'] = 1;
-                $data['msg'] = 'success';
-                $data['login_user_member_type'] = $login_user_member_type;
-                $data['login_user_removead'] = $login_user_removead;
-                $data['login_user_is_trial'] = $login_user_is_trial;
-                echo json_encode($data);
-                die;
-            }
-            $data['login_user_member_type'] = $login_user_member_type;
-            $data['login_user_removead'] = $login_user_removead;
-            $data['login_user_is_trial'] = $login_user_is_trial;
-            //====End====//
-            $userlooksex = $this->UserLooksex->find('all', array('conditions' => array('UserLooksex.user_id' => $user_id), 'order' => array('UserLooksex.id asc')));
-
-            foreach ($userlooksex as $key => $value) {
-
-                $if_exist_profile = $this->UserLooksex->find('first', array('conditions' => array(
-                        'and' => array(
-                            array('UserLooksex.start_time <=' => $current_date,
-                                'UserLooksex.end_time >=' => $current_date
-                            ),
-                            'UserLooksex.id =' => $value['UserLooksex']['id']
-                        )
-                )));
-                //pr($if_exist_profile); die;
-                if (count($if_exist_profile) > 0) {
-                    $is_profile_active = 1;
-                } else {
-                    $is_profile_active = 0;
-                }
-                $userlooksex[$key]['UserLooksex']['description'] = stripslashes($value['UserLooksex']['description']);
-                $userlooksex[$key]['UserLooksex']['my_physical_appearance'] = stripslashes($value['UserLooksex']['my_physical_appearance']);
-                $userlooksex[$key]['UserLooksex']['his_physical_appearance'] = stripslashes($value['UserLooksex']['his_physical_appearance']);
-                $userlooksex[$key]['UserLooksex']['my_sextual_preferences'] = stripslashes($value['UserLooksex']['my_sextual_preferences']);
-                $userlooksex[$key]['UserLooksex']['his_sextual_preferences'] = stripslashes($value['UserLooksex']['his_sextual_preferences']);
-                $userlooksex[$key]['UserLooksex']['my_social_habits'] = stripslashes($value['UserLooksex']['my_social_habits']);
-                $userlooksex[$key]['UserLooksex']['his_social_habits'] = stripslashes($value['UserLooksex']['his_social_habits']);
-                $userlooksex[$key]['UserLooksex']['is_profile_active'] = $is_profile_active;
-            }
-            if ($userlooksex) {
-                $data['success'] = 1;
-                $data['msg'] = 'success';
-                $data['data'] = Hash::extract($userlooksex, '{n}.UserLooksex');
-            } else {
-                $data['success'] = 0;
-                $data['msg'] = 'failure';
-            }
-        } else {
-            $data['success'] = 0;
-            $data['msg'] = 'user id not found';
-        }
-        echo json_encode($data);
-    }*/
 }
