@@ -2764,7 +2764,7 @@ class UserController extends Controller {
             {
                 $data = $request->all();
 
-                $flag_details = FlagModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->first();
+                $flag_details = FlagModel::where(['sender_id'=>$clientId,'receiver_id'=>$data['receiver_id']])->get();
                 if(count($flag_details)==0)
                 {
                     $data['sender_id'] = $clientId;
@@ -2777,14 +2777,14 @@ class UserController extends Controller {
                     else
                     {
                         $response['message'] = 'Unable to save into database.';
-                        $response['success'] = 0;
+                        $response['success'] = 2;
                         $http_status = 400;   
                     }
                 }
                 else
                 {
                     $response['message'] = 'Already exists flag.';
-                    $response['success'] = 0;
+                    $response['success'] = 3;
                     $http_status = 400;
                 }  
             }
