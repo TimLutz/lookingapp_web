@@ -604,7 +604,7 @@ class UserController extends Controller {
                     }
                     /********End*********/
 
-                    if(isset($finalArr['online']) && $finalArr['online'] != 'Not Set')
+                    /*if(isset($finalArr['online']) && $finalArr['online'] != 'Not Set')
                     {
                         //active before one hour
                         if($finalArr['online'] == "Recently")
@@ -619,12 +619,51 @@ class UserController extends Controller {
                             $user = $user->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
                          //   $user = $user->where(array('online_status'=>2))->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
                         }
-                    }
+                    }*/
                     
                     
                 }    
 
+                if ($type == 'looking') {
+                /*                 * *******userlook date profile ************* */
+                $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['user_id'=>$clientId,'look_type'=>'sex'])->first();
+                /*                 * ********End************** */
+
+                /******Get result for all User with chat, profile of user********/
+                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                    $q1->with(['Userdatesextype'])->get();
+                }]);
+                $user_data = $user->whereHas('UserLooKSexType',function($q){
+
+                })
+                                    ->where(['registration_status'=>3])
+                                    ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                        $user_data = $user_data->limit($limit)
+                      //  ->orderBy('distance','ASC')
+                        ->get();               
+               
+                //pr($options);die;
                 
+                //pr($this->UserLooksex->getDataSource()->getLog(true));die;
+                //pr($user_data);die;
+                $total_unread_message = 0;
+                
+                /*                 * ********End*********** */
+                //***************for filter chache**********//
+                $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'looking'])->first();
+                    if ($if_exist_save_filter) {
+                        $filter_cache = $if_exist_save_filter;
+                    }
+            }
+            else if($type == 'sex')
+             {
+
+             }   
+            else
+            {
                 /******Get result for all User with chat, profile of user********/
                 $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                                     ->where(['registration_status'=>3])
@@ -640,7 +679,7 @@ class UserController extends Controller {
                 if ($if_exist_save_filter) {
                     $filter_cache = $if_exist_save_filter;
                 }
-            
+            }
 
 
 
@@ -710,12 +749,35 @@ class UserController extends Controller {
                     }
                     if($arrKey)
                     {
-                        
+                        if($type=='looking')
+                        {
+                            /*$user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                                $q1->with(['Userdatesextype'])->get();
+                            }]);
+                                    $user_data = $user->whereHas('UserLooKSexType',function($q){
+
+                                    })
+                                    ->where(['registration_status'=>3])
+                                    ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                                        $user2 = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                                        $q1->with(['Userdatesextype'])->get();
+                                    }]);*/
+                                    $loggedInUser = $user2->whereHas('UserLooKSexType',function($q){
+
+                                    })
+                                    ->where(['id'=>$clientId])
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                        }
+                        else
+                        {
                             $loggedInUser = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                             ->where(['id'=>$clientId])
                             ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
                             
-                        
+                        }
                         $loggedInUser = $loggedInUser->get();
                         //print_r($loggedInUser); die;
                          foreach ($loggedInUser as $key1 => $value1) {
