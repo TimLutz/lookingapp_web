@@ -3307,6 +3307,14 @@ class UserController extends Controller {
                         /******** Calculates total no. of unread message ******** */
                         foreach ($user_data as $key => $value) {
                             $accuracy_value[] = $value['accuracy'];
+                            if(!empty($value1->last_seen))
+                            {
+                                $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
+                            }
+                            else
+                            {
+                                $user_data[$key]['last_seen'] = 2;
+                            }
                         }
                         /********End******** */
 
