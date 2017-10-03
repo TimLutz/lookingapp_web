@@ -812,12 +812,14 @@ class UserController extends Controller {
                             $UserData[$key1]['photo_change'] = $value1->photo_change;
                             $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
                             $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
-                             if(isset($value['UserLooKSexType']))
-                            {
-                               foreach($value['UserLooKSexType'] AS $val)
+                            if ($type == 'looking') {
+                                 if(isset($value['UserLooKSexType']))
                                 {
-                                    $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
-                                    $UserData[$key]['percentage'] = $percentage ;
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $UserData[$key]['percentage'] = $percentage ;
+                                    }
                                 }
                             }
                          //   $UserData[$key1]['UserLooKSexType'] = $value1->UserLooKSexType;
@@ -875,12 +877,14 @@ class UserController extends Controller {
                             $UserData1[$key]['photo_change'] = $value->photo_change;
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
                             $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
-                            if(isset($value['UserLooKSexType']))
-                            {
-                               foreach($value['UserLooKSexType'] AS $val)
+                            if ($type == 'looking') {
+                                if(isset($value['UserLooKSexType']))
                                 {
-                                    $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
-                                    $UserData1[$key]['percentage'] = $percentage ;
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $UserData1[$key]['percentage'] = $percentage ;
+                                    }
                                 }
                             }
                             if(!empty($value->last_seen))
@@ -3218,8 +3222,6 @@ class UserController extends Controller {
                         if($value['blocked_id'] == $clientId)
                             $block_id[] = $value['user_id'];
                     }
-
-                
                     
                     $favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
                     $favourite_user_id = [];
@@ -3231,13 +3233,14 @@ class UserController extends Controller {
                     if(isset($data['mutual_favorites']))
                     {
                         $mutualfavourite = FavouriteModel::where(['favourite_user_id'=>$clientId,'is_favourite'=>1])->lists('user_id');
-                        if($mutualfavourite)
+                        
+                        if(count($mutualfavourite))
                         {
                             $favourite_user_id = array_intersect($favourite_user_id, $mutualfavourite->toArray());
                         }
                     }
 
-                    /*             * ******for search by name or token ******** */
+                    /** ******for search by name or token ******** */
                     if (isset($data['search_value'])) {
                         $user = $user->where(function($q) use ($data){
                             $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
