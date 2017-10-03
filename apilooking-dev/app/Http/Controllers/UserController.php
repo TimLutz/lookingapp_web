@@ -3269,7 +3269,7 @@ class UserController extends Controller {
                     $user_data = $user_data->limit($limit);
 
                     if (isset($data['recently_added'])) {
-                        die('here');
+
                         } else if (isset($data['last_login'])) {
                           $user_data =  $user_data->orderBy('updated_at','DESC');
                         } else {
