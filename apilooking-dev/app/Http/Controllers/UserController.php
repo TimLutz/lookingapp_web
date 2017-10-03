@@ -3319,7 +3319,7 @@ class UserController extends Controller {
                             {
                                 $user_data[$key]['last_seen'] = 2;
                             }
-                            $user_data[$key]['looking_profile_active'] = $common->check_profile_active(Carbon::now(), $value->id);;
+                            $user_data[$key]['looking_profile_active'] = $common->check_profile_active(Carbon::now(), $value->id);
                         }
                         /********End******** */
 
@@ -3462,6 +3462,14 @@ class UserController extends Controller {
             } else {
                 $read_message_user[] = $chatusers[$key];
             }*/
+            if(!empty($value->last_seen))
+            {
+                $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+            }
+            else
+            {
+                $user_data[$key]['last_seen'] = 2;
+            }
         }  
           
 
