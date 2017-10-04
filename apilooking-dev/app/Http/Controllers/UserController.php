@@ -506,7 +506,7 @@ class UserController extends Controller {
 
                 /********Search With username and profile Id*********/
                 
-                if(isset($finalArr['search_value']))
+                if(isset($finalArr['search_value']) && !empty($finalArr['search_value']))
                 {
                     $user = $user->where(function($q) use($finalArr){
                         $q->orWhere('screen_name','like','%'.$finalArr['search_value'].'%')
@@ -604,7 +604,7 @@ class UserController extends Controller {
                     }
                     /********End*********/
 
-                    /*if(isset($finalArr['online']) && $finalArr['online'] != 'Not Set')
+                    if(isset($finalArr['online']) && $finalArr['online'] != 'Not Set')
                     {
                         //active before one hour
                         if($finalArr['online'] == "Recently")
@@ -619,7 +619,7 @@ class UserController extends Controller {
                             $user = $user->where('last_seen','<=',Carbon::now())->where('last_seen','>=',Carbon::now()->subHours(1));
                          //   $user = $user->where(array('online_status'=>2))->where('last_seen','<=',Carbon::now()->subHours(1))->where('last_seen','>=',Carbon::now()->subHours(24));
                         }
-                    }*/
+                    }
                     
                     
                 }    
@@ -3462,6 +3462,9 @@ class UserController extends Controller {
             } else {
                 $read_message_user[] = $chatusers[$key];
             }*/
+
+
+
             if(!empty($value->last_seen))
             {
                 $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
