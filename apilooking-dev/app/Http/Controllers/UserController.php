@@ -1017,9 +1017,12 @@ class UserController extends Controller {
                         $viewer_lat = $profile['lat'];
                         $viewer_long = $profile['long'];
                         $distance = $common->distance(JWTAuth::parseToken()->authenticate()->lat, JWTAuth::parseToken()->authenticate()->long, $viewer_lat, $viewer_long, 'M');
-                        if (is_nan($distance) == 1) {
+                        /*if (is_nan($distance) == 1) {
                             $distance = 0;
-                        }
+
+                        }*/
+
+                        $distance = ($distance>=0 && $distance<=1) ? 1: $distance;
 
                         $Userdetails['Note'] = array();
                         $Userdetails['User'] = array();
