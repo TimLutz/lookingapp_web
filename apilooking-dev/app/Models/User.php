@@ -63,12 +63,12 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
 	public function ChatFromUser()
 	{
-		return $this->hasMany('App\Models\ChatroomModel','from_user');
+		return $this->hasOne('App\Models\ChatroomModel','from_user');
 	}
 
 	public function ChatToUser()
 	{
-		return $this->hasMany('App\Models\ChatroomModel','to_user');
+		return $this->hasOne('App\Models\ChatroomModel','to_user');
 	}
 
 	public function UserLooKSexType()

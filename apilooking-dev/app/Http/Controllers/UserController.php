@@ -3446,36 +3446,6 @@ class UserController extends Controller {
                 ->whereNotIn('id',$block_id)
                 ->get();
 
-        
-        foreach ($user_data as $key => $value) {
-            $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['id']);
-            /*if ($value['ChatUser']['invite'] > 0) {
-                $invite = 1;
-            } else {
-                $invite = 0;
-            }*/
-            
-
-            /** *****sort by unread message ******** */
-            /*if ($value['ChatUser']['count'] > 0 || $value['ChatUser']['invite'] > 0) {
-                $unread_message_chatusers[] = $chatusers[$key];
-            } else {
-                $read_message_user[] = $chatusers[$key];
-            }*/
-
-
-
-            if(!empty($value->last_seen))
-            {
-                $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
-            }
-            else
-            {
-                $user_data[$key]['last_seen'] = 2;
-            }
-        }  
-          
-
         /************* check user  alredy lock the view profile user ************ */
         $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>isset($data['lock_user_id'])?$data['lock_user_id']:'','is_locked'=>1])->first();
 
@@ -3508,9 +3478,32 @@ class UserController extends Controller {
             /** ********END***************** */
 
             /******** Calculates total no. of unread message ******** */
+            
             foreach ($user_data as $key => $value) {
                 $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['id']);
                 $accuracy_value[] = $value['accuracy'];
+                
+                if(isset($value->ChatFromUser) || isset($value->ChatToUser))
+                {
+                    if((isset($value->ChatFromUser->invite) && $value->ChatFromUser->invite > 0) ||    (isset($value->ChatToUser->invite) && $value->ChatToUser->invite > 0))
+                    {
+
+                        $unread_message_chatusers[] = $user_data[$key];
+                    }
+                    else
+                    {
+                        $read_message_user[] = $user_data[$key];
+                    }
+                }
+
+                if(!empty($value->last_seen))
+                {
+                    $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+                }
+                else
+                {
+                    $user_data[$key]['last_seen'] = 2;
+                }
             }
             /********End******** */
 
@@ -3533,7 +3526,7 @@ class UserController extends Controller {
                 $user_looksexdata = $user_looksex->toArray();
             }
             $response['success'] = 1;
-            $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'unread_message_grid'=>$unread_message_chatusers,'read_message_grid'=>$read_message_user,'profile_lock'=>$Userdetails['User_Profile_Lock']];
+            $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'userlooksex_data' => $user_looksexdata,/* 'user' => $user_data,*/'unread_message_grid'=>$unread_message_chatusers,'read_message_grid'=>$read_message_user,'profile_lock'=>$Userdetails['User_Profile_Lock']];
             $http_status = 200;
 
         } else {
