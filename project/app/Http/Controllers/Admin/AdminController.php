@@ -189,7 +189,7 @@ class AdminController extends Controller
      * Created for: Function for change password.
      * created date:November 2017
      */
-	public function postChangePassword(Requests\ResetPassword $request)
+	public function postChangePassword(Requests\ResetPassword1 $request)
 	{	
 		try
 		{
