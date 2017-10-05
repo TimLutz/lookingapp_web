@@ -2949,7 +2949,8 @@ class UserController extends Controller {
                         /***** Send Pushnotification   *****/    
                         if ($userdetails->online_status == 1) {
                             /*                         * ********* send notification for ios ************* */
-                            $device_token = $userdetails->device_token;
+                        //    $device_token = $userdetails->device_token;
+                            $device_token = 'c85dead4301013427f13263agf4688fb58879513444914fb69b1497a577';
                         //    $device_token = 'e9e7b89b26a15b288f37bf8f90b65dc29e077c63a95acc5caebbdc2eaac2057f';
                             //$device_token = $userdetails->device_token; 
                             $message = isset($data['message']) && !empty($data['message']) ? $data['message'] : '';
@@ -2989,12 +2990,12 @@ class UserController extends Controller {
                     $http_status = 200;
                 }        
         }
-        catch (Exception $e) 
+        catch (\Exception $e) 
         {
-            $response['message'] = $e->getMessage();
+            $response['message'] = 'No data found';
             $response['success'] = 0;
             $http_status = 400;      
-        }    
+        } 
         return response()->json($response,$http_status);
     }
 
@@ -3541,5 +3542,89 @@ class UserController extends Controller {
             $http_status = 400;
         }            
         return response()->json($response,$http_status);
+    }
+
+     /*     * ****** this service use for view looking sex data 11022015 --- Mir ---******** */
+
+    public function view_looking_sex() {
+        try {
+            $clientId = JWTAuth::parse()->authenticate()->id;
+            $current_date = Catbon::now();
+            if ($login_user_member_type == 0) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+                $data['login_user_member_type'] = $login_user_member_type;
+                $data['login_user_removead'] = $login_user_removead;
+                $data['login_user_is_trial'] = $login_user_is_trial;
+                echo json_encode($data);
+                die;
+            }
+        } catch (Exception $e) {
+            
+        }
+
+
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
+        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
+        if ($user_id) {
+            //===login userdetails===//
+            $login_user_member = $this->User->find('first', array('conditions' => array('User.id' => $user_id)));
+            $login_user_member_type = $login_user_member['User']['member_type'];
+            $login_user_removead = $login_user_member['User']['removead'];
+            $login_user_is_trial = $login_user_member['User']['is_trial'];
+            if ($login_user_member_type == 0) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+                $data['login_user_member_type'] = $login_user_member_type;
+                $data['login_user_removead'] = $login_user_removead;
+                $data['login_user_is_trial'] = $login_user_is_trial;
+                echo json_encode($data);
+                die;
+            }
+            $data['login_user_member_type'] = $login_user_member_type;
+            $data['login_user_removead'] = $login_user_removead;
+            $data['login_user_is_trial'] = $login_user_is_trial;
+            //====End====//
+            $userlooksex = $this->UserLooksex->find('all', array('conditions' => array('UserLooksex.user_id' => $user_id), 'order' => array('UserLooksex.id asc')));
+
+            foreach ($userlooksex as $key => $value) {
+
+                $if_exist_profile = $this->UserLooksex->find('first', array('conditions' => array(
+                        'and' => array(
+                            array('UserLooksex.start_time <=' => $current_date,
+                                'UserLooksex.end_time >=' => $current_date
+                            ),
+                            'UserLooksex.id =' => $value['UserLooksex']['id']
+                        )
+                )));
+                //pr($if_exist_profile); die;
+                if (count($if_exist_profile) > 0) {
+                    $is_profile_active = 1;
+                } else {
+                    $is_profile_active = 0;
+                }
+                $userlooksex[$key]['UserLooksex']['description'] = stripslashes($value['UserLooksex']['description']);
+                $userlooksex[$key]['UserLooksex']['my_physical_appearance'] = stripslashes($value['UserLooksex']['my_physical_appearance']);
+                $userlooksex[$key]['UserLooksex']['his_physical_appearance'] = stripslashes($value['UserLooksex']['his_physical_appearance']);
+                $userlooksex[$key]['UserLooksex']['my_sextual_preferences'] = stripslashes($value['UserLooksex']['my_sextual_preferences']);
+                $userlooksex[$key]['UserLooksex']['his_sextual_preferences'] = stripslashes($value['UserLooksex']['his_sextual_preferences']);
+                $userlooksex[$key]['UserLooksex']['my_social_habits'] = stripslashes($value['UserLooksex']['my_social_habits']);
+                $userlooksex[$key]['UserLooksex']['his_social_habits'] = stripslashes($value['UserLooksex']['his_social_habits']);
+                $userlooksex[$key]['UserLooksex']['is_profile_active'] = $is_profile_active;
+            }
+            if ($userlooksex) {
+                $data['success'] = 1;
+                $data['msg'] = 'success';
+                $data['data'] = Hash::extract($userlooksex, '{n}.UserLooksex');
+            } else {
+                $data['success'] = 0;
+                $data['msg'] = 'failure';
+            }
+        } else {
+            $data['success'] = 0;
+            $data['msg'] = 'user id not found';
+        }
+        echo json_encode($data);
     }
 }
