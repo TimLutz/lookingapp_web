@@ -75,6 +75,17 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	{
 		return $this->hasMany('App\Models\UserLooksexdateModel')->where(['look_type'=>'sex']);
 	}
+
+	public function viewerDetail()
+	{
+		return $this->hasMany('App\Models\ViewerModel','user_id');
+	}
+
+	public function viewedDetail()
+	{
+		return $this->hasMany('App\Models\ViewerModel','viewer_user_id');
+	}
+
 	/*public static function getDistanceAttribute()
 	{
 

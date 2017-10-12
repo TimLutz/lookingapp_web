@@ -45,6 +45,29 @@ $app->get('/', function () use ($app) {
     $app->post('add_looking_sex','UserController@postAddSexRecord');
     $app->post('view_favourite_screen','UserController@postViewFavouriteScreen');
     $app->post('view_chat_users','UserController@postViewChatusers');
+    $app->post('view_looking_sex','UserController@postViewLookingSex');
+    $app->get('blocked_user_list','UserController@getBlockedUserList');
+    $app->post('time_extend_looksex_profile','UserController@postTimeExtendLooksexProfile');
+    $app->get('member_album','UserController@getMemberAlbum');
+    $app->post('rename_caption_album_image','UserController@postRenameCaptionAlbumImage');
+    $app->post('delete_album_picture','UserController@postDeleteAlbumPicture');
+    $app->post('move_archive','UserController@postMoveArchive');
+    $app->get('view_archive','UserController@getViewArchive');
+    $app->post('delete_archive','UserController@postDeleteArchive');
+    $app->get('view_receive_album','UserController@getViewReceiveAlbum');
+    $app->post('unblock_all_users','UserController@postUnblockAllUsers');
+    $app->post('add_looking_date','UserController@postAddLookingDate');
+    $app->get('my_profile','UserController@getMyProfile');
+    $app->get('view_looking_date','UserController@getViewLookingDate');
+    $app->post('rename_profile_lookingdates','UserController@postRenameProfileLookingdates');
+    $app->post('rename_profile_lookingsex','UserController@postRenameProfileLookingsex');
+    $app->post('update_profilelock_count','UserController@postUpdateProfilelockCount');
+    $app->post('lock_detail_profile','UserController@postLockDetailProfile');
+    $app->post('move_archive_to_private','UserController@postMoveArchiveToPrivate');
+    $app->post('manage_album_access','UserController@postManageAlbumAccess');
+    $app->post('add_recent_image','UserController@postAddRecentImage');
+    $app->post('profile_viewers_details','UserController@getProfileViewersDetails');
+    $app->post('profile_viewed_details','UserController@getProfileViewedDetails');
     
 });
 

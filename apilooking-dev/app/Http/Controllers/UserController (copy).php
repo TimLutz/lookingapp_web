@@ -729,25 +729,6 @@ class UserController extends Controller {
                                 $total_unread_message+=($value->count + $invite);
                             }
                         }*/
-                        if ($type == 'looking') 
-                        {
-                            if(isset($value['UserLooKSexType']))
-                            {
-                               foreach($value['UserLooKSexType'] AS $val)
-                                {
-                                    $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
-                                    $user_data[$key]['percentage'] = $percentage ;
-                                }
-                            }
-                        }
-                        if(!empty($value->last_seen))
-                        {
-                            $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
-                        }
-                        else
-                        {
-                            $user_data[$key]['last_seen'] = 2;
-                        }
                         $accuracy_value[] = $value['accuracy'];
                     }
                     /********End******** */
@@ -772,11 +753,25 @@ class UserController extends Controller {
                     {
                         if($type=='looking')
                         {
-                            $loggedInUser = $user2->whereHas('UserLooKSexType',function($q){
+                            /*$user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                                $q1->with(['Userdatesextype'])->get();
+                            }]);
+                                    $user_data = $user->whereHas('UserLooKSexType',function($q){
 
-                            })
-                            ->where(['id'=>$clientId])
-                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                                    })
+                                    ->where(['registration_status'=>3])
+                                    ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                                        $user2 = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
+                                        $q1->with(['Userdatesextype'])->get();
+                                    }]);*/
+                                    $loggedInUser = $user2->whereHas('UserLooKSexType',function($q){
+
+                                    })
+                                    ->where(['id'=>$clientId])
+                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
                         }
                         else
                         {
@@ -809,6 +804,33 @@ class UserController extends Controller {
                             }
                         } 
 
+
+                        foreach ($user_data as $key => $value) {
+                            if ($type == 'looking') 
+                            {
+                                if(isset($value['UserLooKSexType']))
+                                {
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $user_data[$key]['percentage'] = $percentage ;
+                                    }
+                                }
+                            }
+                            if(!empty($value->last_seen))
+                            {
+                                $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+                            }
+                            else
+                            {
+                                $user_data[$key]['last_seen'] = 2;
+                            }
+                        }
+
+
+
+
+
                         if(count($loggedInUser) > 0)
                         {
                             $UserData = $loggedInUser->toArray();
@@ -818,7 +840,133 @@ class UserController extends Controller {
                         {
                             $UserData1    = $user_data->toArray();
                         }
+
+
+
+                        //print_r($loggedInUser); die;
+                        /*foreach ($loggedInUser as $key1 => $value1) 
+                        {
+                            $UserData[$key1]['id'] = $value1->id;
+                            $UserData[$key1]['screen_name'] = $value1->screen_name;
+                            $UserData[$key1]['profile_id'] = $value1->profile_id;
+                            $UserData[$key1]['email'] = $value1->email;
+                            $UserData[$key1]['profile_status'] = $value1->profile_status;
+                            $UserData[$key1]['online_status'] = $value1->online_status;
+                            $UserData[$key1]['lat'] = $value1->lat;
+                            $UserData[$key1]['long'] = $value1->long;
+                            $UserData[$key1]['profile_pic'] = $value1->profile_pic;
+                            $UserData[$key1]['profile_pic_type'] = $value1->profile_pic_type;
+                            $UserData[$key1]['profile_pic_date'] = $value1->profile_pic_date;
+                            $UserData[$key1]['is_completed'] = $value1->is_completed;
+                            $UserData[$key1]['registration_status'] = $value1->registration_status;
+                            $UserData[$key1]['accuracy'] = $value1->accuracy;
+                            $UserData[$key1]['member_type'] = $value1->member_type;
+                            $UserData[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
+                            $UserData[$key1]['profile'] = $value1->Profile;
+                            $UserData[$key1]['chat_users'] = $value1->ChatUsers;
+                            $UserData[$key1]['userpartner'] = $value1->Userpartner;
+                            $UserData[$key1]['user_identity'] = $value1->UserIdentity;
+                            $UserData[$key1]['distance'] = $value1->distance;
+                            $UserData[$key1]['country'] = $value1->country;
+                            $UserData[$key1]['city'] = $value1->city;
+                            $UserData[$key1]['status'] = $value1->status;
+                            $UserData[$key1]['device_token'] = $value1->device_token;
+                            $UserData[$key1]['device_type'] = $value1->device_type;
+                            $UserData[$key1]['valid_upto'] = $value1->valid_upto;
+                            $UserData[$key1]['is_trial'] = $value1->is_trial;
+                            $UserData[$key1]['removead'] = $value1->removead;
+                            $UserData[$key1]['valid_upto'] = $value1->valid_upto;
+                            $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                            $UserData[$key1]['profiletext_change'] = $value1->profiletext_change;
+                            $UserData[$key1]['photo_change'] = $value1->photo_change;
+                            $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                            $UserData[$key1]['removead_valid_upto'] = $value1->removead_valid_upto;
+                            if ($type == 'looking') {
+                                 if(isset($value['UserLooKSexType']))
+                                {
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $UserData[$key]['percentage'] = $percentage ;
+                                    }
+                                }
+                            }
+                         //   $UserData[$key1]['UserLooKSexType'] = $value1->UserLooKSexType;
+                            
+                            if(!empty($value1->last_seen))
+                            {
+                                $UserData[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
+                            }
+                            else
+                            {
+                                $UserData[$key1]['last_seen'] = 2;
+                            }
+                        }*/
                     }
+
+                    /*foreach ($user_data as $key => $value) {
+                       // $user_data[$key]['distance1'] = $common->distance(floatval(JWTAuth::parseToken()->authenticate()->lat), floatval(JWTAuth::parseToken()->authenticate()->long), floatval($value->lat), floatval($value->long), 'M');
+                       // $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value->id);
+
+
+                        if($value->id!=$clientId)
+                        {   
+                            $UserData1[$key]['id'] = $value->id;
+                            $UserData1[$key]['screen_name'] = $value->screen_name;
+                            $UserData1[$key]['profile_id'] = $value->profile_id;
+                            $UserData1[$key]['email'] = $value->email;
+                            $UserData1[$key]['profile_status'] = $value->profile_status;
+                            $UserData1[$key]['online_status'] = $value->online_status;
+                            $UserData1[$key]['lat'] = $value->lat;
+                            $UserData1[$key]['long'] = $value->long;
+                            $UserData1[$key]['profile_pic'] = $value->profile_pic;
+                            $UserData1[$key]['profile_pic_type'] = $value->profile_pic_type;
+                            $UserData1[$key]['profile_pic_date'] = $value->profile_pic_date;
+                            $UserData1[$key]['is_completed'] = $value->is_completed;
+                            $UserData1[$key]['registration_status'] = $value->registration_status;
+                            $UserData1[$key]['accuracy'] = $value->accuracy;
+                            $UserData1[$key]['member_type'] = $value->member_type;
+                            $UserData1[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
+                            $UserData1[$key]['profile'] = $value->Profile;
+                            $UserData1[$key]['chat_users'] = $value->ChatUsers;
+                            $UserData1[$key]['userpartner'] = $value->Userpartner;
+                            $UserData1[$key]['user_identity'] = $value->UserIdentity;
+                            $UserData1[$key]['distance'] = $value->distance;
+                            $UserData1[$key]['country'] = $value->country;
+                            $UserData1[$key]['city'] = $value->city;
+                            $UserData1[$key]['status'] = $value->status;
+                            $UserData1[$key]['device_token'] = $value->device_token;
+                            $UserData1[$key]['device_type'] = $value->device_type;
+                            $UserData1[$key]['valid_upto'] = $value->valid_upto;
+                            $UserData1[$key]['is_trial'] = $value->is_trial;
+                            $UserData1[$key]['removead'] = $value->removead;
+                            $UserData1[$key]['valid_upto'] = $value->valid_upto;
+                            $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                            $UserData1[$key]['profiletext_change'] = $value->profiletext_change;
+                            $UserData1[$key]['photo_change'] = $value->photo_change;
+                            $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                            $UserData1[$key]['removead_valid_upto'] = $value->removead_valid_upto;
+                            if ($type == 'looking') {
+                                if(isset($value['UserLooKSexType']))
+                                {
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $UserData1[$key]['percentage'] = $percentage ;
+                                    }
+                                }
+                            }
+                            if(!empty($value->last_seen))
+                            {
+                                $UserData1[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+                            }
+                            else
+                            {
+                                $UserData1[$key]['last_seen'] = 2;
+                            }
+                        }
+                        
+                    }*/
                     
                     /********End******** */
                     //count($UserData1);
@@ -828,10 +976,10 @@ class UserController extends Controller {
                     
                     $user_data = array_merge($UserData,$UserData1); 
 //print_r($user_data); die;
-                    $user_data = array_values(array_map("unserialize", array_unique(array_map("serialize", $user_data))));
-                    /*echo "<pre>";
+                    $user_data = array_map("unserialize", array_unique(array_map("serialize", $user_data)));
+                   // echo "<pre>";
                     print_r($user_data);
-                  die();*/
+                   // die();
                     
                     /********for give user looksex data******** */
                     $user_looksexdata = array();
@@ -1672,11 +1820,11 @@ class UserController extends Controller {
                             if($userdetails->device_type=='android')
                             {
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send message for you';
-                                $notification = ['sound'=>'custom_notify_sound.wav'];
+                                $notification = ['sound'=>'default'];
                             }   
                             else
                             {
-                                $notification = ['badge'=>$total_unread_message,'type'=>$type,'sound'=>'custom_notify_sound.wav'];
+                                $notification = ['badge'=>$total_unread_message,'type'=>$type,'sound'=>'default'];
                             }
 
                             $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
@@ -2076,11 +2224,11 @@ class UserController extends Controller {
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' share album with you';
                                 if($userdetails->device_type=='android')
                                 {
-                                    $notification = ['sound'=>'custom_notify_sound.wav'];
+                                    $notification = ['sound'=>'default'];
                                 }   
                                 else
                                 {
-                                    $notification = ['badge'=>(int) $total_unread_message,'type'=>'share_album','custom_notify_sound.wav'=>'default','count_unread_msg'=>1,'total_view_and_share'=>$total_view_and_share];
+                                    $notification = ['badge'=>(int) $total_unread_message,'type'=>'share_album','sound'=>'default','count_unread_msg'=>1,'total_view_and_share'=>$total_view_and_share];
                                 }
 
                                 $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
@@ -2881,11 +3029,11 @@ class UserController extends Controller {
                             if($userdetails->device_type=='android')
                             {
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' send message for you';
-                                $notification = ['sound'=>'custom_notify_sound.wav'];
+                                $notification = ['sound'=>'default'];
                             }   
                             else
                             {
-                                $notification = ['badge'=>(int) $total_unread_message,'type'=>'chat message','sound'=>'custom_notify_sound.wav','count_unread_msg'=>$total_unread_message,'sender_id'=>$clientId,'receiver_id'=>$data['receiver_id'],'content-available'=>1,'message'=>$message];
+                                $notification = ['badge'=>(int) $total_unread_message,'type'=>'chat message','sound'=>'default','count_unread_msg'=>$total_unread_message,'sender_id'=>$clientId,'receiver_id'=>$data['receiver_id'],'content-available'=>1,'message'=>$message];
                             } 
 //print_r($notification); die;
                             $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
