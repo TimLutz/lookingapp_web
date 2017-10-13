@@ -1483,8 +1483,8 @@ class UserController extends Controller {
                     {
                         try {
 
-                         //   $device_token = '4231e3bc4925797b82cc5350ea1b9730bfbd6d57a88c2572556c8265c476d978';
-                            $device_token = $userdetails->device_token; 
+                            $device_token = '8ffadead27e65270e358941ab4299d304475f9f9a87634a67bf24031b202639e';
+                       //     $device_token = $userdetails->device_token; 
                             if (isset($data['accept']) && $data['accept']==1) {
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' accept invitation';
                                 $type = 'accept_invitation';
@@ -1659,8 +1659,8 @@ class UserController extends Controller {
                     if($userdetails->online_status==1)
                     {
                         try {
-                          // $device_token = 'c50afd3ae826d56fe8179fba5d452c009b30f94d2b61ef0f073933fdc18a91e9';
-                            $device_token = $userdetails->device_token; 
+                          $device_token = '8ffadead27e65270e358941ab4299d304475f9f9a87634a67bf24031b202639e';
+                         //   $device_token = $userdetails->device_token; 
                             if (isset($data['accept']) && $data['accept']==1) {
                                 $msg = JWTAuth::parseToken()->authenticate()->screen_name . ' accept invitation';
                                 $type = 'accept_invitation';
@@ -2067,8 +2067,8 @@ class UserController extends Controller {
                             /***** Send Pushnotification   *****/
                             if($userdetails->online_status==1)
                             {
-                               $device_token = $userdeyails->device_token;
-                         //   $device_token = 'c50afd3ae826d56fe8179fba5d452c009b30f94d2b61ef0f073933fdc18a91e9';
+                             //  $device_token = $userdeyails->device_token;
+                         $device_token = '8ffadead27e65270e358941ab4299d304475f9f9a87634a67bf24031b202639e';
                                 $count_view = $common->count_view($data['receiver_id']);
                                 $count_sharealbum = $common->count_sharealbum($data['receiver_id']);
                                 $total_view_and_share = (int) $count_view + (int) $count_sharealbum;
@@ -2863,8 +2863,8 @@ class UserController extends Controller {
                         /***** Send Pushnotification   *****/    
                         if ($userdetails->online_status == 1) {
                             /*                         * ********* send notification for ios ************* */
-                            $device_token = $userdetails->device_token;
-                      //     $device_token = 'e27c8776ad37729f91e52150391be63d945029516ef32f006423927dfb44a096';
+                       //     $device_token = $userdetails->device_token;
+                           $device_token = '8ffadead27e65270e358941ab4299d304475f9f9a87634a67bf24031b202639e';
                         //    $device_token = 'e9e7b89b26a15b288f37bf8f90b65dc29e077c63a95acc5caebbdc2eaac2057f';
                             //$device_token = $userdetails->device_token; 
                             $message = isset($data['message']) && !empty($data['message']) ? $data['message'] : '';
