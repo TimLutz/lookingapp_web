@@ -632,12 +632,10 @@ class UserController extends Controller {
                 /*                 * ********End************** */
 
                 /******Get result for all User with chat, profile of user********/
-                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1){
-                    $q1->where(['looktype'=>'sex']); }]);
+                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                    $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }]);
                 
-                $user_data = $user->whereHas('UserLooKSexType',function($q){
-
-                })
+                $user_data = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})
                                     ->where(['registration_status'=>3])
                                     ->whereNotIn('id',$block_id)
                                     //->where('id','!=',$clientId)
@@ -736,8 +734,8 @@ class UserController extends Controller {
                                foreach($value['UserLooKSexType'] AS $val)
                                 {
                                     $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
-                                    $user_data[$key]['percentage'] = $percentage ;
                                 }
+                              $user_data[$key]['percentage'] = $percentage ;
                             }
                         }
                         if(!empty($value->last_seen))
@@ -768,15 +766,15 @@ class UserController extends Controller {
                      
                         
                     }
+                    $loggedInUser = [];
                     if($arrKey)
                     {
                         if($type=='looking')
                         {
-                            $loggedInUser = $user2->whereHas('UserLooKSexType',function($q){
-
-                            })
-                            ->where(['id'=>$clientId])
-                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                            $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                                    $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
+                                                ->where(['id'=>$clientId])
+                                                ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
                         }
                         else
                         {
@@ -786,28 +784,31 @@ class UserController extends Controller {
                             
                         }
                         $loggedInUser = $loggedInUser->get();
-
-                        foreach($loggedInUser As $key1 => $value1)
+                        if(count($loggedInUser)>0)
                         {
-                            if ($type == 'looking') {
-                                 if(isset($value1['UserLooKSexType']))
-                                {
-                                   foreach($value1['UserLooKSexType'] AS $val)
+                            foreach($loggedInUser As $key1 => $value1)
+                            {
+                                if ($type == 'looking') {
+                                     if(isset($value1['UserLooKSexType']))
                                     {
-                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                       foreach($value1['UserLooKSexType'] AS $val)
+                                        {
+                                            $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        }
                                         $loggedInUser[$key1]['percentage'] = $percentage ;
                                     }
+                                }   
+                                if(!empty($value1->last_seen))
+                                {
+                                    $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
                                 }
-                            }   
-                            if(!empty($value1->last_seen))
-                            {
-                                $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
-                            }
-                            else
-                            {
-                                $loggedInUser[$key1]['last_seen'] = 2;
-                            }
-                        } 
+                                else
+                                {
+                                    $loggedInUser[$key1]['last_seen'] = 2;
+                                }
+                            } 
+                            
+                        }
 
                         if(count($loggedInUser) > 0)
                         {
@@ -819,7 +820,7 @@ class UserController extends Controller {
                             $UserData1    = $user_data->toArray();
                         }
                     }
-                    
+
                     /********End******** */
                     //count($UserData1);
                    
@@ -829,6 +830,7 @@ class UserController extends Controller {
                     $user_data = array_merge($UserData,$UserData1); 
 //print_r($user_data); die;
                     $user_data = array_values(array_map("unserialize", array_unique(array_map("serialize", $user_data))));
+              //      print_r($user_data); die;
                     /*echo "<pre>";
                     print_r($user_data);
                   die();*/
@@ -2888,7 +2890,7 @@ class UserController extends Controller {
                                 $notification = ['badge'=>(int) $total_unread_message,'type'=>'chat message','sound'=>'custom_notify_sound.wav','count_unread_msg'=>$total_unread_message,'sender_id'=>$clientId,'receiver_id'=>$data['receiver_id'],'content-available'=>1,'message'=>$message];
                             } 
 //print_r($notification); die;
-                            $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
+                         return   $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification); die('zccnvbn');
                         }
                         
                         $data['success'] = 1;
@@ -3301,15 +3303,16 @@ class UserController extends Controller {
         $sentInvite = '';
         if (isset($data['favourites']))
         {
-                $favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
+                $favoriteId = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
                 
-                $user = $user->whereIn('id',$favourite);
+              //  $user = $user->whereIn('id',$favourite);
         } 
         elseif(isset($data['sent_invite']))
         {
             //only for looking as per client requirement
             $sentInvite = 1;
-        } elseif(isset($data['received_invite'])) 
+        } 
+        elseif(isset($data['received_invite'])) 
         {
             $sentInvite = 1;
             //only for browse and dating as per client requirement
@@ -3344,9 +3347,29 @@ class UserController extends Controller {
 
         //pending looking sex and dating functionality
 
-        $user_data = $user->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity']);
-
-        $user_data = $user_data->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
+        $user_data = $user->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
+                            if(!empty($sentInvite))
+                            {
+                                $query->where(['invite'=>1]);
+                            }
+                            $query->where(['to_user'=>$clientId])
+                            ->orderBy('created_at','DESC');
+                        })
+                        ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite){
+                                if(!empty($sentInvite))
+                                {
+                                    $query1->where(['invite'=>1]);
+                                }
+                                $query1->where(['from_user'=>$clientId])
+                                ->orderBy('created_at','DESC');
+                        })
+                        ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+                        ->where(['registration_status'=>3])
+                        ->whereIn('id',$favoriteId)
+                        ->whereNotIn('id',$block_id)
+                        ->get();
+//print_r($user_data); die;
+        /*$user_data = $user_data->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
             if(!empty($sentInvite))
             {
                 $query->where(['invite'=>1]);
@@ -3360,11 +3383,11 @@ class UserController extends Controller {
             }
             $query1->where(['from_user'=>$clientId])
             ->orderBy('created_at','DESC');
-        });                
+        });*/                
 
-        $user_data = $user_data->where(['registration_status'=>3])
+        /*$user_data = $user_data->where(['registration_status'=>3])
                 ->whereNotIn('id',$block_id)
-                ->get();
+                ->get();*/
 
         /************* check user  alredy lock the view profile user ************ */
         $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>isset($data['lock_user_id'])?$data['lock_user_id']:'','is_locked'=>1])->first();
