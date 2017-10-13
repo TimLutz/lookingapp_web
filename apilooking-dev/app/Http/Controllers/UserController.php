@@ -3343,11 +3343,15 @@ class UserController extends Controller {
             });
         }
 
-        $looksex_user_id = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->lists('user_id');
+        $looksex_user_id = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex'])->lists('user_id');
 
+        if(count($looksex_user_id)>0)
+        {
+            $looksex_user_id = $looksex_user_id->toArray();
+        }
         //pending looking sex and dating functionality
 
-        $user_data = $user->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
+        $user = $user->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
                             if(!empty($sentInvite))
                             {
                                 $query->where(['invite'=>1]);
@@ -3366,8 +3370,12 @@ class UserController extends Controller {
                         ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                         ->where(['registration_status'=>3])
                         ->whereIn('id',$favoriteId)
-                        ->whereNotIn('id',$block_id)
-                        ->get();
+                        ->whereNotIn('id',$block_id);
+                        if(isset($data['browse']) && $data['browse']=='looking')
+                        {
+                            $user = $user->whereIn('id',$looksex_user_id);
+                        }
+                        $user_data = $user->get();
 //print_r($user_data); die;
         /*$user_data = $user_data->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
             if(!empty($sentInvite))
@@ -3458,7 +3466,8 @@ class UserController extends Controller {
             /********End******** */
 
             $user_looksexdata = array();
-            $user_looksex = UserLooksexdateModel::where([
+            $user_looksex = UserLooksexdateModel::with(['Userdatesextype'=>function($q1){}])
+                                                ->where([
                                                     'user_id'=>$clientId,
                                                     'look_type'=>'sex'])
                                                 ->where('start_time','<=',Carbon::now())
