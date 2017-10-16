@@ -3648,15 +3648,14 @@ class UserController extends Controller {
                 return response()->json($response,$http);
             }
             $userlooksex = UserLooksexdateModel::with(['Userdatesextype'=>function($q1){
-                $q1->where(['looktype'=>'sex'])->get(['lookdatesex_id','name','type']);
+                $q1->where(['looktype'=>'sex'])->groupBy('type')->select(DB::raw("lookdatesex_id,type, GROUP_CONCAT(name) AS name"));
             }])
                                                      ->where(['user_id'=>$clientId,'look_type'=>'sex'])
                                                      ->orderBy('id','asc')
-                                                
                                                      ->get();
+                                                   
             foreach ($userlooksex as $key => $value) {
-
-                $if_exist_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','<=',$current_date)->where(['id'=>$value->id,'look_type'=>'sex'])->first();
+                $if_exist_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['id'=>$value->id,'look_type'=>'sex'])->first();
 
                 if (count($if_exist_profile) > 0) {
                     $is_profile_active = 1;
@@ -3669,54 +3668,11 @@ class UserController extends Controller {
 
                 foreach($value['Userdatesextype'] AS $key1 => $val)
                 {
-                    if($val['type'] == 'my_physical_appearance')
-                    {
-                        $my_pref .= $val['name'].',';
-                    }
-
-                    if($val['type'] == 'his_physical_appearance')
-                    {
-                        $his_pref .= $val['name'].',';   
-                    }
-
-                    if($val['type'] == 'my_sextual_preferences')
-                    {
-                        $my_sext .= $val['name'].',';
-                    }
-
-                    if($val['type'] == 'his_sextual_preferences')
-                    {
-                        $his_sext .= $val['name'].',';   
-                    }
-
-                    if($val['type'] == 'my_social_habits')
-                    {
-                        $my_social .= $val['name'].',';
-                    }
-
-                    if($val['type'] == 'his_social_habits')
-                    {
-                        $his_social .= $val['name'].',';
-                    }
+                    $userlooksex[$key][$val->type] = $val->name;
                 }
-
-                $userlooksex[$key]['my_physical_appearance'] = trim($my_pref,',');
-                $userlooksex[$key]['his_physical_appearance'] = trim($his_pref,',');
-                $userlooksex[$key]['my_sextual_preferences'] = trim($my_sext,',');
-                $userlooksex[$key]['his_sextual_preferences'] = trim($his_sext,',');
-                $userlooksex[$key]['my_social_habits'] = trim($my_social,',');
-                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
-                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
-                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
-                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
-                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
-                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
-                
-           //     unset($value['Userdatesextype']);
-
-
+                unset($value['Userdatesextype']);
             }
-            
+       
             if($userlooksex)
             {
                 $data1['userlooksex'] = $userlooksex;
