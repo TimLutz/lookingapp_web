@@ -358,7 +358,8 @@ class Repositary
     {
         if(count($hisprofile) && count($myprofile))
         {
-            $his_physical = $his_sextual = $his_social = $my_physical = $my_sextual = $my_social = [];
+            $his_physical = $his_sextual = $his_social = $my_physical = $my_sextual = $my_social = $identities = $his_identities = $my_traits = $his_traits = $my_interest = $his_interest = [];
+            $result = $result1 = $result2 = $result3 = $result4 = $result5 = 0;
             foreach($hisprofile->toArray() AS $val)
             {
                 if($val['type']=='his_physical_appearance')
@@ -369,6 +370,15 @@ class Repositary
 
                 if($val['type']=='his_social_habits')
                     $his_social[] = $val['name'];
+
+                if($val['type']=='his_traits')
+                    $his_traits[] = $val['name'];
+
+                if($val['type']=='his_interest')
+                    $his_interest[] = $val['name'];
+
+                if($val['type']=='his_identites')
+                    $his_identities[] = $val['name'];
             }
             foreach($myprofile->toArray() AS $val)
             {
@@ -380,14 +390,50 @@ class Repositary
 
                 if($val['type']=='my_social_habits')
                     $my_social[] = $val['name'];
+
+                if($val['type']=='my_traits')
+                    $my_traits[] = $val['name'];
+
+                if($val['type']=='my_interest')
+                    $my_interest[] = $val['name'];
+
+
+                if($val['type']=='identites')
+                    $identities[] = $val['name'];
             }
 
-            $result = round((100/count($his_physical)) * count(array_intersect($his_physical, $my_physical))); 
-            $result1 = round((100/count($his_sextual)) * count(array_intersect($his_sextual, $my_sextual))); 
-            $result2 = round((100/count($his_social)) * count(array_intersect($his_social, $my_social)));
+            if(count($his_physical))
+            {
+                $result = round((100/count($his_physical)) * count(array_intersect($his_physical, $my_physical))); 
+                
+            }
 
-            return $total = $result+$result1+$result2;
+            if(count($his_sextual))
+            {
+                $result1 = round((100/count($his_sextual)) * count(array_intersect($his_sextual, $my_sextual))); 
+            }
 
+            if(count($his_social))
+            {
+                $result2 = round((100/count($his_social)) * count(array_intersect($his_social, $my_social)));
+            }
+
+            if(count($his_traits))
+            {
+                $result3 = round((100/count($his_traits)) * count(array_intersect($his_traits, $my_traits)));
+            }
+
+            if(count($his_interest))
+            {
+                $result4 = round((100/count($his_interest)) * count(array_intersect($his_interest, $my_interest)));
+            }
+
+            if(count($his_identities))
+            {
+                $result5 = round((100/count($his_identities)) * count(array_intersect($his_identities, $identities)));
+            }
+            
+            return $total = $result+$result1+$result2+$result3+$result4+$result5;
         }
         else
         {

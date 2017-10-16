@@ -475,7 +475,7 @@ class UserController extends Controller {
                 $block_id = [];
                 $type = isset($data['type'])?$data['type']:''; 
                 $user =User::where('status','!=',0)->where('role',2);
-                $user2 =User::where('status','!=',0)->where('role',2);        
+                $user2 =User::where('status','!=',0)->where('role',2);              
                 /******Blocked User********/
                 $block_user_id = BlockUserModel::where(function($q) use ($clientId){
                     $q->orWhere(array('blocked_id'=>$clientId))
@@ -632,16 +632,14 @@ class UserController extends Controller {
                 /*                 * ********End************** */
 
                 /******Get result for all User with chat, profile of user********/
-                $user = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
-                    $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }]);
-                
-                $user_data = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})
-                                    ->where(['registration_status'=>3])
-                                    ->whereNotIn('id',$block_id)
+                $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                    $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
+                             ->where(['registration_status'=>3])
+                             ->whereNotIn('id',$block_id)
                                     //->where('id','!=',$clientId)
-                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                             ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
 
-                        $user_data = $user_data->limit($limit)
+                        $user_data = $user->limit($limit)
                       //  ->orderBy('distance','ASC')
                         ->get();               
                
@@ -658,9 +656,26 @@ class UserController extends Controller {
                         $filter_cache = $if_exist_save_filter;
                     }
             }
-            else if($type == 'sex')
+            else if($type == 'dating')
              {
+                $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where(['user_id'=>$clientId,'look_type'=>'date'])->first();
 
+                 /******Get result for all User with chat, profile of user********/
+                $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                    $q1->where(['look_type'=>'date']); }])
+                             ->where(['registration_status'=>3])
+                             ->whereNotIn('id',$block_id)
+                                    //->where('id','!=',$clientId)
+                             ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                    $user_data = $user->limit($limit)
+                    //  ->orderBy('distance','ASC')
+                        ->get();     
+                    $total_unread_message = 0;      
+                    $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'dating'])->first();
+                    if ($if_exist_save_filter) {
+                        $filter_cache = $if_exist_save_filter;
+                    }
              }   
             else
             {
@@ -714,6 +729,13 @@ class UserController extends Controller {
                     /*             * ******End********* */
 
                     /******** Calculates total no. of unread message ******** */
+                    if($type == 'dating')
+                    {
+                        $user_his_identitie = User::with(['UserIdentity'=>function($q){
+                            $q->where(['type'=>'his_identites']);
+                        }])->where(['id'=>$clientId])->first();
+                    }
+                    
                     foreach ($user_data as $key => $value) {
                         /*if(count($value['ChatUsers']))
                         {
@@ -727,16 +749,56 @@ class UserController extends Controller {
                                 $total_unread_message+=($value->count + $invite);
                             }
                         }*/
+                        $percentage = 0;
                         if ($type == 'looking') 
                         {
-                            if(isset($value['UserLooKSexType']))
-                            {
-                               foreach($value['UserLooKSexType'] AS $val)
+                           if(count($if_exist_looking_profile))
+                           {
+
+                                if(isset($value['UserLooKSexType']))
                                 {
-                                    $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
-                                }
-                              $user_data[$key]['percentage'] = $percentage ;
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                    }
+                                } 
+                            }   
+                            if($percentage>0)
+                            {
+                                $percentage = round(($percentage * 100) / 400);   
                             }
+                            else
+                            {
+                                $percentage = 0;
+                            }
+                            $user_data[$key]['percentage'] = $percentage ;
+                        }
+                        elseif($type == 'dating') 
+                        {
+                            if(count($if_exist_looking_profile))
+                            {
+                                if(isset($value['UserLooKSexType']))
+                                {
+                                    foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage1 = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $percentage2 = $common->calculatepercentage($user_his_identitie['UserIdentity'],$value['UserIdentity']);
+                                        
+                                        $percentage = $percentage1 + $percentage2;
+
+
+                                    }
+                                }
+                            }
+                            if($percentage>0)
+                            {
+                                $percentage = round(($percentage * 100) / 600);   
+                            }
+                            else
+                            {
+                                $percentage = 0;
+                            }
+                            $user_data[$key]['percentage'] = $percentage ;
                         }
                         if(!empty($value->last_seen))
                         {
@@ -746,15 +808,10 @@ class UserController extends Controller {
                         {
                             $user_data[$key]['last_seen'] = 2;
                         }
-                        $accuracy_value[] = $value['accuracy'];
+                        $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
+                         $accuracy_value[] = $value['accuracy'];
                     }
-                    /********End******** */
 
-                    /********Get Maximum accuracy for the users.******** */
-                    if(count($accuracy_value))
-                    {
-                       $accuracy_max_value = (int) max($accuracy_value);
-                    }
                     /********End******** */
 
                     /********Calculate Distance between login user and another user ******** */
@@ -762,9 +819,7 @@ class UserController extends Controller {
                     $arrKey = '';
                     if($user_data)
                     {
-                         $arrKey = in_array($clientId, array_column($user_data->toArray(), 'id'));
-                     
-                        
+                         $arrKey = in_array($clientId, array_column($user_data->toArray(), 'id'));   
                     }
                     $loggedInUser = [];
                     if($arrKey)
@@ -775,6 +830,13 @@ class UserController extends Controller {
                                     $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
                                                 ->where(['id'=>$clientId])
                                                 ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                        }
+                        elseif($type=='dating')
+                        {
+                            $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatUsers','Profile'=>function($q){                $q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                                              $q1->where(['look_type'=>'date']); }])
+                                                 ->where(['id'=>$clientId])
+                                                 ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
                         }
                         else
                         {
@@ -788,16 +850,54 @@ class UserController extends Controller {
                         {
                             foreach($loggedInUser As $key1 => $value1)
                             {
+                                $percentage = 0;
                                 if ($type == 'looking') {
-                                     if(isset($value1['UserLooKSexType']))
-                                    {
-                                       foreach($value1['UserLooKSexType'] AS $val)
+                                   if(count($if_exist_looking_profile))
+                                   {
+                                        if(isset($value1['UserLooKSexType']))
                                         {
-                                            $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
-                                        }
-                                        $loggedInUser[$key1]['percentage'] = $percentage ;
+                                           foreach($value1['UserLooKSexType'] AS $val)
+                                            {
+                                                $percentage = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                            }
+                                        } 
+                                    }   
+                                    if($percentage>0)
+                                    {
+                                        $percentage = round(($percentage * 100) / 400);   
                                     }
+                                    else
+                                    {
+                                        $percentage = 0;
+                                    }
+                                    $loggedInUser[$key1]['percentage'] = $percentage ;
                                 }   
+                                elseif($type == 'dating') {
+                                    if(count($if_exist_looking_profile))
+                                    {
+                                        if(isset($value1['UserLooKSexType']))
+                                        {
+                                            foreach($value1['UserLooKSexType'] AS $val)
+                                            {
+                                                $percentage1 = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                                $percentage2 = $common->calculatepercentage($user_his_identitie['UserIdentity'],$value1['UserIdentity']);
+                                                
+                                                $percentage = $percentage1 + $percentage2;
+
+
+                                            }
+                                        }
+                                    }
+                                    if($percentage>0)
+                                    {
+                                        $percentage = round(($percentage * 100) / 600);   
+                                    }
+                                    else
+                                    {
+                                        $percentage = 0;
+                                    }
+                                    $loggedInUser[$key1]['percentage'] = $percentage ;
+                                }
                                 if(!empty($value1->last_seen))
                                 {
                                     $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
@@ -806,7 +906,10 @@ class UserController extends Controller {
                                 {
                                     $loggedInUser[$key1]['last_seen'] = 2;
                                 }
+                                $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
                             } 
+
+                             $accuracy_value[] = $value1['accuracy'];
                             
                         }
 
@@ -822,9 +925,9 @@ class UserController extends Controller {
                     }
 
                     /********End******** */
-                    //count($UserData1);
+                    /*print_r($UserData1);
                    
-                   // print_r($UserData);
+                    print_r($UserData); die;*/
 
                     
                     $user_data = array_merge($UserData,$UserData1); 
@@ -834,7 +937,13 @@ class UserController extends Controller {
                     /*echo "<pre>";
                     print_r($user_data);
                   die();*/
-                    
+
+                    /********Get Maximum accuracy for the users.******** */
+                    if(count($accuracy_value))
+                    {
+                       $accuracy_max_value = (int) max($accuracy_value);
+                    }
+                    /********End******** */
                     /********for give user looksex data******** */
                     $user_looksexdata = array();
                     $user_looksex = UserLooksexdateModel::where([
@@ -3128,9 +3237,10 @@ class UserController extends Controller {
                     $is_view = $is_share = $is_profile_active = $total_unread_message = $accuracy_max_value = 0;
                     $accuracy_value = [];
                     $block_id = [];
-                    
+                    $browse = isset($data['browse']) ? $data['browse'] : '';
                     $user =User::where('status','!=',0)->where(['role'=>2])->where('id','!=',$clientId);
 
+                    $current_date = Carbon::now();
                     /******Blocked User********/
                     $block_user_id = BlockUserModel::where(function($q) use ($clientId){
                         $q->orWhere(array('blocked_id'=>$clientId))
@@ -3181,16 +3291,46 @@ class UserController extends Controller {
                     $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, $limit_type);
 
                     /******Get result for all User with chat, profile of user********/
-                    $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data){
-                            $q1->where(['user_id'=>$clientId]);
-                            if (isset($data['recently_added'])) {
-                                $q1 =  $q1->orderBy('updated_at','DESC');
-                            }
+                    $user = $user->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data){
+                                        $q1->where(['user_id'=>$clientId]);
+                                        if (isset($data['recently_added'])) {
+                                            $q1 =  $q1->orderBy('updated_at','DESC');
+                                        }
 
-                    }])
-                                ->where(['registration_status'=>3])
-                                ->whereIn('id',$favourite_user_id)
-                                ->whereNotIn('id',$block_id)
+                                }])
+                                ->where(['registration_status'=>3]);
+                                if(!empty($browse) && $browse == 'looking')
+                                {
+                                    $UserLookdate = UserLooksexdateModel::where(['look_type'=>'sex'])
+                                                                        ->whereIn('user_id',$favourite_user_id)
+                                                                        ->where('start_time','<=',$current_date)
+                                                                        ->where('end_time','>=',$current_date)
+                                                                        ->lists('user_id');
+                                    $looking_sex_id = [];
+                                    if(count($UserLookdate))
+                                    {
+                                        $looking_sex_id = $UserLookdate->toArray();
+                                    }                                    
+                                    $user = $user->whereIn('id',$looking_sex_id);
+                                }
+                                else if(!empty($browse) && $browse == 'dating')
+                                {
+                                    $UserLookdate = UserLooksexdateModel::where(['look_type'=>'date'])
+                                                                        ->whereIn('user_id',$favourite_user_id)
+                                                                        ->lists('user_id');
+                                    $looking_sex_id = [];
+                                    if(count($UserLookdate))
+                                    {
+                                        $looking_sex_id = $UserLookdate->toArray();
+                                    }                                    
+                                    $user = $user->whereIn('id',$looking_sex_id);
+                                }
+                                else
+                                {
+                                   $user = $user->whereIn('id',$favourite_user_id);
+                                    
+                                }
+                                $user_data = $user->whereNotIn('id',$block_id)
                                 ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
 
                     $user_data = $user_data->limit($limit);
@@ -3345,57 +3485,58 @@ class UserController extends Controller {
 
         $looksex_user_id = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex'])->lists('user_id');
 
-        if(count($looksex_user_id)>0)
+        if(count($looksex_user_id))
         {
             $looksex_user_id = $looksex_user_id->toArray();
         }
         //pending looking sex and dating functionality
 
-        $user = $user->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
-                            if(!empty($sentInvite))
-                            {
-                                $query->where(['invite'=>1]);
-                            }
-                            $query->where(['to_user'=>$clientId])
-                            ->orderBy('created_at','DESC');
-                        })
-                        ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite){
-                                if(!empty($sentInvite))
-                                {
-                                    $query1->where(['invite'=>1]);
-                                }
-                                $query1->where(['from_user'=>$clientId])
-                                ->orderBy('created_at','DESC');
-                        })
-                        ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
-                        ->where(['registration_status'=>3])
-                        ->whereIn('id',$favoriteId)
-                        ->whereNotIn('id',$block_id);
-                        if(isset($data['browse']) && $data['browse']=='looking')
-                        {
-                            $user = $user->whereIn('id',$looksex_user_id);
-                        }
-                        $user_data = $user->get();
-//print_r($user_data); die;
-        /*$user_data = $user_data->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite){
-            if(!empty($sentInvite))
-            {
-                $query->where(['invite'=>1]);
-            }
-            $query->where(['to_user'=>$clientId])
-            ->orderBy('created_at','DESC');
-        })->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite){
-            if(!empty($sentInvite))
-            {
-                $query1->where(['invite'=>1]);
-            }
-            $query1->where(['from_user'=>$clientId])
-            ->orderBy('created_at','DESC');
-        });*/                
+        $user = $user->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite,$data){
+                    if(!empty($sentInvite))
+                    {
+                        $query->where(['invite'=>1]);
+                    }
 
-        /*$user_data = $user_data->where(['registration_status'=>3])
-                ->whereNotIn('id',$block_id)
-                ->get();*/
+                    if(isset($data['browse']) && $data['browse']=='dating')
+                    {
+                        $query->where(['invite'=>1]);
+                    }
+
+                    $query->where(['to_user'=>$clientId])
+                    ->orderBy('created_at','DESC');
+                })
+                ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite,$data){
+                        if(!empty($sentInvite))
+                        {
+                            $query1->where(['invite'=>1]);
+                        }
+                        if(isset($data['browse']) && $data['browse']=='dating')
+                        {
+                             $query1->where(['invite'=>1]);  
+                        }
+
+                        $query1->where(['from_user'=>$clientId])
+                        ->orderBy('created_at','DESC');
+                })
+                ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+                ->where(['registration_status'=>3]);
+                
+                if(!empty($favoriteId))
+                {
+                    $user=  $user->whereIn('id',$favoriteId);
+                } 
+                $user = $user->whereNotIn('id',$block_id);
+                if(isset($data['browse']) && $data['browse']=='looking')
+                {
+                    $user = $user->whereIn('id',$looksex_user_id);
+                }
+                elseif(isset($data['browse']) && $data['browse']=='dating')
+                {
+                    $lookdate_user_id = UserLooksexdateModel::where(['look_type'=>'date'])->lists('user_id');
+
+                    $user = $user->whereIn('id',$lookdate_user_id);
+                }
+                $user_data = $user->get();
 
         /************* check user  alredy lock the view profile user ************ */
         $lock_profile = ProfileLockModel::where(['user_id'=>$clientId,'lock_user_id'=>isset($data['lock_user_id'])?$data['lock_user_id']:'','is_locked'=>1])->first();
@@ -3512,8 +3653,7 @@ class UserController extends Controller {
                                                      ->where(['user_id'=>$clientId,'look_type'=>'sex'])
                                                      ->orderBy('id','asc')
                                                 
-                                                     ->get(['description','id']);
-
+                                                     ->get();
             foreach ($userlooksex as $key => $value) {
 
                 $if_exist_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','<=',$current_date)->where(['id'=>$value->id,'look_type'=>'sex'])->first();
@@ -3524,8 +3664,59 @@ class UserController extends Controller {
                     $is_profile_active = 0;
                 }
                 $userlooksex[$key]['is_profile_active'] = $is_profile_active;
-            }
 
+                $my_pref = $his_pref = $my_sext = $his_sext = $my_social = $his_social = '';
+
+                foreach($value['Userdatesextype'] AS $key1 => $val)
+                {
+                    if($val['type'] == 'my_physical_appearance')
+                    {
+                        $my_pref .= $val['name'].',';
+                    }
+
+                    if($val['type'] == 'his_physical_appearance')
+                    {
+                        $his_pref .= $val['name'].',';   
+                    }
+
+                    if($val['type'] == 'my_sextual_preferences')
+                    {
+                        $my_sext .= $val['name'].',';
+                    }
+
+                    if($val['type'] == 'his_sextual_preferences')
+                    {
+                        $his_sext .= $val['name'].',';   
+                    }
+
+                    if($val['type'] == 'my_social_habits')
+                    {
+                        $my_social .= $val['name'].',';
+                    }
+
+                    if($val['type'] == 'his_social_habits')
+                    {
+                        $his_social .= $val['name'].',';
+                    }
+                }
+
+                $userlooksex[$key]['my_physical_appearance'] = trim($my_pref,',');
+                $userlooksex[$key]['his_physical_appearance'] = trim($his_pref,',');
+                $userlooksex[$key]['my_sextual_preferences'] = trim($my_sext,',');
+                $userlooksex[$key]['his_sextual_preferences'] = trim($his_sext,',');
+                $userlooksex[$key]['my_social_habits'] = trim($my_social,',');
+                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
+                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
+                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
+                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
+                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
+                $userlooksex[$key]['his_social_habits'] = trim($his_social,',');
+                
+           //     unset($value['Userdatesextype']);
+
+
+            }
+            
             if($userlooksex)
             {
                 $data1['userlooksex'] = $userlooksex;
@@ -3547,69 +3738,6 @@ class UserController extends Controller {
             $http_status = 400;
         }
         return response()->json($response,$http_status);
-
-        $this->autoRender = false;
-        $user_id = isset($this->request->data['user_id']) ? $this->request->data['user_id'] : '';
-        $current_date = isset($this->request->data['current_date']) ? $this->request->data['current_date'] : '';
-        if ($user_id) {
-            //===login userdetails===//
-            $login_user_member = $this->User->find('first', array('conditions' => array('User.id' => $user_id)));
-            $login_user_member_type = $login_user_member['User']['member_type'];
-            $login_user_removead = $login_user_member['User']['removead'];
-            $login_user_is_trial = $login_user_member['User']['is_trial'];
-            if ($login_user_member_type == 0) {
-                $data['success'] = 1;
-                $data['msg'] = 'success';
-                $data['login_user_member_type'] = $login_user_member_type;
-                $data['login_user_removead'] = $login_user_removead;
-                $data['login_user_is_trial'] = $login_user_is_trial;
-                echo json_encode($data);
-                die;
-            }
-            $data['login_user_member_type'] = $login_user_member_type;
-            $data['login_user_removead'] = $login_user_removead;
-            $data['login_user_is_trial'] = $login_user_is_trial;
-            //====End====//
-            $userlooksex = $this->UserLooksex->find('all', array('conditions' => array('UserLooksex.user_id' => $user_id), 'order' => array('UserLooksex.id asc')));
-
-            foreach ($userlooksex as $key => $value) {
-
-                $if_exist_profile = $this->UserLooksex->find('first', array('conditions' => array(
-                        'and' => array(
-                            array('UserLooksex.start_time <=' => $current_date,
-                                'UserLooksex.end_time >=' => $current_date
-                            ),
-                            'UserLooksex.id =' => $value['UserLooksex']['id']
-                        )
-                )));
-                //pr($if_exist_profile); die;
-                if (count($if_exist_profile) > 0) {
-                    $is_profile_active = 1;
-                } else {
-                    $is_profile_active = 0;
-                }
-                $userlooksex[$key]['UserLooksex']['description'] = stripslashes($value['UserLooksex']['description']);
-                $userlooksex[$key]['UserLooksex']['my_physical_appearance'] = stripslashes($value['UserLooksex']['my_physical_appearance']);
-                $userlooksex[$key]['UserLooksex']['his_physical_appearance'] = stripslashes($value['UserLooksex']['his_physical_appearance']);
-                $userlooksex[$key]['UserLooksex']['my_sextual_preferences'] = stripslashes($value['UserLooksex']['my_sextual_preferences']);
-                $userlooksex[$key]['UserLooksex']['his_sextual_preferences'] = stripslashes($value['UserLooksex']['his_sextual_preferences']);
-                $userlooksex[$key]['UserLooksex']['my_social_habits'] = stripslashes($value['UserLooksex']['my_social_habits']);
-                $userlooksex[$key]['UserLooksex']['his_social_habits'] = stripslashes($value['UserLooksex']['his_social_habits']);
-                $userlooksex[$key]['UserLooksex']['is_profile_active'] = $is_profile_active;
-            }
-            if ($userlooksex) {
-                $data['success'] = 1;
-                $data['msg'] = 'success';
-                $data['data'] = Hash::extract($userlooksex, '{n}.UserLooksex');
-            } else {
-                $data['success'] = 0;
-                $data['msg'] = 'failure';
-            }
-        } else {
-            $data['success'] = 0;
-            $data['msg'] = 'user id not found';
-        }
-        echo json_encode($data);
     }
 
 
