@@ -4974,4 +4974,281 @@ class UserController extends Controller {
         }
         return response()->json($response,$http_status);
     }
+
+    public function getUseProfileLooksex(request $request,Repositary $common)
+    {
+        try {
+            $validator = Validator::make( $request->all()  ,      [
+                'id' => 'required'
+                ],
+                [
+                    'id.required' => 'Please enter id.'
+                ]);
+            if ($validator->fails()) {
+                $response['errors']     = $validator->errors();
+                $response['success']        = 0;
+                $http_status = 422;
+            }
+            else
+            {
+                $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $data = $request->all();
+                $current_date = Carbon::now();
+                $is_view = $is_share = $is_profile_active = $total_unread_message =  0;
+                $filter_cache =[];
+                $block_id = [];
+                $type = isset($data['type'])?$data['type']:''; 
+                $user =User::where('status','!=',0)->where('role',2);
+                $user2 =User::where('status','!=',0)->where('role',2);              
+                /******Blocked User********/
+                $block_user_id = BlockUserModel::where(function($q) use ($clientId){
+                    $q->orWhere(array('blocked_id'=>$clientId))
+                      ->orWhere(array('user_id'=>$clientId))
+                      ->select('id');
+                })
+                ->select('id','user_id','blocked_id')
+                ->get();
+
+                foreach($block_user_id As $k =>$value)
+                {
+                    if($value['user_id']==$clientId)
+                        $block_id[] = $value['blocked_id'];
+
+                    if($value['blocked_id'] == $clientId)
+                        $block_id[] = $value['user_id'];
+                }
+                /******End********/
+
+                //======get limit for free user or paid user==//
+                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
+                $limit = $limit - 1;
+                //=========End================//
+
+                $checklookingSex = UserLooksexdateModel::where(['id'=>$data['id']])->first();
+                if(count($checklookingSex))
+                {
+                    /*                 * *******userlook date profile ************* */
+                    $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['user_id'=>$clientId,'look_type'=>'sex'])->first();
+                    /*                 * ********End************** */
+
+                    /******Get result for all User with chat, profile of user********/
+                    $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser'=>function($q3) use ($clientId){
+                        $q3->where(['from_user'=>$clientId]);
+                    },'ChatToUser'=>function($q4) use ($clientId){
+                        $q4->where(['to_user'=>$clientId]);
+                    },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                        $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
+                                 ->where(['registration_status'=>3])
+                                 ->whereNotIn('id',$block_id)
+                                        //->where('id','!=',$clientId)
+                                 ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                            $user_data = $user->limit($limit)
+                            ->orderBy('distance','ASC')
+                            ->get();     
+
+                    $total_unread_message = 0;
+                    
+                    /*                 * ********End*********** */
+                    //***************for filter chache**********//
+                    $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'looking'])->first();
+                        if ($if_exist_save_filter) {
+                            $filter_cache = $if_exist_save_filter;
+                        }
+                    /*                 * ********End*********** */
+                        
+                    $UserData = array();  
+                    $UserData1 = array();  
+
+
+                    /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
+                    if(count($user_data)) {
+
+                        /********check any one view my profile*********/
+                        $is_view = $common->check_view($clientId);
+                        /*             * ******End********* */
+
+                        /********check any one share album with me*********/
+                        $is_share = $common->check_sharealbum($clientId);
+                        /*             * ******End********* */
+
+                        /********count total user view my profile*********/
+                        $count_view = $common->count_view($clientId);
+                        /*             * ******End********* */
+
+                        /********count total user share album with me*********/
+                        $count_sharealbum = $common->count_sharealbum($clientId);
+                        $total_view_and_share = $count_view + $count_sharealbum;
+                        /*             * ******End********* */
+                        
+                        foreach ($user_data as $key => $value) {
+                            $percentage = 0;
+                           $user_his_identitie = User::with(['UserIdentity'=>function($q){
+                                $q->where(['type'=>'his_identites']);
+                            }])->where(['id'=>$clientId])->first(); 
+
+                           if(count($if_exist_looking_profile))
+                           {
+
+                                if(isset($value['UserLooKSexType']))
+                                {
+                                   foreach($value['UserLooKSexType'] AS $val)
+                                    {
+                                        $percentage1 = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                        $percentage2 = $common->calculatepercentage($user_his_identitie['UserIdentity'],$value['UserIdentity']);
+                                        $percentage = $percentage1 + $percentage2;
+                                    }
+                                } 
+                            }   
+                            if($percentage>0)
+                            {
+                                $percentage = round(($percentage * 100) / 400);   
+                            }
+                            else
+                            {
+                                $percentage = 0;
+                            }
+                            $user_data[$key]['percentage'] = $percentage ;
+                            
+                            if(!empty($value->last_seen))
+                            {
+                                $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+                            }
+                            else
+                            {
+                                $user_data[$key]['last_seen'] = 2;
+                            }
+                            $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
+                             $accuracy_value[] = $value['accuracy'];
+                        }
+
+                        /********End******** */
+
+                        /********Calculate Distance between login user and another user ******** */
+                        $arrKey = '';
+                        if($user_data)
+                        {
+                             $arrKey = in_array($clientId, array_column($user_data->toArray(), 'id'));   
+                        }
+                        $loggedInUser = [];
+                        if($arrKey)
+                        {
+                            
+                            $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                                    $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
+                                                ->where(['id'=>$clientId])
+                                                ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                            
+                            $loggedInUser = $loggedInUser->get();
+                            if(count($loggedInUser)>0)
+                            {
+                                foreach($loggedInUser As $key1 => $value1)
+                                {
+                                   $percentage = 0; 
+                                   if(count($if_exist_looking_profile))
+                                   {
+                                        if(isset($value1['UserLooKSexType']))
+                                        {
+                                           foreach($value1['UserLooKSexType'] AS $val)
+                                            {
+                                                $percentage1 = $common->calculatepercentage($if_exist_looking_profile['Userdatesextype'],$val['Userdatesextype']);
+                                                $percentage2 = $common->calculatepercentage($user_his_identitie['UserIdentity'],$value1['UserIdentity']);
+                                                $percentage = $percentage1 + $percentage2;
+                                            }
+                                        } 
+                                    }   
+                                    if($percentage>0)
+                                    {
+                                        $percentage = round(($percentage * 100) / 400);   
+                                    }
+                                    else
+                                    {
+                                        $percentage = 0;
+                                    }
+                                    $loggedInUser[$key1]['percentage'] = $percentage ;
+                                    
+                                    if(!empty($value1->last_seen))
+                                    {
+                                        $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
+                                    }
+                                    else
+                                    {
+                                        $loggedInUser[$key1]['last_seen'] = 2;
+                                    }
+                                    $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
+                                } 
+
+                                $accuracy_value[] = $value1['accuracy'];
+                                
+                            }
+
+                            if(count($loggedInUser) > 0)
+                            {
+                                $UserData = $loggedInUser->toArray();
+                            }
+
+                            if(count($user_data) > 0)
+                            {
+                                $UserData1    = $user_data->toArray();
+                            }
+                        }
+
+                        /********End******** */
+                        
+                        $user_data = array_merge($UserData,$UserData1); 
+
+                        $user_data = array_values(array_map("unserialize", array_unique(array_map("serialize", $user_data))));
+
+                        /********Get Maximum accuracy for the users.******** */
+                        if(count($accuracy_value))
+                        {
+                           $accuracy_max_value = (int) max($accuracy_value);
+                        }
+                        /********End******** */
+                        /********for give user looksex data******** */
+                        $user_looksexdata = array();
+                        $user_looksex = UserLooksexdateModel::where([
+                                                                    'user_id'=>$clientId,
+                                                                    'look_type'=>'sex'])
+                                                                ->where('start_time','<=',$current_date)
+                                                                ->where('end_time','>=',$current_date)
+                                                                ->first();
+                        if(count($user_looksex))
+                        {
+                            $user_looksexdata = $user_looksex;
+                            $is_profile_active = 1;
+                        }       
+                        else
+                        {
+                            $is_profile_active =0;
+                        }
+                        //***************END***************//
+
+                        $response['success'] = 1;
+                        $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'filter_cache'=>$filter_cache];
+                        $http_status = 200;   
+                        $d1 = $response['data'];
+                    }
+                    else
+                    {
+                        $response['success'] = 0;
+                        $response['message'] = ['data not found'];
+                        $http_status = 400;
+                    }
+                }     
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = ['data not found'];
+                    $http_status = 400;
+                }      
+            }
+        } catch (Exception $e) {
+            $response['success']=0;
+            $response['message'] = $e->getMessage();
+            $http_status = 400;
+        }
+
+        return response()->json($response,$http_status);
+    }
 }
