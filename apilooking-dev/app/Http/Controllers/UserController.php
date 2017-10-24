@@ -191,7 +191,9 @@ class UserController extends Controller {
                     $data = $request->all();
                     $is_completed = 0;  
                     
-                    
+                    $data['start_time'] = isset($data['start_time']) ? $data['start_time'] : '0000-00-00 00:00:00';
+                    $data['end_time'] = isset($data['end_time']) ? $data['end_time'] : '0000-00-00 00:00:00';
+                    $data['birthday'] = isset($data['birthday']) ? $data['birthday'] : '0000-00-00 00:00:00';
 
                     if(in_array('', $data))
                     {
@@ -3716,7 +3718,7 @@ class UserController extends Controller {
         $accuracy_value = $block_id = $read_message_user = $unread_message_chatusers = $Userdetails['User_Profile_Lock'] = [];
          
         $current_date = Carbon::now();
-        $user =User::where('status','!=',0)->where(['role'=>2])->where('id','!=',$clientId);
+    //    $user =User::where('status','!=',0)->where(['role'=>2])->where('id','!=',$clientId);
 
         $favoriteId = [];
         $sentInvite = '';
@@ -3755,13 +3757,6 @@ class UserController extends Controller {
                 $block_id[] = $value['user_id'];
         }
 
-        if (isset($data['search_value'])) {
-            $user = $user->where(function($q) use ($data){
-                $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
-                  ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
-            });
-        }
-
         $looksex_user_id = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex'])->lists('user_id');
 
         if(count($looksex_user_id))
@@ -3770,7 +3765,7 @@ class UserController extends Controller {
         }
         //pending looking sex and dating functionality
 
-        $user = $user->whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite,$data){
+        $user = User::whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite,$data){
                     if(!empty($sentInvite))
                     {
                         $query->where(['invite'=>1]);
@@ -3781,8 +3776,14 @@ class UserController extends Controller {
                         $query->where(['invite'=>1]);
                     }
 
-                    $query->where(['to_user'=>$clientId])
-                    ->orderBy('created_at','DESC');
+                    $query->where(['to_user'=>$clientId]);
+                        if (isset($data['search_value'])) {
+                          $query->where(function($q) use ($data){
+                              $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
+                                ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
+                            });
+                        }
+                    $query->orderBy('created_at','DESC');
                 })
                 ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite,$data){
                         if(!empty($sentInvite))
@@ -3794,11 +3795,23 @@ class UserController extends Controller {
                              $query1->where(['invite'=>1]);  
                         }
 
-                        $query1->where(['from_user'=>$clientId])
-                        ->orderBy('created_at','DESC');
+                        $query1->where(['from_user'=>$clientId]);
+                        if (isset($data['search_value'])) {
+                          $query1->where(function($q) use ($data){
+                              $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
+                                ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
+                            });
+                        }   
+                        $query1->orderBy('created_at','DESC');
                 })
                 ->with(['ChatFromUser','ChatToUser','Profile','Userpartner','UserIdentity'])
-                ->where(['registration_status'=>3]);
+                ->where(['registration_status'=>3])
+                ->where('status','!=',0)
+                ->where(['role'=>2])
+                ->where('id','!=',$clientId);
+
+               
+
                 
                 if(!empty($favoriteId))
                 {
@@ -3856,7 +3869,7 @@ class UserController extends Controller {
                 
                 if(isset($value->ChatFromUser) || isset($value->ChatToUser))
                 {
-                    if((isset($value->ChatFromUser->invite) && $value->ChatFromUser->invite > 0) ||    (isset($value->ChatToUser->invite) && $value->ChatToUser->invite > 0))
+                    if((isset($value->ChatFromUser->invite) && $value->ChatFromUser->invite > 0) || (isset($value->ChatToUser->invite) && $value->ChatToUser->invite > 0))
                     {
 
                         $unread_message_chatusers[] = $user_data[$key];
@@ -5773,4 +5786,22 @@ class UserController extends Controller {
 
         return response()->json($response,$http_status);
     }
+
+    public function postProfileDetail(Request $request)
+    {
+        try {
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $user_data = User::with('Profile','Userpartner')
+
+            $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
+            $user_data = $this->User->find('first', array('conditions' => array('User.id' => $this->request->data['userid'])));
+            echo json_encode(array('success' => 1, 'data' => $user_data, 'path' => PIC_PATH));
+        } catch (\Exception $e) {
+            $response['success']=0;
+            $response['message'] = $e->getMessage();
+            $http_status = 400;
+        }
+    }
+
+    return response()->json($response,$http_status);
 }
