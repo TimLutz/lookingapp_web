@@ -5787,7 +5787,7 @@ class UserController extends Controller {
         return response()->json($response,$http_status);
     }
 
-    public function postProfileDetail(Request $request)
+    /*public function postProfileDetail(Request $request)
     {
         try {
             $clientId = JWTAuth::parseToken()->authenticate()->id;
@@ -5801,7 +5801,7 @@ class UserController extends Controller {
             $response['message'] = $e->getMessage();
             $http_status = 400;
         }
-    }
+        return response()->json($response,$http_status);
+    }*/
 
-    return response()->json($response,$http_status);
 }
