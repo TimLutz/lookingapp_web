@@ -68,8 +68,8 @@ $app->get('/', function () use ($app) {
     $app->post('add_recent_image','UserController@postAddRecentImage');
     $app->post('profile_viewers_details','UserController@getProfileViewersDetails');
     $app->post('profile_viewed_details','UserController@getProfileViewedDetails');
-    $app->post('use_profile_looksex','UserController@getUseProfileLooksex');
-    
+    $app->post('use_profile_looksex','UserController@postUseProfileLooksex');
+    $app->post('use_profile_lookdates','UserController@postUseProfileLookdate');
 });
 
 

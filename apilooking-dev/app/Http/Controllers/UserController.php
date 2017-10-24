@@ -84,56 +84,56 @@ class UserController extends Controller {
                     $response['errors']     = $validator->errors();
                     $response['success']        = 422;
                 }else{
-                        $user=User::where(['email'=>$request->input('email'),'role'=>2])->first();
-                        if(!$user){
-                            $response['success'] = 0;
-                            $response['message'] = 'Email entered doesn`t match our records, please check your email and try again';
-                            $http_status = 400;
+                    $user=User::where(['email'=>$request->input('email'),'role'=>2])->first();
+                    if(!$user){
+                        $response['success'] = 0;
+                        $response['message'] = 'Email entered doesn`t match our records, please check your email and try again';
+                        $http_status = 400;
+                    }
+                    else{
+                        if($user->status==0)
+                        {
+                            $response['message']    = 'You profile banned by the admin.';
+                            $response['status']     = 0;
+                            $http_status = 400; 
                         }
-                        else{
-                            if($user->status==0)
+                        else
+                        {
+                            $name = User::where('email',$request->email)->pluck('screen_name');
+                            
+                            $token = hash_hmac('sha256', Str::random(40), $this->hashKey);
+                            
+                            $email = Input::get('email');
+                            $template=EmailTemplate::find(24);
+                            //$url = url('../reset-password/'.$token);
+                            $url = env('EMAIL_URL').'/reset-password/'.$token;
+                            
+                            //$link="<a href='$url'>$url</a>";
+                            $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
+                            
+                            
+                            $find=array('@company@','@click here@','@email@');
+                         //   $find=array('@company@','@click here@','@email@','@name@');
+                            $values=array(env('SITENAME'),$link,$email);
+                          //  $values=array(env('SITENAME'),$link,$email,$name);
+                            
+                            $body=str_replace($find,$values,$template->content);
+                                $user->remember_token = $token;
+                                $user->reset_exp_date = Carbon::now()->addHours(72);
+                            $user->update();
+                            //Send Mail
+                            Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
                             {
-                                $response['message']    = 'You profile banned by the admin.';
-                                $response['status']     = 0;
-                                $http_status = 400; 
-                            }
-                            else
-                            {
-                                $name = User::where('email',$request->email)->pluck('screen_name');
-                                
-                                $token = hash_hmac('sha256', Str::random(40), $this->hashKey);
-                                
-                                $email = Input::get('email');
-                                $template=EmailTemplate::find(24);
-                                //$url = url('../reset-password/'.$token);
-                                $url = env('EMAIL_URL').'/reset-password/'.$token;
-                                
-                                //$link="<a href='$url'>$url</a>";
-                                $link="<a href='$url' style='text-decoration:none;'>https://www.lookingmobileapp.com/resetpassword</a>";
-                                
-                                
-                                $find=array('@company@','@click here@','@email@');
-                             //   $find=array('@company@','@click here@','@email@','@name@');
-                                $values=array(env('SITENAME'),$link,$email);
-                              //  $values=array(env('SITENAME'),$link,$email,$name);
-                                
-                                $body=str_replace($find,$values,$template->content);
-                                    $user->remember_token = $token;
-                                    $user->reset_exp_date = Carbon::now()->addHours(72);
-                                $user->update();
-                                //Send Mail
-                                Mail::send('emails.verify', array('content'=>$body), function($m) use($template)
-                                {
-                                    $m->to(Input::get('email'))
-                                        ->subject($template->subject);
-                                });
-                                $response['message']    = 'Recovery password link has been sent on your email address';
-                                $response['status']     = 1;
-                                $http_status = 200; 
-                            }
-                        }   
+                                $m->to(Input::get('email'))
+                                    ->subject($template->subject);
+                            });
+                            $response['message']    = 'Recovery password link has been sent on your email address';
+                            $response['status']     = 1;
+                            $http_status = 200; 
+                        }
+                    }   
                 }   
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400; 
@@ -241,7 +241,7 @@ class UserController extends Controller {
                         }
                     }
                 }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400; 
@@ -323,7 +323,7 @@ class UserController extends Controller {
                 }
 
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400; 
@@ -428,7 +428,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400; 
@@ -972,7 +972,7 @@ class UserController extends Controller {
                 /********End*********/
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400; 
@@ -1012,7 +1012,8 @@ class UserController extends Controller {
                     $clientId = JWTAuth::parseToken()->authenticate()->id;
                     $data = $request->all();
                     $viewer_id = $data['viewer_user_id'];
-
+                    $current_date = Carbon::now();
+                    $type = isset($data['type']) ? $data['type'] : '';
                     /*******Add or update view user************/
                     $viewDetail = ViewerModel::where(array('user_id'=>$clientId,'viewer_user_id'=>$viewer_id))->first();
                     if ($clientId == $viewer_id) {
@@ -1036,7 +1037,8 @@ class UserController extends Controller {
                     }
 
                     /*******Get user profile data************/
-                    $profile = User::with(['Profile','UserIdentity'])->where(array('id'=>$viewer_id))->first();
+                    $profile = User::with(['Profile','UserIdentity'=>function($q){ $q->groupBy('type')->select(DB::raw("user_id,type,GROUP_CONCAT(name) AS name")); }])->where(array('id'=>$viewer_id))->first();
+
                     if(count($profile))
                     {
                         $profile['Profile']['description'] = '';
@@ -1242,10 +1244,6 @@ class UserController extends Controller {
                         $Userdetails['User_Lookdate_Profile_Active'] = $check_user_lookdate_active;
                         
                         /*******Check invitation send to receiver by sender************/
-                        /*$chat_invitation = ChatModel::where(['user_id'=>$clientId,'chat_user_id'=>$viewer_id])->first();
-                        if ($chat_invitation) {
-                            $Userdetails['User_Invitation'] = $chat_invitation->toArray();
-                        }*/
                         $chat_invitation = ChatroomModel::where(function($q) use ($clientId,$viewer_id){
                             $q->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id]);
                           //  ->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId]);
@@ -1256,10 +1254,6 @@ class UserController extends Controller {
 
 
                         /*******Check invitation send to sender by receiver************/
-                        /*$chat_invitation_viewer = ChatModel::where(['user_id'=>$viewer_id,'chat_user_id'=>$clientId])->first();    
-                        if ($chat_invitation_viewer) {
-                            $Userdetails['Viewer_Invitation'] = $chat_invitation_viewer->toArray();
-                        }*/
                         $chat_invitation_viewer = ChatroomModel::where(function($q) use ($clientId,$viewer_id){
                             $q->OrWhere(['from_user'=>$viewer_id,'to_user'=>$clientId]);
                           //  ->OrWhere(['from_user'=>$clientId,'to_user'=>$viewer_id]);
@@ -1269,7 +1263,8 @@ class UserController extends Controller {
                         }
                         
                         /*******Check user identities of sender************/
-                        $user_his_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'his_identites'])->get();
+                        $user_his_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'his_identites'])->lists('name');
+                        
                         $identity_percent_permatch = $match_identity = 0;
                         if(count($user_his_identity))
                         {
@@ -1278,7 +1273,7 @@ class UserController extends Controller {
                         $match_identity = 0;
                         
                         /*******Check user identities of receiver************/
-                        $viewer_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'identity'])->get();
+                        $viewer_identity = UserIdentityModel::where(['user_id'=>$clientId,'type'=>'identity'])->lists('name');
                        
                         $identity = array();
                         $traits = array();
@@ -1286,26 +1281,315 @@ class UserController extends Controller {
                         $physicial_appearance = array();
                         $sextual_preferences = array();
                         $social_habits = array();
-
-                        if($user_his_identity && $viewer_identity)
-                            foreach ($user_his_identity as $key => $value) {
+                        
+                        if(count($user_his_identity) && count($viewer_identity))
+                        {
+                            $identity = array_intersect($user_his_identity->toArray(), $viewer_identity->toArray());
+                            if(count($identity))
+                            {
+                                $match_identity = count($identity);
+                            }
+                        }
+                            /*foreach ($user_his_identity as $key => $value) {
                                 foreach ($viewer_identity as $key1 => $value1) {
                                     if (trim(strtolower($value)) == trim(strtolower($value1))) {
                                         $match_identity++;
                                         $identity[] = trim($value);
                                     }
                                 }
+                            }*/
+
+                        $identity_percentage = round($identity_percent_permatch * $match_identity);
+
+                        if(isset($profile['UserIdentity']))
+                        {
+                            $ide =  $hisitde = '';
+                            foreach($profile['UserIdentity'] AS $k => $val)
+                            {
+                                if(isset($val->type) && $val->type == 'identity') 
+                                {
+                                    $ide = $val->name;
+                                }
+                                if(isset($val->type) && $val->type == 'his_identites') 
+                                {
+                                    $hisitde = $val->name;
+                                }
                             }
-                        
-                       $identity_percentage = round($identity_percent_permatch * $match_identity);
-                       
+                            $profile['profile']['identity'] = $ide;
+                            $profile['profile']['his_identitie'] = $hisitde;
+                        }
+
                         /*************User Itdentity*******************/
                         if(isset($type) && $type == 'looking_date')
                         {
+                            $lookdateuser = UserLooksexdateModel::with(['Userdatesextype'=>function($q){
+                                                    //  ->get(['lookdatesex_id','type','name']);
+                                                        $q->groupBy('type')
+                                                        ->select(DB::raw("lookdatesex_id,type,GROUP_CONCAT(name) AS name"));
+                                                   }])
+                                                   ->where(['user_id'=>$clientId,'look_type'=>'date'])->first();
+                            if(count($lookdateuser->Userdatesextype))
+                            {
+                                $my_interest = $his_traits = $his_physical_appearance = $his_sextual_preferences = $his_social_habits = '';
+                                $match_his_physical_appearance = $match_his_sextual_preferences = $match_his_social_habits = $match_interest = $match_traits = $his_physical_appearance_percent_permatch = $his_sextual_preferences_percent_permatch = $his_social_habits_percent_permatch = $interest_percent_permatch = $traits_percent_permatch = 0;
+                                foreach($lookdateuser->Userdatesextype AS $key => $val1)
+                                {
+                                    if($val1->type == 'his_physical_appearance')
+                                    {
+                                        $his_physical_appearance = explode(',', $val1->name);
+                                        $his_physical_appearance_percent_permatch = 100 / count($his_physical_appearance);
+                                    }
+                                    elseif($val1->type == 'his_sextual_preferences')
+                                    {
+                                        $his_sextual_preferences = explode(',', $val1->name);
+                                        $his_sextual_preferences_percent_permatch = 100 / count($his_sextual_preferences);
+                                    }
+                                    elseif($val1->type == 'his_social_habits')
+                                    {
+                                        $his_sextual_preferences = explode(',', $val1->name);
+                                        $his_social_habits_percent_permatch = 100 / count($his_social_habits);
+                                    }
+                                    elseif($val1->type == 'his_traits')
+                                    {
+                                        $his_traits = explode(',', $val1->name);
+                                        $traits_percent_permatch = 100 / count($his_traits);
+                                    }
+                                    elseif($val1->type == 'my_interest')
+                                    {
+                                        $my_interest = explode(',', $val1->name);
+                                        $interest_percent_permatch = 100 / count($my_interest);
+                                    }
+                                }
+                            }    
 
+
+                            $lookdateviewer = UserLooksexdateModel::with(['Userdatesextype'=>function($q){
+                                                    //  ->get(['lookdatesex_id','type','name']);
+                                                      $q->groupBy('type')
+                                                        ->select(DB::raw("lookdatesex_id,type,GROUP_CONCAT(name) AS name"));
+                                                   }])
+                                                   ->where(['user_id'=>$data['viewer_user_id'],'look_type'=>'date'])->first();
+                                                                               
+                            if(count($lookdateviewer->Userdatesextype))
+                            {
+                                $my_physical_appearance = $my_sextual_preferences = $my_social_habits = $my_interest_view = $my_traits = '';
+                                foreach($lookdateviewer->Userdatesextype AS $key => $val1)
+                                {
+                                    if($val1->type == 'my_physical_appearance')
+                                    {
+                                        $my_physical_appearance = explode(',', $val1->name);
+                                    }
+                                    elseif($val1->type == 'my_sextual_preferences')
+                                    {
+                                        $my_sextual_preferences = explode(',', $val1->name);
+                                    }
+                                    elseif($val1->type == 'my_social_habits')
+                                    {
+                                        $my_social_habits = explode(',', $val1->name);
+                                    }
+                                    elseif($val1->type == 'my_traits')
+                                    {
+                                        $my_traits = explode(',', $val1->name);
+                                    }
+                                    elseif($val1->type == 'my_interest')
+                                    {
+                                        $my_interest_view = explode(',', $val1->name);
+                                    }
+                                }
+                            }
+
+                            if(count($lookdateuser) && count($lookdateviewer))
+                            {
+                                $physicial_appearance = array_intersect($his_sextual_preferences, $his_sextual_preferences);
+                                if(count($physicial_appearance))
+                                {
+                                    $match_his_physical_appearance = count($physicial_appearance);
+                                }
+                                $Userdetails['physicial_appearance'] = implode(',', $physicial_appearance);
+                                $physical = round($his_physical_appearance_percent_permatch * $match_his_physical_appearance);
+
+
+                                $sextual_preferences = array_intersect($his_physical_appearance, $his_physical_appearance);
+                                if(count($sextual_preferences))
+                                {
+                                    $match_his_sextual_preferences = count($sextual_preferences);
+                                }
+                                $Userdetails['sextual_preferences'] = implode(',', $sextual_preferences);
+                                $sextual = round($his_sextual_preferences_percent_permatch * $match_his_sextual_preferences);
+
+
+
+                                $social_habits = array_intersect($his_physical_appearance, $his_physical_appearance);
+                                if(count($social_habits))
+                                {
+                                    $match_his_social_habits = count($social_habits);
+                                }
+
+                                $Userdetails['social_habits'] = implode(',', $social_habits);
+                                $social_habits = round($his_social_habits_percent_permatch * $match_his_social_habits);
+
+
+                                $traits_percentage = array_intersect($his_traits, $my_traits);
+                                if(count($traits_percentage))
+                                {
+                                    $match_traits = count($traits_percentage);
+                                }
+
+
+                                $Userdetails['traits'] = implode(',', $traits_percentage);
+                                $traits_percentage = round($traits_percent_permatch * $match_traits);
+
+                                $interest = array_intersect($my_interest, $my_interest_view);
+                                if(count($interest))
+                                {
+                                    $match_interest = count($interest);
+                                }
+
+
+                                $Userdetails['interest'] = implode(',', $interest);
+                                $interest = round($interest_percent_permatch * $match_interest);
+                                
+                                $Userdetails['identity'] = implode(',', $identity);
+                            }
+                            else
+                            {
+                                $traits_percentage = $interest = $physical = $sextual = $social_habits = $identity_percentage = 0;
+                            }
+
+                            $overall_per_sum = ($traits_percentage + $interest + $physical + $sextual + $social_habits + $identity_percentage);
+                            if ($overall_per_sum > 0) {
+                                $Userdetails['Over_All_Percentage'] = round(($overall_per_sum * 100) / 600);
+                            } else {
+                                $Userdetails['Over_All_Percentage'] = 0;
+                            }
+                            $Userdetails['User'] = $profile;
+                                $Userdetails['Profile'] = $profile['Profile'];
+                                $Userdetails['Match_Persent'] = array(
+                                    'traits' => $traits_percentage,
+                                    'interest' => $interest,
+                                    'physical' => $physical,
+                                    'sextual' => $sextual,
+                                    'social_habits' => $social_habits,
+                                    'identity' => $identity_percentage
+                                );
                         }
                         else if(isset($type) && $type == 'looking_sex')
                         {
+                            $looksexuser = UserLooksexdateModel::with(['Userdatesextype'=>function($q){
+                                                    $q->whereIn('type',['his_physical_appearance','his_sextual_preferences','his_social_habits'])
+                                                    //  ->get(['lookdatesex_id','type','name']);
+                                                        ->groupBy('type')
+                                                        ->select(DB::raw("lookdatesex_id,type,GROUP_CONCAT(name) AS name"));
+                                                   }])
+                                                   ->where(['user_id'=>$clientId,'look_type'=>'sex'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->first();
+                            if(count($looksexuser->Userdatesextype))
+                            {
+                                $his_physical_appearance = $his_sextual_preferences = $his_social_habits = '';
+                                $match_his_physical_appearance = $match_his_sextual_preferences = $match_his_social_habits = $his_physical_appearance_percent_permatch = $his_sextual_preferences_percent_permatch = $his_social_habits_percent_permatch = 0;
+                                foreach($looksexuser->Userdatesextype AS $key => $val1)
+                                {
+                                    if($val1->type == 'his_physical_appearance')
+                                    {
+                                        $his_physical_appearance = explode(',', $val1->name);
+                                        $his_physical_appearance_percent_permatch = 100 / count($his_physical_appearance);
+                                    }
+                                    elseif($val1->type == 'his_sextual_preferences')
+                                    {
+                                        $his_sextual_preferences = explode(',', $val1->name);
+                                        $his_sextual_preferences_percent_permatch = 100 / count($his_sextual_preferences);
+                                    }
+                                    elseif($val1->type == 'his_social_habits')
+                                    {
+                                        $his_sextual_preferences = explode(',', $val1->name);
+                                        $his_social_habits_percent_permatch = 100 / count($his_social_habits);
+                                    }
+                                }
+                            }    
+
+
+                            $looksexviewer = UserLooksexdateModel::with(['Userdatesextype'=>function($q){
+                                                    $q->whereIn('type',['my_physical_appearance','my_sextual_preferences','my_social_habits'])
+                                                    //  ->get(['lookdatesex_id','type','name']);
+                                                        ->groupBy('type')
+                                                        ->select(DB::raw("lookdatesex_id,type,GROUP_CONCAT(name) AS name"));
+                                                   }])
+                                                   ->where(['user_id'=>$data['viewer_user_id'],'look_type'=>'sex'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->first();
+                                                                               
+                            if(count($looksexviewer->Userdatesextype))
+                            {
+                                $my_physical_appearance = $my_sextual_preferences = $my_social_habits = '';
+                                foreach($looksexviewer->Userdatesextype AS $key => $val1)
+                                {
+                                    if($val1->type == 'my_physical_appearance')
+                                    {
+                                        $my_physical_appearance = explode(',', $val1->name);
+                                    }
+                                    elseif($val1->type == 'my_sextual_preferences')
+                                    {
+                                        $my_sextual_preferences = explode(',', $val1->name);
+                                    }
+                                    elseif($val1->type == 'my_social_habits')
+                                    {
+                                        $my_social_habits = explode(',', $val1->name);
+                                    }
+                                }
+                            }
+
+                            if(count($looksexuser) && count($looksexviewer))
+                            {
+                                $physicial_appearance = array_intersect($his_sextual_preferences, $his_sextual_preferences);
+                                if(count($physicial_appearance))
+                                {
+                                    $match_his_physical_appearance = count($physicial_appearance);
+                                }
+                                $Userdetails['physicial_appearance'] = implode(',', $physicial_appearance);
+                                $physical = round($his_physical_appearance_percent_permatch * $match_his_physical_appearance);
+
+
+                                $sextual_preferences = array_intersect($his_physical_appearance, $his_physical_appearance);
+                                if(count($sextual_preferences))
+                                {
+                                    $match_his_sextual_preferences = count($sextual_preferences);
+                                }
+                                $Userdetails['sextual_preferences'] = implode(',', $sextual_preferences);
+                                $sextual = round($his_sextual_preferences_percent_permatch * $match_his_sextual_preferences);
+
+
+
+                                $social_habits = array_intersect($his_physical_appearance, $his_physical_appearance);
+                                if(count($social_habits))
+                                {
+                                    $match_his_social_habits = count($social_habits);
+                                }
+
+                                $Userdetails['social_habits'] = implode(',', $social_habits);
+                                $social_habits = round($his_social_habits_percent_permatch * $match_his_social_habits);
+                                
+                                $Userdetails['identity'] = implode(',', $identity);
+                            }
+                            else
+                            {
+                                $physical = $sextual = $social_habits = $identity_percentage = 0;
+                            }
+
+                            $overall_per_sum = ($physical + $sextual + $social_habits + $identity_percentage);
+                            if ($overall_per_sum > 0) {
+                                $Userdetails['Over_All_Percentage'] = round(($overall_per_sum * 100) / 400);
+                            } else {
+                                $Userdetails['Over_All_Percentage'] = 0;
+                            }
+
+                            $Userdetails['User'] = $profile;
+                            $Userdetails['Profile'] = $profile['Profile'];
+                            //Aded by mahadev //
+                            $Userdetails['Profile']['where_I_leave'] = $profile['profile']['where_I_leave'];
+                            $Userdetails['Profile']['about_me'] = $profile['profile']['about_me'];
+                            $Userdetails['Match_Persent'] = array(
+                                'physical' => $physical,
+                                'sextual' => $sextual,
+                                'social_habits' => $social_habits,
+                                'identity' => $identity_percentage
+                            );
 
                         }  /******End*******/
                         else
@@ -1332,14 +1616,11 @@ class UserController extends Controller {
                     }
                 }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;    
         }    
-
-          
-
         return response()->json($response,$http_status);
     }
 
@@ -1397,7 +1678,7 @@ class UserController extends Controller {
                 $response['message'] = 'user id  and type  should not blank';
                 $http_status = 400;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400; 
@@ -1487,7 +1768,7 @@ class UserController extends Controller {
                 }
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -1634,9 +1915,7 @@ class UserController extends Controller {
                 $response['message'] = 'Success';
                 $http_status = 200;
             }
-
-
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -1792,7 +2071,7 @@ class UserController extends Controller {
 
                             $common->sentNotification($device_token,$userdetails->device_type,$msg,$notification);
 
-                        } catch (Exception $e) {
+                        } catch (\Exception $e) {
                             $response['success'] = 0;
                             $response['message'] = 'Invaid device token.';
                             $http_status = 400;
@@ -1812,7 +2091,7 @@ class UserController extends Controller {
             }
 
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -1891,7 +2170,7 @@ class UserController extends Controller {
             }
 
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -1983,7 +2262,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }
             } 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2069,7 +2348,7 @@ class UserController extends Controller {
                     }
                 }  
             }    
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2217,7 +2496,7 @@ class UserController extends Controller {
                 }
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2557,7 +2836,7 @@ class UserController extends Controller {
                 }
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2616,7 +2895,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }
             } 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2651,7 +2930,7 @@ class UserController extends Controller {
                 $response['success'] = 0;
                 $http_status = 400;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2715,7 +2994,7 @@ class UserController extends Controller {
                         $http_status = 400;
                     }
                 }   
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2760,7 +3039,7 @@ class UserController extends Controller {
                 $http_status = 400;
             }
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $response['message']    = $e->getMessage();
                 $response['success']     = 0;
                 $http_status = 400;
@@ -2827,7 +3106,7 @@ class UserController extends Controller {
                 }  
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;
@@ -2888,7 +3167,7 @@ class UserController extends Controller {
                         $http_status = 400;  
                     }
                 }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['message'] = $e->getMessage();
             $response['success'] = 0;
             $http_status = 400;  
@@ -3039,7 +3318,7 @@ class UserController extends Controller {
             $response['data'] = $data;
             $response['success'] = 1;
             $response['data'] = 200;    
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 1;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -3199,7 +3478,7 @@ class UserController extends Controller {
                         }
                     }
                 } 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -3414,7 +3693,7 @@ class UserController extends Controller {
                     }
                      
                 }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
            $response['success'] = 0;
             $response['message'] = $e->getMessage();
             $http_status = 400; 
@@ -3518,7 +3797,7 @@ class UserController extends Controller {
                         $query1->where(['from_user'=>$clientId])
                         ->orderBy('created_at','DESC');
                 })
-                ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+                ->with(['ChatFromUser','ChatToUser','Profile','Userpartner','UserIdentity'])
                 ->where(['registration_status'=>3]);
                 
                 if(!empty($favoriteId))
@@ -3688,7 +3967,7 @@ class UserController extends Controller {
                 $response['data'] = $data1;   
                 $http_status = 400;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -3736,7 +4015,7 @@ class UserController extends Controller {
                 $http_status = 200;
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -3909,7 +4188,7 @@ class UserController extends Controller {
             $http_status = 200;
            
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 0;
             $response['messsage'] = $e->getMessage();
             $http_status = 400;
@@ -4091,7 +4370,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 1;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4129,7 +4408,7 @@ class UserController extends Controller {
                 $response['data'] = $archive;
                 $http_status = 400;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success'] = 0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4184,7 +4463,7 @@ class UserController extends Controller {
                 }
             }  
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             $response['success'] = 0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4229,7 +4508,7 @@ class UserController extends Controller {
                 $http_status = 400;   
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4293,7 +4572,7 @@ class UserController extends Controller {
                 $response['message'] = 'Failure';
                 $http_status = 400;   
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4399,7 +4678,7 @@ class UserController extends Controller {
                     }
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4434,7 +4713,7 @@ class UserController extends Controller {
                 $http_status = 400;
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4498,7 +4777,7 @@ class UserController extends Controller {
                     }
 
                 }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4563,7 +4842,7 @@ class UserController extends Controller {
                     }
 
                 }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4620,7 +4899,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;   
@@ -4671,7 +4950,7 @@ class UserController extends Controller {
                 $http_status = 400;
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4741,7 +5020,7 @@ class UserController extends Controller {
                 }
 
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4780,7 +5059,7 @@ class UserController extends Controller {
                 $http_status = 400;
            }
             
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4826,7 +5105,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4896,7 +5175,7 @@ class UserController extends Controller {
                 $http_status = 400;   
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4967,7 +5246,7 @@ class UserController extends Controller {
                 $http_status = 400;   
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
@@ -4975,7 +5254,14 @@ class UserController extends Controller {
         return response()->json($response,$http_status);
     }
 
-    public function getUseProfileLooksex(request $request,Repositary $common)
+    /**
+     * Name: getUseProfileLooksex
+     * Purpose: function for list of looking users
+     * created By: Lovepreet
+     * Created on :- 10 Oct 2017
+     *
+     **/
+    public function postUseProfileLooksex(request $request,Repositary $common)
     {
         try {
             $validator = Validator::make( $request->all()  ,      [
@@ -5024,7 +5310,7 @@ class UserController extends Controller {
                 $limit = $limit - 1;
                 //=========End================//
 
-                $checklookingSex = UserLooksexdateModel::where(['id'=>$data['id']])->first();
+                $checklookingSex = UserLooksexdateModel::where(['id'=>$data['id'],'look_type'=>'sex'])->first();
                 if(count($checklookingSex))
                 {
                     /*                 * *******userlook date profile ************* */
@@ -5080,6 +5366,10 @@ class UserController extends Controller {
                         $count_sharealbum = $common->count_sharealbum($clientId);
                         $total_view_and_share = $count_view + $count_sharealbum;
                         /*             * ******End********* */
+
+                        /*                 * *****check profile active ********* */
+                        $is_profile_active = $common->check_profile_active($current_date, $clientId);
+                        /*                 * ********END***************** */
                         
                         foreach ($user_data as $key => $value) {
                             $percentage = 0;
@@ -5166,7 +5456,240 @@ class UserController extends Controller {
                                         $percentage = 0;
                                     }
                                     $loggedInUser[$key1]['percentage'] = $percentage ;
-                                    
+                                }
+
+                                if(!empty($value1->last_seen))
+                                {
+                                    $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
+                                }
+                                else
+                                {
+                                    $loggedInUser[$key1]['last_seen'] = 2;
+                                }
+                                $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
+                                $accuracy_value[] = $value1['accuracy'];
+                            }
+
+                            if(count($loggedInUser) > 0)
+                            {
+                                $UserData = $loggedInUser->toArray();
+                            }
+
+                            if(count($user_data) > 0)
+                            {
+                                $UserData1    = $user_data->toArray();
+                            }
+                        }
+
+                        /********End******** */
+                        
+                        $user_data = array_merge($UserData,$UserData1); 
+
+                        $user_data = array_values(array_map("unserialize", array_unique(array_map("serialize", $user_data))));
+
+                        /********Get Maximum accuracy for the users.******** */
+                        if(count($accuracy_value))
+                        {
+                           $accuracy_max_value = (int) max($accuracy_value);
+                        }
+                        /********End******** */
+                        /********for give user looksex data******** */
+                        $user_looksexdata = array();
+                        $user_looksex = UserLooksexdateModel::where([
+                                                                    'user_id'=>$clientId,
+                                                                    'look_type'=>'sex'])
+                                                                ->where('start_time','<=',$current_date)
+                                                                ->where('end_time','>=',$current_date)
+                                                                ->first();
+                        if(count($user_looksex))
+                        {
+                            $user_looksexdata = $user_looksex;
+                            $is_profile_active = 1;
+                        }       
+                        else
+                        {
+                            $is_profile_active =0;
+                        }
+                        //***************END***************//
+
+                        $response['success'] = 1;
+                        $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data,'filter_cache'=>$filter_cache];
+                        $http_status = 200;   
+                        $d1 = $response['data'];
+                    }
+                    else
+                    {
+                        $response['success'] = 0;
+                        $response['message'] = ['data not found'];
+                        $http_status = 400;
+                    }
+                }     
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = ['data not found'];
+                    $http_status = 400;
+                }      
+            }
+        } catch (\Exception $e) {
+            $response['success']=0;
+            $response['message'] = $e->getMessage();
+            $http_status = 400;
+        }
+
+        return response()->json($response,$http_status);
+    }
+
+    /**
+     * Name: getUseProfileLooksex
+     * Purpose: function for list of looking users
+     * created By: Lovepreet
+     * Created on :- 10 Oct 2017
+     *
+     **/
+    public function postUseProfileLookdate(request $request,Repositary $common)
+    {
+        try {
+            $validator = Validator::make( $request->all()  ,      [
+                'id' => 'required'
+                ],
+                [
+                    'id.required' => 'Please enter id.'
+                ]);
+            if ($validator->fails()) {
+                $response['errors']     = $validator->errors();
+                $response['success']        = 0;
+                $http_status = 422;
+            }
+            else
+            {
+                $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $data = $request->all();
+                $current_date = Carbon::now();
+                $is_view = $is_share = $is_profile_active = $total_unread_message =  0;
+                $filter_cache =[];
+                $block_id = [];
+                $type = isset($data['type'])?$data['type']:''; 
+                $user =User::where('status','!=',0)->where('role',2);
+                $user2 =User::where('status','!=',0)->where('role',2);              
+                /******Blocked User********/
+                $block_user_id = BlockUserModel::where(function($q) use ($clientId){
+                    $q->orWhere(array('blocked_id'=>$clientId))
+                      ->orWhere(array('user_id'=>$clientId))
+                      ->select('id');
+                })
+                ->select('id','user_id','blocked_id')
+                ->get();
+
+                foreach($block_user_id As $k =>$value)
+                {
+                    if($value['user_id']==$clientId)
+                        $block_id[] = $value['blocked_id'];
+
+                    if($value['blocked_id'] == $clientId)
+                        $block_id[] = $value['user_id'];
+                }
+                /******End********/
+
+                //======get limit for free user or paid user==//
+                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
+                $limit = $limit - 1;
+                //=========End================//
+
+                $checklookingdate = UserLooksexdateModel::where(['id'=>$data['id'],'look_type'=>'date'])->first();
+                if(count($checklookingdate))
+                {
+                    /*                 * *******userlook date profile ************* */
+                    $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where(['user_id'=>$clientId,'look_type'=>'date'])->first();
+                    /*                 * ********End************** */
+
+                    /******Get result for all User with chat, profile of user********/
+                    $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser'=>function($q3) use ($clientId){
+                        $q3->where(['from_user'=>$clientId]);
+                    },'ChatToUser'=>function($q4) use ($clientId){
+                        $q4->where(['to_user'=>$clientId]);
+                    },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                              $q1->where(['look_type'=>'date']); 
+                          }])
+                                 ->where(['registration_status'=>3])
+                                 ->whereNotIn('id',$block_id)
+                                        //->where('id','!=',$clientId)
+                                 ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+
+                            $user_data = $user->limit($limit)
+                            ->orderBy('distance','ASC')
+                            ->get();     
+
+                    $total_unread_message = 0;
+                    
+                    /*                 * ********End*********** */
+                    //***************for filter chache**********//
+                    $if_exist_save_filter = MatchFilterModel::where(['user_id'=>$clientId,'type'=>'dating'])->first();
+                        if ($if_exist_save_filter) {
+                            $filter_cache = $if_exist_save_filter;
+                        }
+                    /*                 * ********End*********** */
+                        
+                    $UserData = array();  
+                    $UserData1 = array();  
+
+
+                    /********If count greaterthen zreo then successfull message can be done otherwise error message display*********/
+                    if(count($user_data)) {
+
+                        /********check any one view my profile*********/
+                        $is_view = $common->check_view($clientId);
+                        /*             * ******End********* */
+
+                        /********check any one share album with me*********/
+                        $is_share = $common->check_sharealbum($clientId);
+                        /*             * ******End********* */
+
+                        /********count total user view my profile*********/
+                        $count_view = $common->count_view($clientId);
+                        /*             * ******End********* */
+
+                        /********count total user share album with me*********/
+                        $count_sharealbum = $common->count_sharealbum($clientId);
+                        $total_view_and_share = $count_view + $count_sharealbum;
+                        /*             * ******End********* */
+                        
+                        foreach ($user_data as $key => $value) {
+                            if(!empty($value->last_seen))
+                            {
+                                $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+                            }
+                            else
+                            {
+                                $user_data[$key]['last_seen'] = 2;
+                            }
+                            $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
+                             $accuracy_value[] = $value['accuracy'];
+                        }
+
+                        /********End******** */
+
+                        /********Calculate Distance between login user and another user ******** */
+                        $arrKey = '';
+                        if($user_data)
+                        {
+                             $arrKey = in_array($clientId, array_column($user_data->toArray(), 'id'));   
+                        }
+                        $loggedInUser = [];
+                        if($arrKey)
+                        {
+                            
+                            $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+                                             $q1->where(['look_type'=>'date']); 
+                                            }])
+                                                ->where(['id'=>$clientId])
+                                                ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+                            
+                            $loggedInUser = $loggedInUser->get();
+                            if(count($loggedInUser)>0)
+                            {
+                                foreach($loggedInUser As $key1 => $value1)
+                                {
                                     if(!empty($value1->last_seen))
                                     {
                                         $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
@@ -5176,9 +5699,8 @@ class UserController extends Controller {
                                         $loggedInUser[$key1]['last_seen'] = 2;
                                     }
                                     $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
-                                } 
-
-                                $accuracy_value[] = $value1['accuracy'];
+                                    $accuracy_value[] = $value1['accuracy'];
+                                }
                                 
                             }
 
@@ -5243,7 +5765,7 @@ class UserController extends Controller {
                     $http_status = 400;
                 }      
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;

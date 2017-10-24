@@ -140,8 +140,8 @@ class AuthController extends Controller {
           
           if ($validator->fails()) {
               $response['errors']   = $validator->errors();
-              
-              $response['status']   = 0;
+              $response['success']   = 0;
+              $http_status = 422;
             }else{
             if(User::where(['id'=>JWTAuth::parseToken()->authenticate()->id])->update(['online_status'=>2]))
             {
@@ -160,8 +160,7 @@ class AuthController extends Controller {
             $response['message'] = $e->getMessage();
             $response['success'] = 0;
             $http_status = 400;  
-       } 
-     
-      return response()->json($response);
+       }      
+       return response()->json($response,$http_status);
     }
 }
