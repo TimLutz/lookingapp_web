@@ -70,10 +70,6 @@ $app->get('/', function () use ($app) {
     $app->post('profile_viewed_details','UserController@getProfileViewedDetails');
     $app->post('use_profile_looksex','UserController@postUseProfileLooksex');
     $app->post('use_profile_lookdates','UserController@postUseProfileLookdate');
+    $app->post('profile_details','UserController@postProfileDetail');
+    $app->get('payment_details','UserController@getPaymentDetails');
 });
-
-
-
-
-
-

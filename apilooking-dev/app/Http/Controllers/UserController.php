@@ -20,6 +20,7 @@ use App\Models\UseralbumModel;
 use App\Models\PhraseModel; 
 use App\Models\FlagModel;   
 use App\Models\Page; 
+use App\Models\SubcriptionModel; 
 use App\Models\EmailTemplate;
 use JWTAuth;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class UserController extends Controller {
 	protected $hashKey;
 	
 	public function __construct(Request $request){
-       // print_r($request->header()); die('here');
+      //  print_r($request->header()); die('here');
        /* PushNotification::app(['environment' => 'development',
         'certificate' => base_path()."/public/apns_cert/pushcert.pem",
         'passPhrase'  => '123456',
@@ -59,7 +60,11 @@ class UserController extends Controller {
                 ->send('Testing lokinghfghfgh'); die;*/
       $this->middleware('jwt.auth', ['except' => ['postLogin','ForgetPassword','getTermsAndCondition']]);
 
-      User::where(['id'=>JWTAuth::parseToken()->authenticate()->id])->update(['last_seen'=>Carbon::now()]);
+      $headerAuth = $request->header('Authorization');
+      if($headerAuth)
+      {
+        User::where(['id'=>JWTAuth::parseToken()->authenticate()->id])->update(['last_seen'=>Carbon::now()]);
+      }
     }
     
      /**
@@ -3319,7 +3324,7 @@ class UserController extends Controller {
             $data =  view('pages.termsandconditions',compact('content'))->render();
             $response['data'] = $data;
             $response['success'] = 1;
-            $response['data'] = 200;    
+            $http_status = 200;    
         } catch (\Exception $e) {
             $response['success'] = 1;
             $response['message'] = $e->getMessage();
@@ -5787,21 +5792,132 @@ class UserController extends Controller {
         return response()->json($response,$http_status);
     }
 
-    /*public function postProfileDetail(Request $request)
+    /**
+     * Name: postProfileDetail
+     * Purpose: function for profile detail of current details.
+     * created By: Lovepreet
+     * Created on :- 25 Oct 2017
+     *
+     **/
+    public function postProfileDetail(Request $request)
     {
         try {
             $clientId = JWTAuth::parseToken()->authenticate()->id;
             $user_data = User::with('Profile','Userpartner')
-
-            $this->User->unbindModel(array('hasMany' => array('BlockedUser')));
-            $user_data = $this->User->find('first', array('conditions' => array('User.id' => $this->request->data['userid'])));
-            echo json_encode(array('success' => 1, 'data' => $user_data, 'path' => PIC_PATH));
+                        ->where(['id'=>$clientId])
+                        ->first();
+            if(count($user_data))
+            {
+                $response['success'] = 1;
+                $response['data'] =  ['user' => $user_data];
+                $http_status = 200;   
+            }   
+            else
+            {
+                $response['success'] = 0;
+                $response['message'] = ['data not found'];
+                $http_status = 400;
+            }
         } catch (\Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
         }
         return response()->json($response,$http_status);
-    }*/
+    }
 
+
+    /**
+     * Name: getPaymentDetails
+     * Purpose: function for get detail of user and subscription.
+     * created By: Lovepreet
+     * Created on :- 25 Oct 2017
+     *
+     **/
+    public function getPaymentDetails(Request $request) {
+        try {
+            $clientId = JWTAuth::parseToken()->authenticate()->id;
+            $subscriptions_arr = [];
+            $login_user = User::with(['Profile','Userpartner'])->where(['id'=>$clientId])->get();
+            $subscriptions = SubcriptionModel::orderBy('month','ASC')->get();
+            if(count($subscriptions)>0)
+            {
+                $subscriptions_arr = $subscriptions->toArray();
+            }
+
+            $response['success'] = 1;
+            $response['success'] = 'success';
+            $response['data'] = ['server_time_zone'=>Carbon::now()->timezoneName,'subscription'=>$subscriptions_arr,'login_user'=>$login_user];
+            $http_status = 200;
+        } catch (\Exception $e) {
+            $response['success']=0;
+            $response['message'] = $e->getMessage();
+            $http_status = 400;
+        }
+        return response()->json($response,$http_status);
+    }
+
+    /*public function payment_success() {
+        try {
+            $validator = Validator::make( $request->all()  ,      [
+                'payment_for' => 'required',
+                'amount'=>'required',
+                'month'=>'required'
+            ],
+            [
+                'payment_for.required' => 'Payment for should not be blank.',
+                'amount.required'    => 'Amount should not be blank.',
+                'month.required'   => 'Month should not be blank.'  
+            ]);
+            if ($validator->fails()) {
+                $response['errors']     = $validator->errors();
+                $response['success']        = 422;
+            }else{
+                $clientId = JWTAuth::parseToken()->authenticate()->id;
+
+            }
+        } catch (Exception $e) {
+            $response['success']=0;
+            $response['message'] = $e->getMessage();
+            $http_status = 400;
+        }
+
+        $this->autoRender = false;
+        $user_id = isset($this->request->data['user_id']) ? trim($this->request->data['user_id']) : "";
+        $payment_for = isset($this->request->data['payment_for']) ? trim($this->request->data['payment_for']) : ""; //Payment for subscription or remove add(1=>subscription 2=>removeadd)
+        $amount = isset($this->request->data['amount']) ? trim($this->request->data['amount']) : "";
+        $month = isset($this->request->data['month']) ? trim($this->request->data['month']) : ""; //pay for how many month 
+        //$data = isset($this->request->data['all_data'])?trim($this->request->data['all_data']):"";
+        if ($user_id == '') {
+            $json_msg = array('success' => 0, 'msg' => 'Not a valid user.Please login again.');
+            echo json_encode($json_msg);
+            exit;
+        } else if ($amount == '') {
+            $json_msg = array('success' => 0, 'msg' => 'Amount should not be blank.');
+            echo json_encode($json_msg);
+            exit;
+        } else if ($payment_for == '') {
+            $json_msg = array('success' => 0, 'msg' => 'Payment for should not be blank.');
+            echo json_encode($json_msg);
+            exit;
+        } else if ($month == '') {
+            $json_msg = array('success' => 0, 'msg' => 'Month should not be blank.');
+            echo json_encode($json_msg);
+            exit;
+        }
+        $login_user = $this->User->find('first', array('conditions' => array('User.id' => $user_id)));
+        if (date('Y-m-d', strtotime($login_user['User']['valid_upto'])) > date('Y-m-d')) {
+            $valid_upto = date('Y-m-d', strtotime('+' . $month . 'month', strtotime($login_user['User']['valid_upto'])));
+        } else {
+            $valid_upto = date('Y-m-d', strtotime('+' . $month . 'month', strtotime(date('Y-m-d'))));
+        }
+        if ($payment_for == 1) {
+            $this->User->updateAll(array('User.is_trial' => 0, 'User.member_type' => 1, 'User.valid_upto' => "'" . $valid_upto . "'"), array('User.id' => $user_id));
+        } else {
+            $this->User->updateAll(array('User.removead' => 1, 'User.removead_valid_upto' => "'" . $valid_upto . "'"), array('User.id' => $user_id));
+        }
+        $json_msg = array('success' => 1, 'msg' => 'Payment successfully completed.', 'valid_upto' => date('Y-m-d H:i:s', strtotime($valid_upto)));
+        echo json_encode($json_msg);
+        exit;
+    }*/
 }
