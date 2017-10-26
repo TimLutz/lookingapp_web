@@ -86,8 +86,9 @@ class UserController extends Controller {
                     'email.exists'   =>  'Email doesn`t exist in the our record.'  
                 ]);
                 if ($validator->fails()) {
-                    $response['errors']     = $validator->errors();
-                    $response['success']        = 422;
+                    $response['success']   = 0;
+                    $response['errors']   = $validator->errors();
+                    $http_status=422;
                 }else{
                     $user=User::where(['email'=>$request->input('email'),'role'=>2])->first();
                     if(!$user){
@@ -5857,7 +5858,14 @@ class UserController extends Controller {
         return response()->json($response,$http_status);
     }
 
-    /*public function payment_success() {
+    /**
+     * Name: postPaymentSuccess
+     * Purpose: function for Update the user detail.
+     * created By: Lovepreet
+     * Created on :- 25 Oct 2017
+     *
+     **/
+    public function postPaymentSuccess(Request $request) {
         try {
             $validator = Validator::make( $request->all()  ,      [
                 'payment_for' => 'required',
@@ -5870,54 +5878,122 @@ class UserController extends Controller {
                 'month.required'   => 'Month should not be blank.'  
             ]);
             if ($validator->fails()) {
-                $response['errors']     = $validator->errors();
-                $response['success']        = 422;
+                $response['success']   = 0;
+                $response['errors']   = $validator->errors();
+                $http_status=422;
             }else{
-                $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $data = $request->all();
 
+                $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $user = User::where(['id'=>$clientId])->first();
+                if(count($user))
+                {
+                    if(Carbon::now()->parse(JWTAuth::parseToken()->authenticate()->valid_upto) >Carbon::now())
+                    {
+                        $valid_upto = Carbon::now()->parse(JWTAuth::parseToken()->authenticate()->valid_upto)->addMonths($data['month']);
+                    }
+                    else
+                    {
+                        $valid_upto = Carbon::now()->addMonths($data['month']);
+                    }
+
+                    if($data['payment_for'] == 1)
+                    {
+                        if($user->update(['is_trial'=>0,'member_type'=>1,'valid_upto'=>$valid_upto]))
+                        {
+                            $response['success'] = 1;
+                            $response['message'] = 'Success';
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'Faliure';
+                            $http_status = 400;
+                        }
+                    }
+                    else
+                    {
+                        if($user->update(['removead'=>1,'removead_valid_upto'=>$valid_upto]))
+                        {
+                            $response['success'] = 1;
+                            $response['message'] = 'Success';
+                            $http_status = 200;
+                        }
+                        else
+                        {
+                            $response['success'] = 0;
+                            $response['message'] = 'Faliure';
+                            $http_status = 400;
+                        }
+                    }
+                }
+                else
+                {
+                    $response['success'] = 0;
+                    $response['message'] = 'No data found.';
+                    $http_status = 400;
+                }
             }
         } catch (Exception $e) {
             $response['success']=0;
             $response['message'] = $e->getMessage();
             $http_status = 400;
         }
+        return response()->json($response,$http_status);
+    }
 
-        $this->autoRender = false;
-        $user_id = isset($this->request->data['user_id']) ? trim($this->request->data['user_id']) : "";
-        $payment_for = isset($this->request->data['payment_for']) ? trim($this->request->data['payment_for']) : ""; //Payment for subscription or remove add(1=>subscription 2=>removeadd)
-        $amount = isset($this->request->data['amount']) ? trim($this->request->data['amount']) : "";
-        $month = isset($this->request->data['month']) ? trim($this->request->data['month']) : ""; //pay for how many month 
-        //$data = isset($this->request->data['all_data'])?trim($this->request->data['all_data']):"";
-        if ($user_id == '') {
-            $json_msg = array('success' => 0, 'msg' => 'Not a valid user.Please login again.');
-            echo json_encode($json_msg);
-            exit;
-        } else if ($amount == '') {
-            $json_msg = array('success' => 0, 'msg' => 'Amount should not be blank.');
-            echo json_encode($json_msg);
-            exit;
-        } else if ($payment_for == '') {
-            $json_msg = array('success' => 0, 'msg' => 'Payment for should not be blank.');
-            echo json_encode($json_msg);
-            exit;
-        } else if ($month == '') {
-            $json_msg = array('success' => 0, 'msg' => 'Month should not be blank.');
-            echo json_encode($json_msg);
-            exit;
+    /**
+     * Name: postStopCurrentSearch
+     * Purpose: function for stop the current profile.
+     * created By: Lovepreet
+     * Created on :- 25 Oct 2017
+     *
+     **/
+    public function postStopCurrentSearch(Request $request) {
+        try {
+            $validator = Validator::make( $request->all()  ,      [
+                'id' => 'required'
+            ],
+            [
+                'id.required' => 'Profile id not be blank.' 
+            ]);
+            if ($validator->fails()) {
+                $response['success']   = 0;
+                $response['errors']   = $validator->errors();
+                $http_status=422;
+            }else{
+                $clientId = JWTAuth::parseToken()->authenticate()->id;
+                $data = $request->all();
+                $if_exist_profile = UserLooksexdateModel::where(['user_id'=>$clientId,'id'=>$data['id'],'look_type'=>'sex'])->first();
+
+                if(count($if_exist_profile))
+                {
+                  if($if_exist_profile->update(['end_time'=>Carbon::now()->addMinutes(-1)]))
+                  {
+                    $response['success'] = 1;
+                    $response['message'] = 'success';
+                    $http_status = 200;
+                  }
+                  else
+                  {
+                    $response['success'] = 2;
+                    $response['message'] = 'unable to update';
+                    $http_status = 400;
+                  }
+                }
+                else
+                {
+                  $response['success'] = 3;
+                  $response['message'] = 'profile not exists';
+                  $http_status = 400;
+                }
+            }
+        } catch (Exception $e) {
+          $response['success']=0;
+          $response['message'] = $e->getMessage();
+          $http_status = 400;
         }
-        $login_user = $this->User->find('first', array('conditions' => array('User.id' => $user_id)));
-        if (date('Y-m-d', strtotime($login_user['User']['valid_upto'])) > date('Y-m-d')) {
-            $valid_upto = date('Y-m-d', strtotime('+' . $month . 'month', strtotime($login_user['User']['valid_upto'])));
-        } else {
-            $valid_upto = date('Y-m-d', strtotime('+' . $month . 'month', strtotime(date('Y-m-d'))));
-        }
-        if ($payment_for == 1) {
-            $this->User->updateAll(array('User.is_trial' => 0, 'User.member_type' => 1, 'User.valid_upto' => "'" . $valid_upto . "'"), array('User.id' => $user_id));
-        } else {
-            $this->User->updateAll(array('User.removead' => 1, 'User.removead_valid_upto' => "'" . $valid_upto . "'"), array('User.id' => $user_id));
-        }
-        $json_msg = array('success' => 1, 'msg' => 'Payment successfully completed.', 'valid_upto' => date('Y-m-d H:i:s', strtotime($valid_upto)));
-        echo json_encode($json_msg);
-        exit;
-    }*/
+        return response()->json($response,$http_status);
+    }
 }

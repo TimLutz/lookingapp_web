@@ -72,4 +72,6 @@ $app->get('/', function () use ($app) {
     $app->post('use_profile_lookdates','UserController@postUseProfileLookdate');
     $app->post('profile_details','UserController@postProfileDetail');
     $app->get('payment_details','UserController@getPaymentDetails');
+    $app->post('payment_success','UserController@postPaymentSuccess');
+    $app->post('stop_current_search','UserController@postStopCurrentSearch');
 });
