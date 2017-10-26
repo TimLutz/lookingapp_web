@@ -3694,10 +3694,10 @@ class UserController extends Controller {
                         $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
                         $http_status = 200;
                     } else {
-                        $response['success'] = 1;
+                        $response['success'] = 0;
                         $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
                         $response['message'] =  'No record found';
-                        $http_status = 200;
+                        $http_status = 400;
                     }
                      
                 }
@@ -3846,7 +3846,7 @@ class UserController extends Controller {
                                   $looksex_check_invite_user_id[] = $lookuser;
                               }
                             }
-                            
+
                             $query1->whereIn('users.id',$looksex_check_invite_user_id);
                         }
                         $query1->where(['from_user'=>$clientId]);
@@ -3872,28 +3872,6 @@ class UserController extends Controller {
                     $user=  $user->whereIn('id',$favoriteId);
                 } 
                 $user = $user->whereNotIn('id',$block_id);
-                /*if(isset($data['browse']) && $data['browse']=='looking')
-                {
-                    $user = $user->whereIn('id',$looksex_user_id);
-                }
-                elseif(isset($data['browse']) && $data['browse']=='dating')
-                {
-                    $lookdate_user_id = UserLooksexdateModel::where(['look_type'=>'date'])->lists('user_id');
-                    $looksex_check_invite_user_id = [];
-                    foreach ($looksex_user_id as $lookuser) {
-                      $chatuserinvite = ChatroomModel::where(function($q) use ($lookuser,$clientId))
-                      {
-                        $q->OrWhere(['from_user'=>$lookuser,'to_user'=>$clientId,'invite'=>1])
-                          ->OrWhere(['to_user'=>$lookuser,'from_user'=>$clientId,'invite'=>1]);
-                      }
-                        if (count($chatuserinvite)) {
-                            $looksex_check_invite_user_id[] = $lookuser;
-                        }
-                        //echo $lookuser;die;
-                    }
-
-                    $user = $user->whereIn('id',$looksex_check_invite_user_id);
-                }*/
                 $user_data = $user->get();
 
         /************* check user  alredy lock the view profile user ************ */
