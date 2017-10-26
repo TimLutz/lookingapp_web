@@ -1624,7 +1624,7 @@ class UserController extends Controller {
                     }
                 }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response['message']    = $e->getMessage();
             $response['success']     = 0;
             $http_status = 400;    

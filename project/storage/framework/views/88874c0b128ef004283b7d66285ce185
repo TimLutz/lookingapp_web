@@ -1,0 +1,35 @@
+<?php $__env->startSection('title'); ?>
+	Edit Page		
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('css'); ?>
+<link href="<?php echo e(asset('/css/editor.css')); ?>" type="text/css" rel="stylesheet"/>
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('heading'); ?>
+	Edit <?php echo e($page->name); ?> Page
+<?php $__env->stopSection(); ?>
+<?php $__env->startSection('content'); ?>
+<div class="row">
+	<div class="col-md-8">
+<?php echo $__env->make('errors.user_error', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+<?php echo $__env->make('flash::message', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+ <?php echo Form::model($page,['id' => 'add_template','method' => 'PATCH','url' => getenv('adminurl').'/pages/'.Crypt::encrypt($page->id) ]); ?>
+
+    <?php echo Form::hidden('action','edit'); ?>
+
+    <?php echo Form::hidden('pageid',$page->id); ?>
+
+    <?php echo $__env->make('admin.pages.form',['submitButtonText' => 'Update Page'], array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+    <?php echo Form::close(); ?>
+
+</div>
+</div>
+<?php $__env->stopSection(); ?>	
+<?php $__env->startSection('js'); ?>
+<!-- Alias JS -->
+<script src="<?php echo e(asset('/js/alias.js')); ?>"></script>
+<!----  Editor JS  ---->
+<script src="<?php echo e(asset('/js/editor.js')); ?>"></script>
+<script src="<?php echo e(asset('assets/dist/js/editor.js')); ?>" type="text/javascript"></script>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('admin.layout', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
