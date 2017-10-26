@@ -3763,15 +3763,18 @@ class UserController extends Controller {
                 $block_id[] = $value['user_id'];
         }
 
+        
         $looksex_user_id = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex'])->lists('user_id');
 
         if(count($looksex_user_id))
         {
             $looksex_user_id = $looksex_user_id->toArray();
         }
+
+//print_r($looksex_user_id); die;
         //pending looking sex and dating functionality
 
-        $user = User::whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite,$data){
+        $user = User::whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite,$data,$looksex_user_id){
                     if(!empty($sentInvite))
                     {
                         $query->where(['invite'=>1]);
@@ -3782,6 +3785,28 @@ class UserController extends Controller {
                         $query->where(['invite'=>1]);
                     }
 
+                    if(isset($data['browse']) && $data['browse']=='looking')
+                    {
+                        $query->whereIn('users.id',$looksex_user_id);
+                       // $query->whereRaw("users.id IN".$looksex_user_id);
+                    }  
+                    elseif(isset($data['browse']) && $data['browse']=='dating')
+                    {
+                        $lookdate_user_id = UserLooksexdateModel::where(['look_type'=>'date'])->lists('user_id');
+                        $looksex_check_invite_user_id = [];
+                        foreach($lookdate_user_id AS $key => $lookuser) 
+                        {
+                          $chatuserinvite = ChatroomModel::where(function($q) use ($lookuser,$clientId)
+                          {
+                            $q->OrWhere(['from_user'=>$lookuser,'to_user'=>$clientId,'invite'=>1])
+                              ->OrWhere(['to_user'=>$lookuser,'from_user'=>$clientId,'invite'=>1]);
+                          })->get();
+                          if (count($chatuserinvite)) {
+                              $looksex_check_invite_user_id[] = $lookuser;
+                          }
+                        }
+                        $query->whereIn('users.id',$looksex_check_invite_user_id);
+                    }
                     $query->where(['to_user'=>$clientId]);
                         if (isset($data['search_value'])) {
                           $query->where(function($q) use ($data){
@@ -3791,7 +3816,7 @@ class UserController extends Controller {
                         }
                     $query->orderBy('created_at','DESC');
                 })
-                ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite,$data){
+                ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite,$data,$looksex_user_id){
                         if(!empty($sentInvite))
                         {
                             $query1->where(['invite'=>1]);
@@ -3801,6 +3826,29 @@ class UserController extends Controller {
                              $query1->where(['invite'=>1]);  
                         }
 
+                        if(isset($data['browse']) && $data['browse']=='looking')
+                        {
+                            $query1->whereIn('users.id',$looksex_user_id);
+                        }
+                        elseif(isset($data['browse']) && $data['browse']=='dating')
+                        {
+                            $lookdate_user_id = UserLooksexdateModel::where(['look_type'=>'date'])->lists('user_id');
+                            $looksex_check_invite_user_id = [];
+
+                            foreach($lookdate_user_id AS $key => $lookuser) 
+                            {
+                              $chatuserinvite = ChatroomModel::where(function($q) use ($lookuser,$clientId)
+                              {
+                                $q->OrWhere(['from_user'=>$lookuser,'to_user'=>$clientId,'invite'=>1])
+                                  ->OrWhere(['to_user'=>$lookuser,'from_user'=>$clientId,'invite'=>1]);
+                              })->get();
+                              if (count($chatuserinvite)) {
+                                  $looksex_check_invite_user_id[] = $lookuser;
+                              }
+                            }
+                            
+                            $query1->whereIn('users.id',$looksex_check_invite_user_id);
+                        }
                         $query1->where(['from_user'=>$clientId]);
                         if (isset($data['search_value'])) {
                           $query1->where(function($q) use ($data){
@@ -3824,16 +3872,28 @@ class UserController extends Controller {
                     $user=  $user->whereIn('id',$favoriteId);
                 } 
                 $user = $user->whereNotIn('id',$block_id);
-                if(isset($data['browse']) && $data['browse']=='looking')
+                /*if(isset($data['browse']) && $data['browse']=='looking')
                 {
                     $user = $user->whereIn('id',$looksex_user_id);
                 }
                 elseif(isset($data['browse']) && $data['browse']=='dating')
                 {
                     $lookdate_user_id = UserLooksexdateModel::where(['look_type'=>'date'])->lists('user_id');
+                    $looksex_check_invite_user_id = [];
+                    foreach ($looksex_user_id as $lookuser) {
+                      $chatuserinvite = ChatroomModel::where(function($q) use ($lookuser,$clientId))
+                      {
+                        $q->OrWhere(['from_user'=>$lookuser,'to_user'=>$clientId,'invite'=>1])
+                          ->OrWhere(['to_user'=>$lookuser,'from_user'=>$clientId,'invite'=>1]);
+                      }
+                        if (count($chatuserinvite)) {
+                            $looksex_check_invite_user_id[] = $lookuser;
+                        }
+                        //echo $lookuser;die;
+                    }
 
-                    $user = $user->whereIn('id',$lookdate_user_id);
-                }
+                    $user = $user->whereIn('id',$looksex_check_invite_user_id);
+                }*/
                 $user_data = $user->get();
 
         /************* check user  alredy lock the view profile user ************ */
