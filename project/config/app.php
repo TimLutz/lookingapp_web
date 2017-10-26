@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'debug' => env('APP_DEBUG', false),
+    'debug' => env('APP_DEBUG', true),
     //Website name
     'website_name' => 'Looking :: Administrator',
     
@@ -100,6 +100,10 @@ return [
 
    // 'log' => 'single',
     'log' => 'daliy',
+
+    'log-level' => 'error',
+    
+    'log_max_files' => 5,
 
     /*
     |--------------------------------------------------------------------------
