@@ -3578,45 +3578,47 @@ class UserController extends Controller {
                     $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, $limit_type);
 
                     /******Get result for all User with chat, profile of user********/
-                    $user = $user->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data){
-                                        $q1->where(['user_id'=>$clientId]);
+                    $user = $user->whereHas('FavouriteUsers',function($qu) use ($clientId,$favourite_user_id,$data,$browse,$current_date){
+                                      $qu->where(['user_id'=>$clientId]);
+                                      if(!empty($browse) && $browse == 'looking')
+                                      {
+                                          $UserLookdate = UserLooksexdateModel::where(['look_type'=>'sex'])
+                                                ->whereIn('user_id',$favourite_user_id)
+                                                ->where('start_time','<=',$current_date)
+                                                ->where('end_time','>=',$current_date)
+                                                ->lists('user_id');
+                                          $looking_sex_id = [];
+                                          if(count($UserLookdate))
+                                          {
+                                              $looking_sex_id = $UserLookdate->toArray();
+                                          }                                    
+                                          $qu->whereIn('users.id',$looking_sex_id);
+                                      }
+                                      else if(!empty($browse) && $browse == 'dating')
+                                      {
+                                          $UserLookdate = UserLooksexdateModel::where(['look_type'=>'date'])
+                                                    ->whereIn('user_id',$favourite_user_id)
+                                                    ->lists('user_id');
+                                          $looking_sex_id = [];
+                                          if(count($UserLookdate))
+                                          {
+                                              $looking_sex_id = $UserLookdate->toArray();
+                                          }                                    
+                                          $qu->whereIn('users.id',$looking_sex_id);
+                                      }
+                                      else
+                                      {
+                                        $qu->whereIn('users.id',$favourite_user_id);
+                                      }
+                                  })
+                                ->with(['ChatFromUser','ChatToUser','Profile','Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data,$favourite_user_id){
+                                        
+                                    //    $q1->where(['user_id'=>$clientId]);
                                         if (isset($data['recently_added'])) {
                                             $q1 =  $q1->orderBy('updated_at','DESC');
                                         }
-
                                 }])
                                 ->where(['registration_status'=>3]);
-                                if(!empty($browse) && $browse == 'looking')
-                                {
-                                    $UserLookdate = UserLooksexdateModel::where(['look_type'=>'sex'])
-                                                                        ->whereIn('user_id',$favourite_user_id)
-                                                                        ->where('start_time','<=',$current_date)
-                                                                        ->where('end_time','>=',$current_date)
-                                                                        ->lists('user_id');
-                                    $looking_sex_id = [];
-                                    if(count($UserLookdate))
-                                    {
-                                        $looking_sex_id = $UserLookdate->toArray();
-                                    }                                    
-                                    $user = $user->whereIn('id',$looking_sex_id);
-                                }
-                                else if(!empty($browse) && $browse == 'dating')
-                                {
-                                    $UserLookdate = UserLooksexdateModel::where(['look_type'=>'date'])
-                                                                        ->whereIn('user_id',$favourite_user_id)
-                                                                        ->lists('user_id');
-                                    $looking_sex_id = [];
-                                    if(count($UserLookdate))
-                                    {
-                                        $looking_sex_id = $UserLookdate->toArray();
-                                    }                                    
-                                    $user = $user->whereIn('id',$looking_sex_id);
-                                }
-                                else
-                                {
-                                   $user = $user->whereIn('id',$favourite_user_id);
-                                    
-                                }
                                 $user_data = $user->whereNotIn('id',$block_id)
                                 ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
 
