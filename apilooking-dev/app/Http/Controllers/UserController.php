@@ -1490,7 +1490,7 @@ class UserController extends Controller {
                                                         ->select(DB::raw("lookdatesex_id,type,GROUP_CONCAT(name) AS name"));
                                                    }])
                                                    ->where(['user_id'=>$clientId,'look_type'=>'sex'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->first();
-                            if(isset($looksexuser->Userdatesextype) && count($looksexuser->Userdatesextype))
+                            if(count($looksexuser->Userdatesextype))
                             {
                                 $his_physical_appearance = $his_sextual_preferences = $his_social_habits = '';
                                 $match_his_physical_appearance = $match_his_sextual_preferences = $match_his_social_habits = $his_physical_appearance_percent_permatch = $his_sextual_preferences_percent_permatch = $his_social_habits_percent_permatch = 0;
@@ -1523,7 +1523,7 @@ class UserController extends Controller {
                                                    }])
                                                    ->where(['user_id'=>$data['viewer_user_id'],'look_type'=>'sex'])->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->first();
                                                                                
-                            if(isset($looksexviewer->Userdatesextype) && count($looksexviewer->Userdatesextype))
+                            if(count($looksexviewer->Userdatesextype))
                             {
                                 $my_physical_appearance = $my_sextual_preferences = $my_social_habits = '';
                                 foreach($looksexviewer->Userdatesextype AS $key => $val1)
