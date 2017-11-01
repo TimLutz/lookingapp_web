@@ -3320,7 +3320,6 @@ class UserController extends Controller {
 
             UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
 
-
             if($looksex->update($data))
             {
               UserLokDatesexTypeModel::where(['user_id'=>$clientId,'lookdatesex_id'=>$looksex->id])->delete();
@@ -3885,7 +3884,7 @@ class UserController extends Controller {
                                                ->get();
                                              
       foreach ($userlooksex as $key => $value) {
-        $if_exist_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['id'=>$value->id,'look_type'=>'sex'])->first();
+        $if_exist_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_tie','>=',$current_date)->where(['id'=>$value->id,'look_type'=>'sex'])->first();
 
         if (count($if_exist_profile) > 0) {
           $is_profile_active = 1;
