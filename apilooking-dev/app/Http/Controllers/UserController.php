@@ -3386,209 +3386,211 @@ class UserController extends Controller {
    **/
   public function postViewFavouriteScreen(Request $request, Repositary $common) {
     try {
-        $validator = Validator::make( $request->all(),[
-                'browse' => 'required'
-                ],
-                [
-                    'browse.required' => 'Browse field is required.'
-                ]
-            );
-       
-            if ($validator->fails()) {
-               
-                $response['errors']     = $validator->errors();
-                $response['success']     = 0;
-                $http_status=422;
-            }else
-            {
-                $clientId = JWTAuth::parseToken()->authenticate()->id;
-                $data = $request->all();
-                $is_view = $is_share = $is_profile_active = $total_unread_message = $accuracy_max_value = 0;
-                $accuracy_value = [];
-                $block_id = [];
-                $browse = isset($data['browse']) ? $data['browse'] : '';
-                $user =User::where('status','!=',0)->where(['role'=>2])->where('id','!=',$clientId);
+      $validator = Validator::make( $request->all(),[
+          'browse' => 'required'
+        ],
+        [
+          'browse.required' => 'Browse field is required.'
+        ]
+      );
 
-                $current_date = Carbon::now();
-                /******Blocked User********/
-                $block_user_id = BlockUserModel::where(function($q) use ($clientId){
-                    $q->orWhere(array('blocked_id'=>$clientId))
-                      ->orWhere(array('user_id'=>$clientId))
-                      ->select('id');
-                })
-                ->select('id','user_id','blocked_id')
-                ->get();
+      if ($validator->fails()) {
+         
+          $response['errors']     = $validator->errors();
+          $response['success']     = 0;
+          $http_status=422;
+      }else
+      {
+        $clientId = JWTAuth::parseToken()->authenticate()->id;
+        $data = $request->all();
+        $is_view = $is_share = $is_profile_active = $total_unread_message = $accuracy_max_value = 0;
+        $accuracy_value = [];
+        $block_id = [];
+        $browse = isset($data['browse']) ? $data['browse'] : '';
+        $user =User::where('status','!=',0)->where(['role'=>2])->where('id','!=',$clientId);
 
-                foreach($block_user_id As $k =>$value)
-                {
-                    if($value['user_id']==$clientId)
-                        $block_id[] = $value['blocked_id'];
+        $current_date = Carbon::now();
+        /******Blocked User********/
+        $block_user_id = BlockUserModel::where(function($q) use ($clientId){
+            $q->orWhere(array('blocked_id'=>$clientId))
+              ->orWhere(array('user_id'=>$clientId))
+              ->select('id');
+        })
+        ->select('id','user_id','blocked_id')
+        ->get();
 
-                    if($value['blocked_id'] == $clientId)
-                        $block_id[] = $value['user_id'];
-                }
-                
-                $favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
-                $favourite_user_id = [];
-                if($favourite)
-                {
-                    $favourite_user_id = $favourite->toArray();
-                }
+        foreach($block_user_id As $k =>$value)
+        {
+          if($value['user_id']==$clientId)
+            $block_id[] = $value['blocked_id'];
 
-                if(isset($data['mutual_favorites']))
-                {
-                    $mutualfavourite = FavouriteModel::where(['favourite_user_id'=>$clientId,'is_favourite'=>1])->lists('user_id');
-                    
-                    if(count($mutualfavourite))
-                    {
-                        $favourite_user_id = array_intersect($favourite_user_id, $mutualfavourite->toArray());
-                    }
-                }
+          if($value['blocked_id'] == $clientId)
+            $block_id[] = $value['user_id'];
+        }
+        
+        $favourite = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
+        $favourite_user_id = [];
+        if($favourite)
+        {
+          $favourite_user_id = $favourite->toArray();
+        }
 
-                /** ******for search by name or token ******** */
-                if (isset($data['search_value'])) {
-                    $user = $user->where(function($q) use ($data){
-                        $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
-                          ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
-                    });
-                    $limit_type = 'Search';
-                }
-                else
-                {
-                    $limit_type = 'Favorite';
-                }
-                $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, $limit_type);
+        if(isset($data['mutual_favorites']))
+        {
+          $mutualfavourite = FavouriteModel::where(['favourite_user_id'=>$clientId,'is_favourite'=>1])->lists('user_id');
+          
+          if(count($mutualfavourite))
+          {
+              $favourite_user_id  
+          }
+        }
 
-                /******Get result for all User with chat, profile of user********/
-                $user = $user->whereHas('FavouriteUsers',function($qu) use ($clientId,$favourite_user_id,$data,$browse,$current_date){
-                                  $qu->where(['user_id'=>$clientId]);
-                                  if(!empty($browse) && $browse == 'looking')
-                                  {
-                                      $UserLookdate = UserLooksexdateModel::where(['look_type'=>'sex'])
-                                            ->whereIn('user_id',$favourite_user_id)
-                                            ->where('start_time','<=',$current_date)
-                                            ->where('end_time','>=',$current_date)
-                                            ->lists('user_id');
-                                      $looking_sex_id = [];
-                                      if(count($UserLookdate))
-                                      {
-                                          $looking_sex_id = $UserLookdate->toArray();
-                                      }                                    
-                                      $qu->whereIn('users.id',$looking_sex_id);
-                                  }
-                                  else if(!empty($browse) && $browse == 'dating')
-                                  {
-                                      $UserLookdate = UserLooksexdateModel::where(['look_type'=>'date'])
-                                                ->whereIn('user_id',$favourite_user_id)
-                                                ->lists('user_id');
-                                      $looking_sex_id = [];
-                                      if(count($UserLookdate))
-                                      {
-                                          $looking_sex_id = $UserLookdate->toArray();
-                                      }                                    
-                                      $qu->whereIn('users.id',$looking_sex_id);
-                                  }
-                                  else
-                                  {
-                                    $qu->whereIn('users.id',$favourite_user_id);
-                                  }
-                              })
-                            ->with(['ChatFromUser','ChatToUser','Profile','Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data,$favourite_user_id){
-                                    
-                                //    $q1->where(['user_id'=>$clientId]);
-                                    if (isset($data['recently_added'])) {
-                                        $q1 =  $q1->orderBy('updated_at','DESC');
-                                    }
-                            }])
-                            ->where(['registration_status'=>3]);
-                            $user_data = $user->whereNotIn('id',$block_id)
-                            ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
+        /** ******for search by name or token ******** */
+        if (isset($data['search_value'])) {
+          $user = $user->where(function($q) use ($data){
+              $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
+                ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
+          });
+          $limit_type = 'Search';
+        }
+        else
+        {
+          $limit_type = 'Favorite';
+        }
+        $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, $limit_type);
 
-                $user_data = $user_data->limit($limit);
-
-                if (isset($data['recently_added'])) {
-
-                    } else if (isset($data['last_login'])) {
-                      $user_data =  $user_data->orderBy('updated_at','DESC');
-                    } else {
-                      $user_data =  $user_data->orderBy('distance','ASC');
-                    }
-                
-                $user_data = $user_data->get();
-
-
-               
-                if (count($user_data)) {
-
-                    /** ********check user view my profile ********* */
-                    $is_view = $common->check_view($clientId);
-                    /** ********END************ */
-
-                    /** ******check any one share album with me******** */
-                    $is_share = $common->check_sharealbum($clientId);
-                    /** ******End********* */
-
-                    /** ******count total user view my profile******** */
-                    $count_view = $common->count_view($clientId);
-                    /** ******End********* */
-
-                    /** ******count total user share album with me******** */
-                    $count_sharealbum = $common->count_sharealbum($clientId);
-                    $total_view_and_share = $count_view + $count_sharealbum;
-                    /** ******End********* */
-
-                    /*                 * *****check profile active ********* */
-                    $is_profile_active = $common->check_profile_active(Carbon::now(), $clientId);
-                    /** ********END***************** */
-
-                    /******** Calculates total no. of unread message ******** */
-                    foreach ($user_data as $key => $value) {
-                        $accuracy_value[] = $value['accuracy'];
-                        if(!empty($value->last_seen))
+        /******Get result for all User with chat, profile of user********/
+        $user = $user->whereHas('FavouriteUsers',function($qu) use ($clientId,$favourite_user_id,$data,$browse,$current_date){
+                        $qu->where(['user_id'=>$clientId]);
+                        if(!empty($browse) && $browse == 'looking')
                         {
-                            $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+                          $UserLookdate = UserLooksexdateModel::where(['look_type'=>'sex'])
+                                ->whereIn('user_id',$favourite_user_id)
+                                ->where('start_time','<=',$current_date)
+                                ->where('end_time','>=',$current_date)
+                                ->lists('user_id');
+                          $looking_sex_id = [];
+                          if(count($UserLookdate))
+                          {
+                              $looking_sex_id = $UserLookdate->toArray();
+                          }                                    
+                          $qu->whereIn('users.id',$looking_sex_id);
+                        }
+                        else if(!empty($browse) && $browse == 'dating')
+                        {
+                          $UserLookdate = UserLooksexdateModel::where(['look_type'=>'date'])
+                                    ->whereIn('user_id',$favourite_user_id)
+                                    ->lists('user_id');
+                          $looking_sex_id = [];
+                          if(count($UserLookdate))
+                          {
+                              $looking_sex_id = $UserLookdate->toArray();
+                          }                                    
+                          $qu->whereIn('users.id',$looking_sex_id);
                         }
                         else
                         {
-                            $user_data[$key]['last_seen'] = 2;
+                          $qu->whereIn('users.id',$favourite_user_id);
                         }
-                        $user_data[$key]['looking_profile_active'] = $common->check_profile_active(Carbon::now(), $value->id);
-                    }
-                    /********End******** */
+                      })
+                    ->with(['ChatFromUser','ChatToUser','Profile','Userpartner','UserIdentity','FavouriteUsers'=>function($q1) use ($clientId,$data,$favourite_user_id){
+                            
+                        //    $q1->where(['user_id'=>$clientId]);
+                            if (isset($data['recently_added'])) {
+                              $q1 =  $q1->orderBy('updated_at','DESC');
+                            }
+                    }])
+                    ->where(['registration_status'=>3]);
+                    $user_data = $user->whereNotIn('id',$block_id)
+                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
 
-                    /********Get Maximum accuracy for the users.******** */
-                    if(count($accuracy_value))
-                    {
-                       $accuracy_max_value = (int) max($accuracy_value);
-                    }
-                    /********End******** */
+        $user_data = $user_data->limit($limit);
 
-                    $user_looksexdata = array();
-                    $user_looksex = UserLooksexdateModel::where([
-                                                            'user_id'=>$clientId,
-                                                            'look_type'=>'sex'])
-                                                        ->where('start_time','<=',Carbon::now())
-                                                        ->where('end_time','>=',Carbon::now())
-                                                        ->first();
-                    
-                    if ($user_looksex) {
-                        $user_looksexdata = $user_looksex->toArray();
-                    }
-                    $response['success'] = 1;
-                    $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
-                    $http_status = 200;
-                } else {
-                    $response['success'] = 0;
-                    $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
-                    $response['message'] =  'No record found';
-                    $http_status = 400;
-                }
-                 
+        if (isset($data['recently_added'])) {
+
+            } else if (isset($data['last_login'])) {
+              $user_data =  $user_data->orderBy('updated_at','DESC');
+            } else {
+              $user_data =  $user_data->orderBy('distance','ASC');
             }
+        
+        $user_data = $user_data->get();
+
+
+       
+        if (count($user_data)) {
+
+          /** ********check user view my profile ********* */
+          $is_view = $common->check_view($clientId);
+          /** ********END************ */
+
+          /** ******check any one share album with me******** */
+          $is_share = $common->check_sharealbum($clientId);
+          /** ******End********* */
+
+          /** ******count total user view my profile******** */
+          $count_view = $common->count_view($clientId);
+          /** ******End********* */
+
+          /** ******count total user share album with me******** */
+          $count_sharealbum = $common->count_sharealbum($clientId);
+          $total_view_and_share = $count_view + $count_sharealbum;
+          /** ******End********* */
+
+          /*                 * *****check profile active ********* */
+          $is_profile_active = $common->check_profile_active(Carbon::now(), $clientId);
+          /** ********END***************** */
+
+          /******** Calculates total no. of unread message ******** */
+          foreach ($user_data as $key => $value) {
+            $accuracy_value[] = $value['accuracy'];
+            if(!empty($value->last_seen))
+            {
+              $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
+            }
+            else
+            {
+              $user_data[$key]['last_seen'] = 2;
+            }
+            $user_data[$key]['looking_profile_active'] = $common->check_profile_active(Carbon::now(), $value->id);
+          }
+          /********End******** */
+
+          /********Get Maximum accuracy for the users.******** */
+          if(count($accuracy_value))
+          {
+            $accuracy_max_value = (int) max($accuracy_value);
+          }
+          /********End******** */
+
+          $user_looksexdata = array();
+          $user_looksex = UserLooksexdateModel::where([
+                                                  'user_id'=>$clientId,
+                                                  'look_type'=>'sex'])
+            se['success'] = 0;
+          $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
+          $response['message'] =  'No record found';
+          $http_status = 400;                                  ->where('start_time','<=',Carbon::now())
+                                              ->where('end_time','>=',Carbon::now())
+                                              ->first();
+          
+          if ($user_looksex) {
+            $user_looksexdata = $user_looksex->toArray();
+          }
+          $response['success'] = 1;
+          $response['data'] =  ['is_share_album' => $is_share, 'is_viewed' => $is_view, 'total_unread_message' => $total_unread_message, 'total_view_and_share' => $total_view_and_share, 'user_looking_profile_active' => $is_profile_active, 'accuracy' => $accuracy_max_value, 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead, 'login_user_is_trial' => JWTAuth::parseToken()->authenticate()->is_trial, 'userlooksex_data' => $user_looksexdata, 'user' => $user_data];
+          $http_status = 200;
+        } else {
+          $response['success'] = 0;
+          $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
+          $response['message'] =  'No record found';
+          $http_status = 400;
+        }  
+      }
     } catch (\Exception $e) {
-       $response['success'] = 0;
-        $response['message'] = $e->getMessage();
-        $http_status = 400; 
+      $response['success'] = 0;
+      $response['message'] = $e->getMessage();
+      $http_status = 400; 
     }
     return  response()->json($response,$http_status);
   }
@@ -3601,6 +3603,7 @@ class UserController extends Controller {
    *
    **/
   public function postViewChatusers(Request $request,Repositary $common){
+    try {
       $clientId = JWTAuth::parseToken()->authenticate()->id;
       $data = $request->all();
       $is_view = $is_share = $is_profile_active = $total_unread_message = $accuracy_max_value =  0;
@@ -3846,8 +3849,13 @@ class UserController extends Controller {
           $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
           $response['message'] =  'No record found';
           $http_status = 400;
-      }            
-      return response()->json($response,$http_status);
+      }
+    } catch (Exception $e) {
+      $response['success'] = 0;
+      $response['message'] = $e->getMessage();
+      $http_status = 400; 
+    }
+    return  response()->json($response,$http_status);
   }
 
   /**
