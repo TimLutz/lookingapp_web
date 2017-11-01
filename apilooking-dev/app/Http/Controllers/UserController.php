@@ -3295,8 +3295,6 @@ class UserController extends Controller {
 
         $looksex = UserLooksexdateModel::where(['user_id'=>$clientId,'profile_name'=>$data['profile_name'],'look_type'=>'sex'])->first();
 
-    //    $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
-    //    $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
         $data['start_time'] = Carbon::parse($data['start_time']);
         $data['end_time'] = Carbon::parse($data['end_time']);
 
@@ -3316,18 +3314,17 @@ class UserController extends Controller {
           else
           {
             if (count($if_exist_profile) > 0) {
-              //$newTime = date("Y-m-d H:i:s", strtotime($current_date . " -1 minutes"));
               $newTime = Carbon::now()->subMinute(1); 
               UserLooksexdateModel::whereIn('id',$if_exist_profile->toArray())->update(['end_time'=>$newTime]);
             }
 
-            $update_userlooks = UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
+            UserLooksexdateModel::where(['user_id'=>$clientId,'look_type'=>'sex'])->update(['is_active'=>0]);
 
 
             if($looksex->update($data))
             {
-           //   UserLokDatesexTypeModel::where(['user_id'=>$clientId,'lookdatesex_id'=>$looksex->id])->delete();
-           //   $common->saveLooksexvalue($data,$clientId,$looksex->id,'sex');
+              UserLokDatesexTypeModel::where(['user_id'=>$clientId,'lookdatesex_id'=>$looksex->id])->delete();
+              $common->saveLooksexvalue($data,$clientId,$looksex->id,'sex');
               $response['success'] = 1;
               $response['message'] = 'success';
               $data1['id'] = $looksex->id;
