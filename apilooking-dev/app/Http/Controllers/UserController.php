@@ -3567,10 +3567,7 @@ class UserController extends Controller {
           $user_looksex = UserLooksexdateModel::where([
                                                   'user_id'=>$clientId,
                                                   'look_type'=>'sex'])
-          $response['success'] = 0;
-          $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
-          $response['message'] =  'No record found';
-          $http_status = 400;                                  ->where('start_time','<=',Carbon::now())
+                                              ->where('start_time','<=',Carbon::now())
                                               ->where('end_time','>=',Carbon::now())
                                               ->first();
           
