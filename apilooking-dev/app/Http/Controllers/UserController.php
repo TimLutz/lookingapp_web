@@ -3326,8 +3326,8 @@ class UserController extends Controller {
 
             if($looksex->update($data))
             {
-              UserLokDatesexTypeModel::where(['user_id'=>$clientId,'lookdatesex_id'=>$looksex->id])->delete();
-              $common->saveLooksexvalue($data,$clientId,$looksex->id,'sex');
+           //   UserLokDatesexTypeModel::where(['user_id'=>$clientId,'lookdatesex_id'=>$looksex->id])->delete();
+           //   $common->saveLooksexvalue($data,$clientId,$looksex->id,'sex');
               $response['success'] = 1;
               $response['message'] = 'success';
               $data1['id'] = $looksex->id;
