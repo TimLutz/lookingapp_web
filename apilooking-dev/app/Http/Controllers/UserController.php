@@ -3297,7 +3297,7 @@ class UserController extends Controller {
 
     //    $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
     //    $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
-      return  $data['start_time'] = Carbon::parse($data['start_time']);
+        $data['start_time'] = Carbon::parse($data['start_time']);
         $data['end_time'] = Carbon::parse($data['end_time']);
 
         $data['is_active'] = 1;
@@ -3317,7 +3317,7 @@ class UserController extends Controller {
           {
             if (count($if_exist_profile) > 0) {
               //$newTime = date("Y-m-d H:i:s", strtotime($current_date . " -1 minutes"));
-              $newTime = Carbon::now()->subMintue(1); 
+              $newTime = Carbon::now()->subMinute(1); 
               UserLooksexdateModel::whereIn('id',$if_exist_profile->toArray())->update(['end_time'=>$newTime]);
             }
 
@@ -3347,7 +3347,7 @@ class UserController extends Controller {
         {
           if (count($if_exist_profile) > 0) {
           //  $newTime = date("Y-m-d H:i:s", strtotime($current_date . " -1 minutes"));
-            $newTime = Carbon::now()->subMintue(1);
+            $newTime = Carbon::now()->subMinute(1);
             UserLooksexdateModel::whereIn('id',$if_exist_profile->toArray())->update(['end_time'=>$newTime]);
           }
 
