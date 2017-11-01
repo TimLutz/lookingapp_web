@@ -3588,9 +3588,9 @@ class UserController extends Controller {
         }  
       }
     } catch (\Exception $e) {
-      $response['success'] = 0;
-      $response['message'] = $e->getMessage();
-      $http_status = 400; 
+       $response['success'] = 0;
+        $response['message'] = $e->getMessage();
+        $http_status = 400; 
     }
     return  response()->json($response,$http_status);
   }
@@ -3603,7 +3603,6 @@ class UserController extends Controller {
    *
    **/
   public function postViewChatusers(Request $request,Repositary $common){
-    try {
       $clientId = JWTAuth::parseToken()->authenticate()->id;
       $data = $request->all();
       $is_view = $is_share = $is_profile_active = $total_unread_message = $accuracy_max_value =  0;
@@ -3849,13 +3848,8 @@ class UserController extends Controller {
           $response['data'] =  ['user_looking_profile_active' => $common->check_profile_active(Carbon::now(), $clientId), 'login_user_member_type' => JWTAuth::parseToken()->authenticate()->member_type, 'login_user_removead' => JWTAuth::parseToken()->authenticate()->removead];
           $response['message'] =  'No record found';
           $http_status = 400;
-      }
-    } catch (Exception $e) {
-      $response['success'] = 0;
-      $response['message'] = $e->getMessage();
-      $http_status = 400; 
-    }
-    return  response()->json($response,$http_status);
+      }            
+      return response()->json($response,$http_status);
   }
 
   /**
