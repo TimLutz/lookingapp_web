@@ -3883,7 +3883,6 @@ class UserController extends Controller {
                                                ->orderBy('id','asc')
                                                ->get();
                                              
- return $userlooksex; die;
       foreach ($userlooksex as $key => $value) {
         $if_exist_profile = UserLooksexdateModel::where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['id'=>$value->id,'look_type'=>'sex'])->first();
 
@@ -3902,6 +3901,7 @@ class UserController extends Controller {
         }
         unset($value['Userdatesextype']);
       }
+ return $userlooksex; die;
 
       if($userlooksex)
       {
