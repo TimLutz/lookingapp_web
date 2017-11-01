@@ -163,7 +163,7 @@ class UsersController extends Controller
 			{
 				$imagee = '<img class="img-circle" src="'.url('images/no_image.png').'" alt="User Image" width="50px" height="50">';
 			}					
-			$GLOBALS['data'][] = array($i,$imagee,$value->screen_name,$value->profile_id,$value->email,$memberType,$createDate,date('Y-m-d',strtotime($value->valid_upto)),$aboutMe,$status);
+			$GLOBALS['data'][] = array($i,$imagee,preg_replace("/\\\\u([0-9A-F]{2,5})/i", "&#x$1;", $value->screen_name),$value->profile_id,$value->email,$memberType,$createDate,date('Y-m-d',strtotime($value->valid_upto)),$aboutMe,$status);
 			$i++;
 		}
 		$result = array();

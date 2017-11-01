@@ -75,8 +75,6 @@ class Application
     private $initialized;
 
     /**
-     * Constructor.
-     *
      * @param string $name    The name of the application
      * @param string $version The version of the application
      */
@@ -681,7 +679,7 @@ class Application
                 $width = 1 << 31;
             }
             $lines = array();
-            foreach (preg_split('/\r?\n/', $e->getMessage()) as $line) {
+            foreach (preg_split('/\r?\n/', trim($e->getMessage())) as $line) {
                 foreach ($this->splitStringByWidth($line, $width - 4) as $line) {
                     // pre-format lines to get the right string length
                     $lineLength = Helper::strlen($line) + 4;
@@ -709,8 +707,8 @@ class Application
                 $trace = $e->getTrace();
                 array_unshift($trace, array(
                     'function' => '',
-                    'file' => $e->getFile() !== null ? $e->getFile() : 'n/a',
-                    'line' => $e->getLine() !== null ? $e->getLine() : 'n/a',
+                    'file' => null !== $e->getFile() ? $e->getFile() : 'n/a',
+                    'line' => null !== $e->getLine() ? $e->getLine() : 'n/a',
                     'args' => array(),
                 ));
 
@@ -838,9 +836,9 @@ class Application
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
             $input->setInteractive(false);
         } else {
-            if ($input->hasParameterOption('-vvv') || $input->hasParameterOption('--verbose=3') || $input->getParameterOption('--verbose') === 3) {
+            if ($input->hasParameterOption('-vvv') || $input->hasParameterOption('--verbose=3') || 3 === $input->getParameterOption('--verbose')) {
                 $output->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
-            } elseif ($input->hasParameterOption('-vv') || $input->hasParameterOption('--verbose=2') || $input->getParameterOption('--verbose') === 2) {
+            } elseif ($input->hasParameterOption('-vv') || $input->hasParameterOption('--verbose=2') || 2 === $input->getParameterOption('--verbose')) {
                 $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
             } elseif ($input->hasParameterOption('-v') || $input->hasParameterOption('--verbose=1') || $input->hasParameterOption('--verbose') || $input->getParameterOption('--verbose')) {
                 $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
@@ -1133,9 +1131,8 @@ class Application
             $lines[] = str_pad($line, $width);
             $line = $char;
         }
-        if ('' !== $line) {
-            $lines[] = count($lines) ? str_pad($line, $width) : $line;
-        }
+
+        $lines[] = count($lines) ? str_pad($line, $width) : $line;
 
         mb_convert_variables($encoding, 'utf8', $lines);
 

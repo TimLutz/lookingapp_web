@@ -80,11 +80,13 @@ $app->middleware([
  //Illuminate\View\Middleware\ShareErrorsFromSession::class,
 //     // Laravel\Lumen\Http\Middleware\VerifyCsrfToken::class,
  App\Http\Middleware\CorsMiddleware::class,
+// App\Http\Middleware\JwtAuthCustom::class,
 ]);
 
 $app->routeMiddleware([
 	'jwt.auth'    => Tymon\JWTAuth\Middleware\GetUserFromToken::class,
     'jwt.refresh' => Tymon\JWTAuth\Middleware\RefreshToken::class,
+    'jwtcustom'     => App\Http\Middleware\JwtAuthCustom::class,
 ]);
 
 /*

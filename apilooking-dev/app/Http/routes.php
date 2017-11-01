@@ -19,6 +19,11 @@ $app->get('/', function () use ($app) {
     $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers'], function ($app) {
     $app->post('auth/login', 'Auth\AuthController@postLogin');
     $app->post('forget_password', 'UserController@ForgetPassword');
+    $app->get('terms','UserController@getTermsAndCondition');
+    });
+
+    
+    $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers','middleware' => 'jwtcustom'], function ($app) {
     $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('user_profile', 'UserController@postUserProfile');
     $app->post('profile_picture', 'UserController@postProfilePicture');
@@ -41,7 +46,6 @@ $app->get('/', function () use ($app) {
     $app->post('add_flag','UserController@postAddFlag');
     $app->post('chat_message_push_notification','UserController@postChatMessagePushNotification');
     $app->post('declain_invitation','UserController@postDeclainInvitation');
-    $app->get('terms','UserController@getTermsAndCondition');
     $app->post('add_looking_sex','UserController@postAddSexRecord');
     $app->post('view_favourite_screen','UserController@postViewFavouriteScreen');
     $app->post('view_chat_users','UserController@postViewChatusers');
@@ -74,4 +78,14 @@ $app->get('/', function () use ($app) {
     $app->get('payment_details','UserController@getPaymentDetails');
     $app->post('payment_success','UserController@postPaymentSuccess');
     $app->post('stop_current_search','UserController@postStopCurrentSearch');
+    $app->post('edit_profile','UserController@postEditProfile');
+    $app->post('partner_profile','UserController@postPartnerProfile');
+    $app->post('block_chat_user','UserController@postBlockChatUser');
+    $app->post('change_password','UserController@postChangePassword');
+    $app->post('check_is_active','UserController@postCheckIsActive');
+    $app->get('setting','UserController@getSetting');
 });
+
+
+
+

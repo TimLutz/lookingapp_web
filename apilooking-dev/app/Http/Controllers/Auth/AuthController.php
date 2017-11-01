@@ -24,7 +24,8 @@ use App\Http\Repository\Repository;
 class AuthController extends Controller {
 	
   	public function __construct(){
-      $this->middleware('jwt.auth', ['except' => ['postLogin','postSocialLogin']]);
+     // $this->middleware('jwt.auth', ['except' => ['postLogin','postSocialLogin']]);
+    //  $this->middleware('jwtcustom',['except'=>'postLogin']);  
     }
 
      /**
@@ -70,6 +71,7 @@ class AuthController extends Controller {
               $credentials['role']=2;
 
               // verify the credentials and create a token for the user
+
               if ($token = JWTAuth::attempt($credentials)) 
               {
                  $user = User::where('email',$request['email'])->first();
@@ -81,6 +83,7 @@ class AuthController extends Controller {
                      $userdata['device_type'] = $request->Input('device_type');
                      $userdata['modification_date'] = Carbon::now();
                      
+
                      if($user->update($userdata)){
                          $user['token'] = $token;
                          $http_status=200;

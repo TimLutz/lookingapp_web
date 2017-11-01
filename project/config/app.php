@@ -98,12 +98,12 @@ return [
     |
     */
 
-   // 'log' => 'single',
-    'log' => 'daliy',
+    'log' => 'single',
+    /*'log' => 'daliy',
 
     'log-level' => 'error',
     
-    'log_max_files' => 5,
+    'log_max_files' => 5,*/
 
     /*
     |--------------------------------------------------------------------------
@@ -157,7 +157,8 @@ return [
         App\Providers\RouteServiceProvider::class,
         Collective\Html\HtmlServiceProvider::class,
         Laracasts\Flash\FlashServiceProvider::class,
-		App\Providers\ValidationServiceProvider::class
+		App\Providers\ValidationServiceProvider::class,
+        Unicodeveloper\Emoji\EmojiServiceProvider::class
     ],
 
     /*
@@ -208,7 +209,8 @@ return [
         'View'      => Illuminate\Support\Facades\View::class,
         'Form' => Collective\Html\FormFacade::class,
 		'Html' => Collective\Html\HtmlFacade::class,
-		'Flash' => \Laracasts\Flash\Flash::class
+		'Flash' => \Laracasts\Flash\Flash::class,
+        'Emoji' => Unicodeveloper\Emoji\Facades\Emoji::class
     ],
 
 ];
