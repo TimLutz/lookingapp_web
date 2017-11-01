@@ -3901,8 +3901,7 @@ class UserController extends Controller {
         }
         unset($value['Userdatesextype']);
       }
- //return $userlooksex; die;
-
+ 
       if($userlooksex)
       {
         $data1['userlooksex'] = $userlooksex;
