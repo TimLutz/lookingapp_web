@@ -3297,8 +3297,8 @@ class UserController extends Controller {
 
     //    $data['start_time'] = date('Y-m-d H:i:s', strtotime($data['start_time']));
     //    $data['end_time'] = date('Y-m-d H:i:s', strtotime($data['end_time']));
-        $data['start_time'] = Carbon::parse($data['start_time'])->subSeconds(26);
-        $data['end_time'] = Carbon::parse($data['end_time'])->subSeconds(26);
+        $data['start_time'] = Carbon::parse($data['start_time']);
+        $data['end_time'] = Carbon::parse($data['end_time']);
 
         $data['is_active'] = 1;
         $data['notification_time'] = $notification_time;
