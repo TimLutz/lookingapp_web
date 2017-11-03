@@ -499,7 +499,7 @@ class UserController extends Controller {
         {
     //      $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
         }
-        $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Search');
+        $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
         /********End*********/
         Log::info('Showing user profile for user: '.json_encode($finalArr));
         if(isset($finalArr['type']) && $request->Input('type')=='browse')   
