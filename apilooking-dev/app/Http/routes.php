@@ -84,6 +84,8 @@ $app->get('/', function () use ($app) {
     $app->post('change_password','UserController@postChangePassword');
     $app->post('check_is_active','UserController@postCheckIsActive');
     $app->get('setting','UserController@getSetting');
+    $app->post('chat_notification','UserController@postChatNotification');
+    
 });
 
 

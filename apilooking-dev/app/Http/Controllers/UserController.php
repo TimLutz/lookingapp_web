@@ -6138,4 +6138,19 @@ class UserController extends Controller {
     }
     return response()->json($response,$http_status);
   }
+
+  public function postChatNotification(Request $request)
+  {
+    try {
+      
+      $response['success']=1;
+      $response['message'] = 'Succcess';
+      $http_status = 200;
+    } catch (Exception $e) {
+      $response['success']=0;
+      $response['message'] = $e->getMessage();
+      $http_status = 400;  
+    }
+    return response()->json($response,$http_status);
+  }
 }

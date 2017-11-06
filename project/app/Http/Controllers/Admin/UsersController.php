@@ -51,6 +51,7 @@ class UsersController extends Controller
      *********/
     public function postListAllUsers(Request $request,CommonRepository $common)
 	{
+		header('Content-type: text/html; charset=utf-8');
 		 $basearray = User::with(['Profile'])->where(['role'=>2]);
 		  $totalusercount = DB::table('users')->where(['role'=>2])->count();
 		
@@ -163,6 +164,54 @@ class UsersController extends Controller
 			{
 				$imagee = '<img class="img-circle" src="'.url('images/no_image.png').'" alt="User Image" width="50px" height="50">';
 			}					
+			//preg_replace("/\\\\u([0-9A-F]{2,5})/i", "&#x$1;", $value->screen_name)
+			//$em = str_replace('\', '\\', json_encode($value->screen_name));
+			//$myInput = '\ud83d\ude0d';
+
+			//$myHexString = str_replace('\u', '', $myInput);
+		//	$myBinString = hex2bin($myHexString);
+			//iconv("UTF-16BE", "UTF-8", hex2bin(str_replace('\u', '', HtmlSpecialChars('\uD83D\uDCA9'))))
+
+			//print iconv("UTF-16BE", "UTF-8", $myBinString);
+
+			/*if(count(explode('\u', $value->screen_name))>1)
+			{
+				$name1 = explode('\u', $value->screen_name);
+				$namstr = '';
+				foreach($name1 As $key => $val)
+				{
+					if(strlen($val)>=4)
+					{
+						if(strlen($val) == 4)
+						{
+							$namstr.= $val;
+						}
+						else
+						{
+						   $namee = str_split($val,4);
+						   $namstr.= $namee[0];
+						   //$nam[] = $namee[1];
+						}
+						if(strlen($namstr)==8)
+						{
+							$nam[] = $namstr;
+							$namstr = '';
+						}
+
+					}
+					else
+					{
+						$nam[] = $val;
+					}
+
+				}
+
+				$name = implode('', $nam);
+			}
+			else
+			{*/
+				//$name = $value->screen_name;
+			/*}*/
 			$GLOBALS['data'][] = array($i,$imagee,preg_replace("/\\\\u([0-9A-F]{2,5})/i", "&#x$1;", $value->screen_name),$value->profile_id,$value->email,$memberType,$createDate,date('Y-m-d',strtotime($value->valid_upto)),$aboutMe,$status);
 			$i++;
 		}
