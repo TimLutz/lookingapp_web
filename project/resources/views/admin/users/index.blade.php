@@ -1,4 +1,7 @@
 <?php header( 'Content-Type: text/html; charset=utf-8' ); ?>
+@section('css')
+<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+@endsection
 @extends('admin.layout')
 @section('title')
 	Users Management

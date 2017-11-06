@@ -28,6 +28,7 @@ License: You must have a valid license purchased only from themeforest(the above
 <!-- BEGIN HEAD -->
 <head>
 <meta charset="utf-8"/>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <title>{{ config('app.website_name') }} - @yield('title')</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <link rel="icon" type="image/png" id="favicon" href="{{asset('images/favicon.ico')}}"/>

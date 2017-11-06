@@ -213,7 +213,7 @@ class UsersController extends Controller
 			{
 				$name = $value->screen_name;
 			}*/
-			$GLOBALS['data'][] = array($i,$imagee,preg_replace("/\\\\u([0-9A-F]{2,5})/i", "&#x$1;", $value->screen_name),$value->profile_id,$value->email,$memberType,$createDate,date('Y-m-d',strtotime($value->valid_upto)),$aboutMe,$status);
+			$GLOBALS['data'][] = array($i,$imagee,preg_replace("/\\\\u([0-9A-F]{2,5})/i", "&#x$1;", json_decode('"'.$value->screen_name.'"')),$value->profile_id,$value->email,$memberType,$createDate,date('Y-m-d',strtotime($value->valid_upto)),$aboutMe,$status);
 			$i++;
 		}
 		$result = array();
