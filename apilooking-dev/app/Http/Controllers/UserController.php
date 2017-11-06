@@ -612,7 +612,7 @@ class UserController extends Controller {
                        ->where('end_time','>=',$current_date)
                        ->where(['look_type'=>'sex']); 
                      })
-                       ->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'])
+                       ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'])
                      ->where(['registration_status'=>3])
                      ->whereNotIn('id',$block_id)
                             //->where('id','!=',$clientId)

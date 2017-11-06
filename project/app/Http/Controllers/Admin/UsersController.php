@@ -194,6 +194,7 @@ class UsersController extends Controller
 						}
 						if(strlen($namstr)==8)
 						{
+
 							$nam[] = $namstr;
 							$namstr = '';
 						}
@@ -209,9 +210,9 @@ class UsersController extends Controller
 				$name = implode('', $nam);
 			}
 			else
-			{*/
-				//$name = $value->screen_name;
-			/*}*/
+			{
+				$name = $value->screen_name;
+			}*/
 			$GLOBALS['data'][] = array($i,$imagee,preg_replace("/\\\\u([0-9A-F]{2,5})/i", "&#x$1;", $value->screen_name),$value->profile_id,$value->email,$memberType,$createDate,date('Y-m-d',strtotime($value->valid_upto)),$aboutMe,$status);
 			$i++;
 		}
