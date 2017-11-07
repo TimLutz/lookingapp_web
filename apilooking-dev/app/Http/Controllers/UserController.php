@@ -655,7 +655,7 @@ class UserController extends Controller {
         else
         {
           /******Get result for all User with chat, profile of user********/
-          $user_data = $user->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+          $user_data = $user->with(['ChatFromUser','ChatToUser','ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                               ->where(['registration_status'=>3])
                               ->whereNotIn('id',$block_id)
                              // ->where('id','!=',$clientId)
@@ -815,7 +815,7 @@ class UserController extends Controller {
             }
             else
             {
-              $loggedInUser = $user2->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+              $loggedInUser = $user2->with(['ChatFromUser','ChatToUser','ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
               ->where(['id'=>$clientId])
               ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
             }
@@ -3558,6 +3558,15 @@ class UserController extends Controller {
               $user_data[$key]['last_seen'] = 2;
             }
             $user_data[$key]['looking_profile_active'] = $common->check_profile_active(Carbon::now(), $value->id);
+            $user_data[$key]['chatroomid'] = '';
+            if(count($value->ChatFromUser))
+            {
+             $user_data[$key]['chatroomid'] = $value->ChatFromUser->id;
+            }
+            else if(count($value->ChatToUser))
+            {
+             $user_data[$key]['chatroomid'] = $value->ChatToUser->id;
+            }
           }
           /********End******** */
 
@@ -3819,6 +3828,15 @@ class UserController extends Controller {
               else
               {
                   $user_data[$key]['last_seen'] = 2;
+              }
+              $user_data[$key]['chatroomid'] = '';
+              if(count($value->ChatFromUser))
+              {
+               $user_data[$key]['chatroomid'] = $value->ChatFromUser->id;
+              }
+              else if(count($value->ChatToUser))
+              {
+               $user_data[$key]['chatroomid'] = $value->ChatToUser->id;
               }
           }
           /********End******** */
