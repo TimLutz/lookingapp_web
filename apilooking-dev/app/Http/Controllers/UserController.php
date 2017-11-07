@@ -636,7 +636,7 @@ class UserController extends Controller {
           $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where(['user_id'=>$clientId,'look_type'=>'date'])->first();
 
            /******Get result for all User with chat, profile of user********/
-          $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+          $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
               $q1->where(['look_type'=>'date']); }])
                        ->where(['registration_status'=>3])
                        ->whereNotIn('id',$block_id)
@@ -655,7 +655,7 @@ class UserController extends Controller {
         else
         {
           /******Get result for all User with chat, profile of user********/
-          $user_data = $user->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+          $user_data = $user->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                               ->where(['registration_status'=>3])
                               ->whereNotIn('id',$block_id)
                              // ->where('id','!=',$clientId)
@@ -776,6 +776,15 @@ class UserController extends Controller {
             }
             $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
              $accuracy_value[] = $value['accuracy'];
+             $user_data[$key]['chatroomid'] = '';
+             if(count($value->ChatFromUser))
+             {
+               $user_data[$key]['chatroomid'] = $value->ChatFromUser->id;
+             }
+             else if(count($value->ChatToUser))
+             {
+               $user_data[$key]['chatroomid'] = $value->ChatToUser->id;
+             }
           }
 
           /********End******** */
@@ -792,21 +801,21 @@ class UserController extends Controller {
           {
             if($type=='looking')
             {
-              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
                 $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
                                ->where(['id'=>$clientId])
                                ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
             }
             elseif($type=='dating')
             {
-              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatUsers','Profile'=>function($q){                $q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){                $q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
                                 $q1->where(['look_type'=>'date']); }])
                                    ->where(['id'=>$clientId])
                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
             }
             else
             {
-              $loggedInUser = $user2->with(['ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+              $loggedInUser = $user2->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
               ->where(['id'=>$clientId])
               ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
             }
@@ -870,6 +879,17 @@ class UserController extends Controller {
                   $loggedInUser[$key1]['last_seen'] = 2;
                 }
                 $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
+
+                $loggedInUser[$key1]['chatroomid'] = '';
+
+                if(count($value1['ChatFromUser']))
+                {
+                 $loggedInUser[$key1]['chatroomid'] = $value1['ChatFromUser']['id'];
+                }
+                else if(count($value1['ChatToUser']))
+                {
+                 $loggedInUser[$key1]['chatroomid'] = $value1['ChatToUser']['id'];
+                }
               } 
               $accuracy_value[] = $value1['accuracy'];  
             }
