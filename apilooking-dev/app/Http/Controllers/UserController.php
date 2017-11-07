@@ -612,7 +612,17 @@ class UserController extends Controller {
                        ->where('end_time','>=',$current_date)
                        ->where(['look_type'=>'sex']); 
                      })
-                       ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'])
+                       ->with(['ChatFromUser'=>function($cf) use ($clientId){
+                         $cf->where(function($c) use($clientId) {
+                          $c->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'ChatToUser'=>function($ct) use ($clientId){
+                         $ct->where(function($c1) use ($clientId){
+                          $c1->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'])
                      ->where(['registration_status'=>3])
                      ->whereNotIn('id',$block_id)
                             //->where('id','!=',$clientId)
@@ -655,7 +665,17 @@ class UserController extends Controller {
         else
         {
           /******Get result for all User with chat, profile of user********/
-          $user_data = $user->with(['ChatFromUser','ChatToUser','ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+          $user_data = $user->with(['ChatFromUser'=>function($cf) use ($clientId){
+                         $cf->where(function($c) use($clientId) {
+                          $c->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'ChatToUser'=>function($ct) use ($clientId){
+                         $ct->where(function($c1) use ($clientId){
+                          $c1->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
                               ->where(['registration_status'=>3])
                               ->whereNotIn('id',$block_id)
                              // ->where('id','!=',$clientId)
@@ -815,7 +835,17 @@ class UserController extends Controller {
             }
             else
             {
-              $loggedInUser = $user2->with(['ChatFromUser','ChatToUser','ChatUsers','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
+              $loggedInUser = $user2->with(['ChatFromUser'=>function($cf) use ($clientId){
+                         $cf->where(function($c) use ($clientId){
+                          $c->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'ChatToUser'=>function($ct) use ($clientId){
+                         $ct->where(function($c1) use ($clientId){
+                          $c1->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity'])
               ->where(['id'=>$clientId])
               ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
             }
@@ -880,7 +910,7 @@ class UserController extends Controller {
                 }
                 $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
 
-                /*$loggedInUser[$key1]['chatroomid'] = '';
+                $loggedInUser[$key1]['chatroomid'] = '';
 
                 if(count($value1['ChatFromUser']))
                 {
@@ -889,7 +919,7 @@ class UserController extends Controller {
                 else if(count($value1['ChatToUser']))
                 {
                  $loggedInUser[$key1]['chatroomid'] = $value1['ChatToUser']['id'];
-                }*/
+                }
               } 
               $accuracy_value[] = $value1['accuracy'];  
             }
@@ -3625,21 +3655,21 @@ class UserController extends Controller {
 
       $favoriteId = [];
       $sentInvite = '';
-      if (isset($data['favourites']))
+      if (isset($data['favourite']))
       {
-              $favoriteId = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
-              
-            //  $user = $user->whereIn('id',$favourite);
+        $favoriteId = FavouriteModel::where(['user_id'=>$clientId,'is_favourite'=>1])->lists('favourite_user_id');
+        
+      //  $user = $user->whereIn('id',$favourite);
       } 
       elseif(isset($data['sent_invite']))
       {
-          //only for looking as per client requirement
-          $sentInvite = 1;
+        //only for looking as per client requirement
+        $sentInvite = 1;
       } 
       elseif(isset($data['received_invite'])) 
       {
-          $sentInvite = 1;
-          //only for browse and dating as per client requirement
+        $sentInvite = 1;
+        //only for browse and dating as per client requirement
       }
 
       /******Blocked User********/
@@ -3653,11 +3683,11 @@ class UserController extends Controller {
 
       foreach($block_user_id As $k =>$value)
       {
-          if($value['user_id']==$clientId)
-              $block_id[] = $value['blocked_id'];
+        if($value['user_id']==$clientId)
+          $block_id[] = $value['blocked_id'];
 
-          if($value['blocked_id'] == $clientId)
-              $block_id[] = $value['user_id'];
+        if($value['blocked_id'] == $clientId)
+          $block_id[] = $value['user_id'];
       }
 
       
@@ -3665,7 +3695,7 @@ class UserController extends Controller {
 
       if(count($looksex_user_id))
       {
-          $looksex_user_id = $looksex_user_id->toArray();
+        $looksex_user_id = $looksex_user_id->toArray();
       }
 
       //print_r($looksex_user_id); die;
@@ -3674,18 +3704,18 @@ class UserController extends Controller {
       $user = User::whereHas('ChatFromUser',function( $query ) use ($clientId,$sentInvite,$data,$looksex_user_id){
                   if(!empty($sentInvite))
                   {
-                      $query->where(['invite'=>1]);
+                    $query->where(['invite'=>1]);
                   }
 
                   if(isset($data['browse']) && $data['browse']=='dating')
                   {
-                      $query->where(['invite'=>1]);
+                    $query->where(['invite'=>1]);
                   }
 
                   if(isset($data['browse']) && $data['browse']=='looking')
                   {
-                      $query->whereIn('users.id',$looksex_user_id);
-                     // $query->whereRaw("users.id IN".$looksex_user_id);
+                    $query->whereIn('users.id',$looksex_user_id);
+                    // $query->whereRaw("users.id IN".$looksex_user_id);
                   }  
                   elseif(isset($data['browse']) && $data['browse']=='dating')
                   {

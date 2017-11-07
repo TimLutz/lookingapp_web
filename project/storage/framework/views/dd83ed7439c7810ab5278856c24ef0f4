@@ -97,23 +97,23 @@
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="<?php if($active == 'free'): ?> active <?php endif; ?>">
-							<!-- <a href="javascript:void(0)"> -->
+						<!-- <li class="<?php if($active == 'free'): ?> active <?php endif; ?>"> -->
+							<a href="javascript:void(0)">
 							<a href="<?php echo e(url(getenv('adminurl').'/userrestriction')); ?>">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Free Users</a>
 						</li>
 						<li class="<?php if($active == 'paid'): ?> active <?php endif; ?>">
-							<!-- <a href="javascript:void(0)"> -->
-							<a href="<?php echo e(url(getenv('adminurl').'/userrestriction/paid')); ?>">
+							<a href="javascript:void(0)">
+							<!-- <a href="<?php echo e(url(getenv('adminurl').'/userrestriction/paid')); ?>"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Paid Users</a>
 						</li>
 					</ul>
 				</li>
 				<li class="<?php if(isset($active) && $active == 'trials'): ?> active <?php endif; ?>">
-					<a href="<?php echo e(url(getenv('adminurl').'/trials')); ?>">
-					<!-- <a href="javascript:void(0)"> -->
+					<!-- <a href="<?php echo e(url(getenv('adminurl').'/trials')); ?>"> -->
+					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
 					Trials </span>
@@ -136,8 +136,8 @@
 				</li>
 
 				<li>
-					<!-- <a href="javascript:void(0)"> -->
-					<a href="<?php echo e(url('looking/wp-admin')); ?>" target="_blank">
+					<a href="javascript:void(0)">
+					<!-- <a href="<?php echo e(url('looking/wp-admin')); ?>" target="_blank"> -->
 					<i class="icon-list"></i>
 					<span class="title">
 					Website Admin</span>
