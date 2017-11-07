@@ -880,7 +880,7 @@ class UserController extends Controller {
                 }
                 $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
 
-                $loggedInUser[$key1]['chatroomid'] = '';
+                /*$loggedInUser[$key1]['chatroomid'] = '';
 
                 if(count($value1['ChatFromUser']))
                 {
@@ -889,7 +889,7 @@ class UserController extends Controller {
                 else if(count($value1['ChatToUser']))
                 {
                  $loggedInUser[$key1]['chatroomid'] = $value1['ChatToUser']['id'];
-                }
+                }*/
               } 
               $accuracy_value[] = $value1['accuracy'];  
             }
