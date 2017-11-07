@@ -97,23 +97,23 @@
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<li class="@if($active == 'free') active @endif">
-							<!-- <a href="javascript:void(0)"> -->
+						<!-- <li class="@if($active == 'free') active @endif"> -->
+							<a href="javascript:void(0)">
 							<a href="{{ url(getenv('adminurl').'/userrestriction') }}">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Free Users</a>
 						</li>
 						<li class="@if($active == 'paid') active @endif">
-							<!-- <a href="javascript:void(0)"> -->
-							<a href="{{ url(getenv('adminurl').'/userrestriction/paid') }}">
+							<a href="javascript:void(0)">
+							<!-- <a href="{{ url(getenv('adminurl').'/userrestriction/paid') }}"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Paid Users</a>
 						</li>
 					</ul>
 				</li>
 				<li class="@if(isset($active) && $active == 'trials') active @endif">
-					<a href="{{ url(getenv('adminurl').'/trials') }}">
-					<!-- <a href="javascript:void(0)"> -->
+					<!-- <a href="{{ url(getenv('adminurl').'/trials') }}"> -->
+					<a href="javascript:void(0)">
 					<i class="icon-list"></i>
 					<span class="title">
 					Trials </span>
@@ -136,8 +136,8 @@
 				</li>
 
 				<li>
-					<!-- <a href="javascript:void(0)"> -->
-					<a href="{{ url('looking/wp-admin') }}" target="_blank">
+					<a href="javascript:void(0)">
+					<!-- <a href="{{ url('looking/wp-admin') }}" target="_blank"> -->
 					<i class="icon-list"></i>
 					<span class="title">
 					Website Admin</span>
