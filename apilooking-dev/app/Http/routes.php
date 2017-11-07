@@ -22,9 +22,9 @@ $app->get('/', function () use ($app) {
     $app->get('terms','UserController@getTermsAndCondition');
     });
 
+    $app->post('auth/register', 'Auth\RegisterController@postRegister');
     
     $app->group(['prefix' => 'api','namespace' => 'App\Http\Controllers','middleware' => 'jwtcustom'], function ($app) {
-    $app->post('auth/register', 'Auth\RegisterController@postRegister');
     $app->post('user_profile', 'UserController@postUserProfile');
     $app->post('profile_picture', 'UserController@postProfilePicture');
     $app->post('find_members', 'UserController@getFilterValue');
