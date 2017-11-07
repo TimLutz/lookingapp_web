@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ab016d3cd169e4fa8ce944fa9b172d8c",
-    "content-hash": "f29e984fff631aac16667c64d9a03cf3",
+    "hash": "d676df45ee8a2c45c5d412513ce5a2fe",
+    "content-hash": "367020ad4466ac4ad4c5433ef03dcd56",
     "packages": [
         {
             "name": "aretusa/flash-bundle",
@@ -102,6 +102,74 @@
                 "captcha"
             ],
             "time": "2017-02-02 09:07:14"
+        },
+        {
+            "name": "christofferok/laravel-emojione",
+            "version": "2.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/christofferok/laravel-emojione.git",
+                "reference": "61521ad00cb39f51616d9af816d1cba12d7a0480"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/christofferok/laravel-emojione/zipball/61521ad00cb39f51616d9af816d1cba12d7a0480",
+                "reference": "61521ad00cb39f51616d9af816d1cba12d7a0480",
+                "shasum": ""
+            },
+            "require": {
+                "emojione/emojione": "^3.1.0",
+                "illuminate/support": "~5.1",
+                "php": "~5.6|~7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0||~5.0",
+                "squizlabs/php_codesniffer": "^2.3"
+            },
+            "suggest": {
+                "emojione/assets": "If you want to serve the emojione assets yourself"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                },
+                "laravel": {
+                    "providers": [
+                        "ChristofferOK\\LaravelEmojiOne\\LaravelEmojiOneServiceProvider"
+                    ],
+                    "alias": {
+                        "LaravelEmojiOne": "ChristofferOK\\LaravelEmojiOne\\LaravelEmojiOneFacade"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ChristofferOK\\LaravelEmojiOne\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": ":Christoffer Korvald",
+                    "email": "korvald@gmail.com",
+                    "homepage": "https://christoffeork.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Laravel helper for EmojiOne",
+            "homepage": "https://github.com/christofferok/LaravelEmojiOne",
+            "keywords": [
+                "ChristofferOK",
+                "LaravelEmojiOne",
+                "emoji",
+                "emojione",
+                "laravel"
+            ],
+            "time": "2017-07-22 12:30:16"
         },
         {
             "name": "classpreloader/classpreloader",
@@ -434,6 +502,84 @@
                 "parser"
             ],
             "time": "2014-09-09 13:34:57"
+        },
+        {
+            "name": "emojione/assets",
+            "version": "3.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/emojione/emojione-assets.git",
+                "reference": "aed6c9f01922db9d75e9639e8d893ac54e48f3aa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/emojione/emojione-assets/zipball/aed6c9f01922db9d75e9639e8d893ac54e48f3aa",
+                "reference": "aed6c9f01922db9d75e9639e8d893ac54e48f3aa",
+                "shasum": ""
+            },
+            "suggest": {
+                "emojione/emojione": "A set of libraries to make using emoji on your websites easier."
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "proprietary"
+            ],
+            "description": "Emojis in png format brought to you by EmojiOne. EmojiOne is a complete set of emojis designed for the web.",
+            "homepage": "https://www.emojione.com",
+            "keywords": [
+                "emoji",
+                "emojione",
+                "emojis",
+                "emoticons",
+                "smileys",
+                "smilies",
+                "unicode"
+            ],
+            "time": "2017-08-08 15:44:16"
+        },
+        {
+            "name": "emojione/emojione",
+            "version": "3.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/emojione/emojione.git",
+                "reference": "f0d00822b25cef78726289c16e379f64e0ea23b6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/emojione/emojione/zipball/f0d00822b25cef78726289c16e379f64e0ea23b6",
+                "reference": "f0d00822b25cef78726289c16e379f64e0ea23b6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.6 || ~5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Emojione\\": "lib/php/src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "(CC-BY-4.0 and MIT)"
+            ],
+            "description": "EmojiOne is a complete set of emojis designed for the web. It includes libraries to easily convert unicode characters to shortnames (:smile:) and shortnames to our custom emoji images. PNG format provided for the emoji images.",
+            "homepage": "http://www.emojione.com",
+            "keywords": [
+                "emoji",
+                "emojione",
+                "emojis",
+                "emoticons",
+                "smileys",
+                "smilies",
+                "unicode"
+            ],
+            "time": "2017-08-08 16:33:10"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -1209,7 +1355,7 @@
         },
         {
             "name": "mtdowling/cron-expression",
-            "version": "v1.2.0",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mtdowling/cron-expression.git",
@@ -3226,58 +3372,6 @@
                 "dump"
             ],
             "time": "2017-09-15 10:36:22"
-        },
-        {
-            "name": "unicodeveloper/laravel-emoji",
-            "version": "1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/unicodeveloper/laravel-emoji.git",
-                "reference": "df5ce0b221521cf5a3850382c9487f3b80328105"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/unicodeveloper/laravel-emoji/zipball/df5ce0b221521cf5a3850382c9487f3b80328105",
-                "reference": "df5ce0b221521cf5a3850382c9487f3b80328105",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/support": "5.*",
-                "php": "^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "4.*",
-                "satooshi/php-coveralls": "^0.7.0",
-                "scrutinizer/ocular": "~1.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Unicodeveloper\\Emoji\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "unicodeveloper",
-                    "email": "prosperotemuyiwa@gmail.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A Laravel 5 Package for Using & Working With Emojis",
-            "keywords": [
-                "emoji",
-                "github",
-                "laravel",
-                "laravel 5",
-                "open source",
-                "php",
-                "unicode"
-            ],
-            "time": "2016-02-08 06:28:24"
         },
         {
             "name": "vlucas/phpdotenv",

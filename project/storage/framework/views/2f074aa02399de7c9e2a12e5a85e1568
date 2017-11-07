@@ -1,6 +1,7 @@
 <?php header( 'Content-Type: text/html; charset=utf-8' ); ?>
 <?php $__env->startSection('css'); ?>
-<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+<?php $link =  "project/vendor/emojione/sprites/emojione-sprite-".config('emojione.spriteSize').".min.css"; ?>
+<!-- <link rel="stylesheet" href="<?php echo e(asset($link)); ?>"/> -->
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('title'); ?>

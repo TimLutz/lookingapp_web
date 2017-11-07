@@ -1,6 +1,7 @@
 <?php header( 'Content-Type: text/html; charset=utf-8' ); ?>
 @section('css')
-<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
+<?php $link =  "project/vendor/emojione/sprites/emojione-sprite-".config('emojione.spriteSize').".min.css"; ?>
+<!-- <link rel="stylesheet" href="{{ asset($link) }}"/> -->
 @endsection
 @extends('admin.layout')
 @section('title')

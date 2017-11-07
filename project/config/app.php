@@ -158,7 +158,7 @@ return [
         Collective\Html\HtmlServiceProvider::class,
         Laracasts\Flash\FlashServiceProvider::class,
 		App\Providers\ValidationServiceProvider::class,
-        Unicodeveloper\Emoji\EmojiServiceProvider::class
+        ChristofferOK\LaravelEmojiOne\LaravelEmojiOneServiceProvider::class
     ],
 
     /*
@@ -210,7 +210,7 @@ return [
         'Form' => Collective\Html\FormFacade::class,
 		'Html' => Collective\Html\HtmlFacade::class,
 		'Flash' => \Laracasts\Flash\Flash::class,
-        'Emoji' => Unicodeveloper\Emoji\Facades\Emoji::class
+        'LaravelEmojiOne' => ChristofferOK\LaravelEmojiOne\LaravelEmojiOneFacade::class
     ],
 
 ];

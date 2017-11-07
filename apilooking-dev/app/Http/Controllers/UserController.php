@@ -646,7 +646,17 @@ class UserController extends Controller {
           $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where(['user_id'=>$clientId,'look_type'=>'date'])->first();
 
            /******Get result for all User with chat, profile of user********/
-          $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+          $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser'=>function($cf) use ($clientId){
+                         $cf->where(function($c) use($clientId) {
+                          $c->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'ChatToUser'=>function($ct) use ($clientId){
+                         $ct->where(function($c1) use ($clientId){
+                          $c1->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
               $q1->where(['look_type'=>'date']); }])
                        ->where(['registration_status'=>3])
                        ->whereNotIn('id',$block_id)
@@ -821,14 +831,34 @@ class UserController extends Controller {
           {
             if($type=='looking')
             {
-              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser'=>function($cf) use ($clientId){
+                         $cf->where(function($c) use($clientId) {
+                          $c->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'ChatToUser'=>function($ct) use ($clientId){
+                         $ct->where(function($c1) use ($clientId){
+                          $c1->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
                 $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
                                ->where(['id'=>$clientId])
                                ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
             }
             elseif($type=='dating')
             {
-              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser','ChatToUser','Profile'=>function($q){                $q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
+              $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser'=>function($cf) use ($clientId){
+                         $cf->where(function($c) use($clientId) {
+                          $c->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'ChatToUser'=>function($ct) use ($clientId){
+                         $ct->where(function($c1) use ($clientId){
+                          $c1->OrWhere(['from_user'=>$clientId])
+                            ->OrWhere(['to_user'=>$clientId]);
+                         });
+                       },'Profile'=>function($q){                $q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
                                 $q1->where(['look_type'=>'date']); }])
                                    ->where(['id'=>$clientId])
                                    ->select(DB::raw("( 6371 * acos( cos( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * cos( radians( users.lat ) ) * cos( radians(users.long) - radians(" . JWTAuth::parseToken()->authenticate()->long . ") ) + sin( radians(" . JWTAuth::parseToken()->authenticate()->lat . ") ) * sin( radians( users.lat ) ) ) ) AS distance , users.*"));
@@ -3746,11 +3776,11 @@ class UserController extends Controller {
               ->orWhereHas('ChatToUser',function( $query1 ) use ($clientId,$sentInvite,$data,$looksex_user_id){
                       if(!empty($sentInvite))
                       {
-                          $query1->where(['invite'=>1]);
+                        $query1->where(['invite'=>1]);
                       }
                       if(isset($data['browse']) && $data['browse']=='dating')
                       {
-                           $query1->where(['invite'=>1]);  
+                        $query1->where(['invite'=>1]);  
                       }
 
                       if(isset($data['browse']) && $data['browse']=='looking')
