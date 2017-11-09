@@ -97,7 +97,7 @@
 					<span class="arrow open"></span>
 					</a>
 					<ul class="sub-menu">
-						<!-- <li class="<?php if($active == 'free'): ?> active <?php endif; ?>"> -->
+						 <li class="<?php if($active == 'free'): ?> active <?php endif; ?>"> 
 							<a href="javascript:void(0)">
 							<a href="<?php echo e(url(getenv('adminurl').'/userrestriction')); ?>">
 							<i class="glyphicon glyphicon-pushpin"></i>
