@@ -99,7 +99,7 @@
 					<ul class="sub-menu">
 						 <li class="@if($active == 'free') active @endif"> 
 							<a href="javascript:void(0)">
-							<a href="{{ url(getenv('adminurl').'/userrestriction') }}">
+							<!-- <a href="{{ url(getenv('adminurl').'/userrestriction') }}"> -->
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Free Users</a>
 						</li>
