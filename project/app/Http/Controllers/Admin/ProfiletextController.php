@@ -81,7 +81,7 @@ class ProfiletextController extends Controller
             foreach($resultset as $value){
                 $userId = \Crypt::encrypt($value->id);
                      
-                    $status='<div class="statuscenter"><a  id="change-profiletex-status" data-table="users" data-id="'.$userId.'" data-profilestatus="'.$value->profiletext_change.'" data-action="Plans" class="current_users"><i class="fa fa-check-circle"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban"></i><a></div>';
+                    $status='<div class="statuscenter"><a  id="change-profiletex-status" data-table="users" data-id="'.$userId.'" data-profilestatus="'.$value->profiletext_change.'" data-action="Plans" class="current_users" title="Change Status to Approve"><i class="fa fa-check-circle"></i><a><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans" title="Change Status to Ban"><i class="fa fa-ban"></i><a></div>';
                 
 
                 $aboutMe = $createDate = '';

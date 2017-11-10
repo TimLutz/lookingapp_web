@@ -55,7 +55,7 @@ class UserRestrictionController extends Controller
             foreach($resultset as $value){
                 $r_Id = \Crypt::encrypt($value->id);
                     $url = url(getenv('adminurl').'/userrestriction/edit/'.$r_Id); 
-                    $status='<div class="statuscenter"><a href="'.$url.'"><i class="fa fa-pencil text-warning"></i><a></div>';
+                    $status='<div class="statuscenter"><a href="'.$url.'" title="Edit"><i class="fa fa-pencil text-warning"></i><a></div>';
                 $limit = $value->limit;    
                 if($value->limit==0)
                 {

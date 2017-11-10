@@ -55,7 +55,7 @@ class TrialController extends Controller
         foreach($resultset as $value){
             $trialId = \Crypt::encrypt($value->id);
                 $url = url(getenv('adminurl').'/trials/edit/'.$trialId);
-                $edit = '<div class="statuscenter"><a href="'.$url.'"><i class="fa fa-pencil text-warning"></i><a></div>';
+                $edit = '<div class="statuscenter"><a href="'.$url.'" title="Edit"><i class="fa fa-pencil text-warning"></i><a></div>';
             $GLOBALS['data'][] = array($i,$value->days,$edit);
             $i++;
         }

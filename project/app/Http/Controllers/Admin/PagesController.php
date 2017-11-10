@@ -101,7 +101,9 @@ class PagesController extends Controller
 								
 					
 					 $editurl = url(getenv('adminurl').'/pages/'.$userId.'/edit/');
-					$view_link = '<a href="'.$editurl.'" class="btn btn-circle btn-icon-only btn-default"><span style="color:orange" title="Edit" class="icon-pencil" aria-hidden="true"></span></a>';
+                   // $view_link = '<a href="'.$editurl.'" class="btn btn-circle btn-icon-only btn-default"><span style="color:orange" title="Edit" class="icon-pencil" aria-hidden="true"></span></a>';
+					$view_link = '<a href="'.$editurl.'" title="Edit"><l class="fa fa-pencil text-warning "></l></a>';
+
 					
 					if($task->status== '1')
 					{
