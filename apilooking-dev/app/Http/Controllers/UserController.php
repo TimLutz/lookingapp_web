@@ -1776,6 +1776,7 @@ class UserController extends Controller {
             $response['success'] = 0;
             $response['message'] = 'You have reached your Favorite limit of ' . number_format($limit) . ' guys. Please remove a Favorite if you would like to add a new one.';
             $http_status = 400;
+            return response()->json($response,$http_status);
           }
         }
         /*****Update or create favorite users******/
