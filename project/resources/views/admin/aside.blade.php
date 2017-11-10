@@ -104,16 +104,16 @@
 							Free Users</a>
 						</li>
 						<li class="@if($active == 'paid') active @endif">
-							<a href="javascript:void(0)">
-							<!-- <a href="{{ url(getenv('adminurl').'/userrestriction/paid') }}"> -->
+							<!-- <a href="javascript:void(0)"> -->
+							<a href="{{ url(getenv('adminurl').'/userrestriction/paid') }}">
 							<i class="glyphicon glyphicon-pushpin"></i>
 							Paid Users</a>
 						</li>
 					</ul>
 				</li>
 				<li class="@if(isset($active) && $active == 'trials') active @endif">
-					<!-- <a href="{{ url(getenv('adminurl').'/trials') }}"> -->
-					<a href="javascript:void(0)">
+					<a href="{{ url(getenv('adminurl').'/trials') }}">
+					<!-- <a href="javascript:void(0)"> -->
 					<i class="icon-list"></i>
 					<span class="title">
 					Trials </span>

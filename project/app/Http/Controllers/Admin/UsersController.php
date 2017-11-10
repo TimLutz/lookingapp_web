@@ -122,10 +122,10 @@ class UsersController extends Controller
 			$userId = \Crypt::encrypt($value->id);
 			if($value->status== '1')
 			{
-				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-check-circle text-success"></i><a></div>';
+				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans" title="Change Status to ban"><i class="fa fa-check-circle text-success"></i><a></div>';
 			}
 			else{
-				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger"></i><a></div>';
+				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans" title="Change Status to Unban"><i class="fa fa-ban text-danger"></i><a></div>';
 			}
 
 			$aboutMe = $createDate=$memberType = '';
@@ -390,7 +390,7 @@ class UsersController extends Controller
 			$userId = \Crypt::encrypt($value->id);
 			if($value->status== '0')
 			{
-				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans"><i class="fa fa-ban text-danger"></i><a></div>';
+				$status='<div class="statuscenter"><a  id="change-common-status" data-table="users" data-id="'.$value->id.'" data-status="'.$value->status.'" data-action="Plans" title="Change Status to Unban"><i class="fa fa-ban text-danger"></i><a></div>';
 			}
 
 			$aboutMe = $createDate=$memberType = '';

@@ -170,26 +170,33 @@ License: You must have a valid license purchased only from themeforest(the above
 				<li class="dropdown dropdown-user">
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
 						<?php
-						$photo=Auth::user()->profile_pic;
-							if($photo)
-							{
-								$url_img = asset('uploads/'.$photo);
-								$img_path = $common->setPhoto($url_img,'25','25');  ?>
-							 	<img src="{{ $img_path }}" class="img-circle" alt="User Image"/> 
-					<?php
-							}
-							else
-							{
-								$url_img = asset('uploads/no_image.jpg');
-						
-								$img_path = $common->setPhoto($url_img,'25','25');  ?>
-								<img src="{{ $url_img }}" class="img-circle" alt="User Image"/>
-						
-					<?php	}	
+						if(Auth::user())
+						{
+							$photo=Auth::user()->profile_pic;
+								if($photo)
+								{
+									$url_img = asset('uploads/'.$photo);
+									$img_path = $common->setPhoto($url_img,'25','25');  ?>
+								 	<img src="{{ $img_path }}" class="img-circle" alt="User Image"/> 
+						<?php
+								}
+								else
+								{
+									$url_img = asset('uploads/no_image.jpg');
+							
+									$img_path = $common->setPhoto($url_img,'25','25');  ?>
+									<img src="{{ $url_img }}" class="img-circle" alt="User Image"/>
+							
+						<?php	}	
+							
+						}
 						
 						?>
 					<span class="username username-hide-on-mobile">
-					{{ Auth::user()->screen_name }}</span>
+					@if(Auth::user())
+					{{ Auth::user()->screen_name }}
+					@endif
+					</span>
 					<i class="fa fa-angle-down"></i>
 					</a>
 					<ul class="dropdown-menu dropdown-menu-default">

@@ -65,3 +65,9 @@ display:none;
     color: #e85547;
     font-size: 24px;
 }
+
+.statuscenter a.current_users {
+	position: relative;
+	right: 4px;
+	/*bottom: 3px;*/
+}

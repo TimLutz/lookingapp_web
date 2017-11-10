@@ -109,7 +109,7 @@ class UserReportController extends Controller
                 $emailrece = $value->flagReceiverUser->email;
                 $userReceiver = $value->flagReceiverUser->id;
             }
-            $status='<div class="statuscenter"><a  id="change-common-archive" data-table="users" data-id="'.$r_Id.'" data-status="'.$value->archive.'" data-action="Plans"><i class="fa fa-archive"></i><a><a  id="change-common-status" data-table="users" data-id="'.$userReceiver.'" data-status="'.$value->flagReceiverUser->status.'" data-action="Plans"><i class="fa fa-check-circle text-success"></i><a></div>';
+            $status='<div class="statuscenter"><a  id="change-common-archive" data-table="users" data-id="'.$r_Id.'" data-status="'.$value->archive.'" data-action="Plans" class="current_users" title="Move to archive"><i class="fa fa-archive"></i><a><a  id="change-common-status" data-table="users" data-id="'.$userReceiver.'" data-status="'.$value->flagReceiverUser->status.'" data-action="Plans"><i class="fa fa-check-circle text-success" title="Change Status to ban"></i><a></div>';
             
             $GLOBALS['data'][] = array($i,$emailTo,$emailrece,$value->flag,date('Y-m-d H:i:s',strtotime($value->created_at)),$status);
             $i++;

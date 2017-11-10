@@ -3516,12 +3516,13 @@ class UserController extends Controller {
               $q->OrWhere('screen_name','like','%'.$data['search_value'].'%')
                 ->OrWhere('profile_id','like','%'.$data['search_value'].'%');
           });
-          $limit_type = 'Search';
+         // $limit_type = 'Search';
         }
         else
         {
-          $limit_type = 'Favorite';
+         // $limit_type = 'Favorite';
         }
+        $limit_type = 'Favorite';
         $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, $limit_type);
 
         /******Get result for all User with chat, profile of user********/
