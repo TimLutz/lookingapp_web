@@ -833,13 +833,13 @@ class UserController extends Controller {
             {
               $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser'=>function($cf) use ($clientId){
                          $cf->where(function($c) use($clientId) {
-                          $c->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                         // $c->OrWhere(['from_user'=>$clientId])
+                            $c->OrWhere(['to_user'=>$clientId]);
                          });
                        },'ChatToUser'=>function($ct) use ($clientId){
                          $ct->where(function($c1) use ($clientId){
-                          $c1->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                          $c1->OrWhere(['from_user'=>$clientId]);
+                          //  ->OrWhere(['to_user'=>$clientId]);
                          });
                        },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
                 $q1->where('start_time','<=',$current_date)->where('end_time','>=',$current_date)->where(['look_type'=>'sex']); }])
@@ -850,13 +850,13 @@ class UserController extends Controller {
             {
               $loggedInUser = $user2->whereHas('UserLooKSexType',function($q2){})                  ->with(['ChatFromUser'=>function($cf) use ($clientId){
                          $cf->where(function($c) use($clientId) {
-                          $c->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                         // $c->OrWhere(['from_user'=>$clientId])
+                            $c->OrWhere(['to_user'=>$clientId]);
                          });
                        },'ChatToUser'=>function($ct) use ($clientId){
                          $ct->where(function($c1) use ($clientId){
-                          $c1->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                          $c1->OrWhere(['from_user'=>$clientId]);
+                         //   ->OrWhere(['to_user'=>$clientId]);
                          });
                        },'Profile'=>function($q){                $q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
                                 $q1->where(['look_type'=>'date']); }])
