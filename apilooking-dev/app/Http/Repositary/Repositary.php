@@ -221,7 +221,7 @@ class Repositary
             if(!empty($value))
             {
                 $his_identity[$key]['user_id'] = $clientId;
-                $his_identity[$key]['type'] = 'his_identites';
+                $his_identity[$key]['type'] = 'his_identites';  
                 $his_identity[$key]['name'] = $value;
             }
         }
