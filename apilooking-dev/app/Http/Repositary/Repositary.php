@@ -208,16 +208,22 @@ class Repositary
     	$his_identitie = explode(',', str_replace([', ',' ,',' , '], ',', trim($his_identitie)));
     	foreach($identite AS $key => $value)
         {
-            $identity[$key]['user_id'] = $clientId;
-            $identity[$key]['type'] = 'identity';
-            $identity[$key]['name'] = $value;
+            if(!empty($value))
+            {
+                $identity[$key]['user_id'] = $clientId;
+                $identity[$key]['type'] = 'identity';
+                $identity[$key]['name'] = $value;
+            }
         }
 
         foreach($his_identitie AS $key => $value)
         {
-            $his_identity[$key]['user_id'] = $clientId;
-            $his_identity[$key]['type'] = 'his_identites';
-            $his_identity[$key]['name'] = $value;
+            if(!empty($value))
+            {
+                $his_identity[$key]['user_id'] = $clientId;
+                $his_identity[$key]['type'] = 'his_identites';
+                $his_identity[$key]['name'] = $value;
+            }
         }
 
         return $IdentityData = array_merge($identity,$his_identity); 

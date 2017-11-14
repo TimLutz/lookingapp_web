@@ -614,13 +614,13 @@ class UserController extends Controller {
                      })
                        ->with(['ChatFromUser'=>function($cf) use ($clientId){
                          $cf->where(function($c) use($clientId) {
-                          $c->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                         // $c->OrWhere(['from_user'=>$clientId])
+                            $c->OrWhere(['to_user'=>$clientId]);
                          });
                        },'ChatToUser'=>function($ct) use ($clientId){
                          $ct->where(function($c1) use ($clientId){
-                          $c1->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                          $c1->OrWhere(['from_user'=>$clientId]);
+                           // ->OrWhere(['to_user'=>$clientId]);
                          });
                        },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'])
                      ->where(['registration_status'=>3])
@@ -648,13 +648,13 @@ class UserController extends Controller {
            /******Get result for all User with chat, profile of user********/
           $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser'=>function($cf) use ($clientId){
                          $cf->where(function($c) use($clientId) {
-                          $c->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                         // $c->OrWhere(['from_user'=>$clientId])
+                            $c->OrWhere(['to_user'=>$clientId]);
                          });
                        },'ChatToUser'=>function($ct) use ($clientId){
                          $ct->where(function($c1) use ($clientId){
-                          $c1->OrWhere(['from_user'=>$clientId])
-                            ->OrWhere(['to_user'=>$clientId]);
+                          $c1->OrWhere(['from_user'=>$clientId]);
+                        //    ->OrWhere(['to_user'=>$clientId]);
                          });
                        },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
               $q1->where(['look_type'=>'date']); }])
@@ -5094,7 +5094,7 @@ class UserController extends Controller {
       [
         'image.required' => 'Please provide image.'
       ]);
-      if ($validator->fails()) {
+      if($validator->fails()) {
         $response['errors']     = $validator->errors();
         $response['success']        = 0;
         $http_status = 422;
