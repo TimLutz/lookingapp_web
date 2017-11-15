@@ -503,7 +503,7 @@ class UserController extends Controller {
         /********End*********/
         Log::info('Showing user profile for user: '.json_encode($finalArr));
       //  if(isset($finalArr['type']) && $request->Input('type')=='browse')   
-        if(isset($finalArr['type']) && ($request->Input('type')=='browse' || $request->Input('type')=='looking'))   
+        if(isset($finalArr['type']) && ($request->Input('type')=='browse' || $request->Input('type')=='looking' || $request->Input('type')=='dating'))   
         {
           /********Search By profile pic*********/
           if(isset($finalArr['profile_pic_type']) && $finalArr['profile_pic_type'] != 'Not Set')
@@ -647,7 +647,9 @@ class UserController extends Controller {
           $if_exist_looking_profile = UserLooksexdateModel::with(['Userdatesextype'])->where(['user_id'=>$clientId,'look_type'=>'date'])->first();
 
            /******Get result for all User with chat, profile of user********/
-          $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){})         ->with(['ChatFromUser'=>function($cf) use ($clientId){
+          $user = $user->whereHas('UserLooKSexType',function($q2) use ($current_date){
+                      $q2->where(['look_type'=>'date']);
+          })         ->with(['ChatFromUser'=>function($cf) use ($clientId){
                          $cf->where(function($c) use($clientId) {
                          // $c->OrWhere(['from_user'=>$clientId])
                             $c->OrWhere(['to_user'=>$clientId]);
@@ -658,7 +660,8 @@ class UserController extends Controller {
                         //    ->OrWhere(['to_user'=>$clientId]);
                          });
                        },'Profile'=>function($q){$q->select('id','user_id','identity','his_identitie','relationship_status');},'Userpartner','UserIdentity','UserLooKSexType'=>function($q1) use ($current_date){
-              $q1->where(['look_type'=>'date']); }])
+                          $q1->where(['look_type'=>'date']); 
+                         }])
                        ->where(['registration_status'=>3])
                        ->whereNotIn('id',$block_id)
                               //->where('id','!=',$clientId)
