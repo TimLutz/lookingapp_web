@@ -502,7 +502,8 @@ class UserController extends Controller {
         $limit = $common->getlimit(JWTAuth::parseToken()->authenticate()->member_type, 'Match');
         /********End*********/
         Log::info('Showing user profile for user: '.json_encode($finalArr));
-        if(isset($finalArr['type']) && $request->Input('type')=='browse')   
+      //  if(isset($finalArr['type']) && $request->Input('type')=='browse')   
+        if(isset($finalArr['type']) && ($request->Input('type')=='browse' || $request->Input('type')=='looking'))   
         {
           /********Search By profile pic*********/
           if(isset($finalArr['profile_pic_type']) && $finalArr['profile_pic_type'] != 'Not Set')
@@ -2856,8 +2857,8 @@ class UserController extends Controller {
           $clientId = JWTAuth::parseToken()->authenticate()->id;
           $data = $request->all();
           $data1 = [];
-      //    $arrphrases = explode('~~~', $data['phrases']);
-          
+         // $arrphrases = explode('~~~', $data['phrases']);
+          //print_r($data['phrases']); die;
           foreach ($data['phrases'] as $key => $value) {
             $data1[$key]['user_id'] = $clientId;
             $data1[$key]['phrases'] = $value;
