@@ -89,7 +89,15 @@ class ProfiletextController extends Controller
 
                 if(count($value->Profile))
                 {
-                    $aboutMe = $value->Profile->about_me;
+                    if(strlen($value->Profile->about_me) > 47)
+                    {
+                        $encrypt = \Crypt::encrypt($value->Profile->id);
+                        $aboutMe = substr($value->Profile->about_me,0,47)."<a href='javascript:void(0)' class='profiledata' profile='".$encrypt."'>read more..</a>";
+                    }
+                    else
+                    {
+                        $aboutMe = $value->Profile->about_me;
+                    }
                 }
 
                 if($value->profile_text_change_date)

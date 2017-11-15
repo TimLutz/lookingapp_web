@@ -115,6 +115,8 @@ Banned Users
 		<!-- End: life time stats -->
 	</div>
 </div>
+
+@include('models.profiletext')
 			<!-- END PAGE CONTENT-->
 @endsection
 @section('js')

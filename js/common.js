@@ -386,3 +386,39 @@ $(".change_multiple_status").on('click',function(){
 	});
 
 });	
+
+
+$(document).on('click','.profiledata',function(){
+		var id = $(this).attr('profile');
+		var token = $('meta[name="csrf-token"]').attr('content');
+		$.ajax({
+            type:'post',
+            url:path+adminname+'/users/profile_text',
+            data : "&type="+$(this).attr('profile') + "&_token="+token,
+            dataType:'json',
+            beforeSend: function(){
+				
+			},
+			complete: function(){
+				
+			},
+            success: function(data){
+            	
+            	$('#profiletextModal').modal('show'); 
+            	if(data.status == 1)
+            	{
+            		$('#profiletextModal .profileT').html(data.message);
+            	}
+
+            	if(data.status == 0)
+            	{
+            		alert('dnvbm');
+            	}
+
+          },
+          error : function(xttr) { 
+                 var errors = jQuery.parseJSON(xttr.responseText);
+          		showErrorMessage(errors.message);
+            }
+        }); 
+	});

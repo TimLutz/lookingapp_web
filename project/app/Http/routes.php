@@ -18,6 +18,7 @@ Route::group(['middleware' => ['backbutton']], function()
 		Route::get('/', 'Admin\AdminController@Index');
 		Route::get('users/genrateCsv','Admin\UsersController@genrateCsv');
 		Route::get('users/genrateCsv1','Admin\UsersController@genrateCsvBannedUser');
+		Route::post('users/profile_text','Admin\UsersController@postProfileText');
 		Route::post('pages/list-pages', 'Admin\PagesController@ListPages');
 		Route::controller('users','Admin\UsersController');
 		Route::controller('photos','Admin\PhotosController');

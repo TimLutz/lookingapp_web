@@ -120,6 +120,8 @@ Users
 		<!-- End: life time stats -->
 	</div>
 </div>
+
+@include('models.profiletext')
 			<!-- END PAGE CONTENT-->
 @endsection
 @section('js')
@@ -169,6 +171,7 @@ jQuery(document).ready(function() {
  
 	TableAjax.init();
 	TableAjax.update();
+    
 });
 </script>
 <script src="{{ asset('js/realtor.js') }}"></script>
