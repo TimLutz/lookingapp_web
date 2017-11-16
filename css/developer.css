@@ -68,8 +68,8 @@ display:none;
 
 .statuscenter a.current_users {
 	position: relative;
-	right: 4px;
-	/*bottom: 3px;*/
+	right: 17px;
+	bottom: 5px;
 }
 
 a.profiledata{
