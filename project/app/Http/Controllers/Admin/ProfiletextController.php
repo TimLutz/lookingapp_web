@@ -92,7 +92,7 @@ class ProfiletextController extends Controller
                     if(strlen($value->Profile->about_me) > 47)
                     {
                         $encrypt = \Crypt::encrypt($value->Profile->id);
-                        $aboutMe = substr($value->Profile->about_me,0,47)."<a href='javascript:void(0)' class='profiledata' profile='".$encrypt."'>read more..</a>";
+                        $aboutMe = substr($value->Profile->about_me,0,47)."<br><a href='javascript:void(0)' class='profiledata' profile='".$encrypt."'>read more..</a>";
                     }
                     else
                     {
