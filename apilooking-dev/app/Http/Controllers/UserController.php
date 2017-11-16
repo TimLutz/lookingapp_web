@@ -2800,7 +2800,7 @@ class UserController extends Controller {
           {
             $data['from_user'] = $clientId;
             $data['to_user'] = $data['chat_user_id'];
-            $data['invite'] = 0;
+            $data['invite'] = 2;
             $chatData  = ChatroomModel::create($data);
             if($chatData)
             {
