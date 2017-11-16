@@ -5,10 +5,11 @@
 			<div class="modal-body  profileT">
 			
 			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default statusexit" data-dismiss="modal">Ok</button>
+			<!-- <div class="modal-footer"> -->
+				<!-- <button type="button" class="btn close_btn pull-right" data-dismiss="modal">X</button> -->
+				<a href="#" class="close_btn" data-dismiss="modal"><img src="{{ asset('images/close_btn.png') }}"></a>
 				
-			</div>
+			<!-- </div> -->
 		</div>
 	</div>
 </div>
