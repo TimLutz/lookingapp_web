@@ -1,0 +1,8 @@
+
+
+					<h1><?php echo e($privacy->title); ?></h1>
+				
+					<?php echo $privacy->content; ?>
+
+			
+

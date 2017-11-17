@@ -1,12 +1,11 @@
-
 # BEGIN WordPress
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteBase /App/app/webroot/looking/
+RewriteBase /lookingApp/looking/
 RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /App/app/webroot/looking/index.php [L]
+RewriteRule . /lookingApp/looking/index.php [L]
 </IfModule>
 
 # END WordPress
