@@ -50,7 +50,6 @@ class UserController extends Controller {
 	protected $hashKey;
 	
 	public function __construct(Request $request){      
-
       /******Update User last seen*******/  
       $headerAuth = $request->header('Authorization');
       if($headerAuth)
@@ -819,6 +818,7 @@ class UserController extends Controller {
              {
                $user_data[$key]['chatroomid'] = $value->ChatToUser->id;
              }
+             $user_data[$key]['lastseen'] = $value->last_seen;
           }
 
           /********End******** */
@@ -942,6 +942,7 @@ class UserController extends Controller {
                 {
                   $loggedInUser[$key1]['last_seen'] = 2;
                 }
+                $user_data[$key]['lastseen'] = $value->last_seen;
                 $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
 
                 $loggedInUser[$key1]['chatroomid'] = '';
