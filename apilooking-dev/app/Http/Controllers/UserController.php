@@ -938,7 +938,7 @@ class UserController extends Controller {
                 }
                 if(!empty($value1->last_seen))
                 {
-                  $loggedInUser[$key1]['lastseen'] = $value->last_seen;
+                  $loggedInUser[$key1]['lastseen'] = $value1->last_seen;
                   $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
                 }
                 else
