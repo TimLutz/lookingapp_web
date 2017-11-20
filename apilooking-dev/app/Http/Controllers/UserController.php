@@ -801,13 +801,13 @@ class UserController extends Controller {
             }
             if(!empty($value->last_seen))
             {
-              $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
               $user_data[$key]['lastseen'] = $value->last_seen;
+              $user_data[$key]['last_seen'] = $common->check_difference_in_hours($value->last_seen);
             }
             else
             {
-              $user_data[$key]['last_seen'] = 2;
               $user_data[$key]['lastseen'] = '0000-00-00 00:00:00';
+              $user_data[$key]['last_seen'] = 2;
             }
             $user_data[$key]['looking_profile_active'] = $common->check_profile_active($current_date, $value['User']['id']);
              $accuracy_value[] = $value['accuracy'];
@@ -938,13 +938,13 @@ class UserController extends Controller {
                 }
                 if(!empty($value1->last_seen))
                 {
-                  $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
                   $loggedInUser[$key1]['lastseen'] = $value->last_seen;
+                  $loggedInUser[$key1]['last_seen'] = $common->check_difference_in_hours($value1->last_seen);
                 }
                 else
                 {
-                  $loggedInUser[$key1]['last_seen'] = 2;
                   $loggedInUser[$key1]['lastseen'] = '0000-00-00 00:00:00';
+                  $loggedInUser[$key1]['last_seen'] = 2;
                 }
                 $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
 
