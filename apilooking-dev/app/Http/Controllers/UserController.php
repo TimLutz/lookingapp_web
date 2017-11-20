@@ -944,7 +944,7 @@ class UserController extends Controller {
                 else
                 {
                   $loggedInUser[$key1]['last_seen'] = 2;
-                  $loggedInUser[$key1]['last_seen'] = '0000-00-00 00:00:00';
+                  $loggedInUser[$key1]['lastseen'] = '0000-00-00 00:00:00';
                 }
                 $loggedInUser[$key1]['looking_profile_active'] = $common->check_profile_active($current_date, $value1['User']['id']);
 
