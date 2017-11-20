@@ -1074,7 +1074,7 @@ class UserController extends Controller {
           }
 
           /*******Get user profile data************/
-          $profile = User::with(['Profile','UserIdentity'=>function($q){ $q->groupBy('type')->select(DB::raw("user_id,type,GROUP_CONCAT(name) AS name")); }])->where(array('id'=>$viewer_id))->first();
+          $profile = User::with(['Profile'=>function($qq){ $qq->select(DB::raw("FLOOR(DATEDIFF (NOW(), profiles.birthday)/365) AS Age,profiles.*")); },'UserIdentity'=>function($q){ $q->groupBy('type')->select(DB::raw("user_id,type,GROUP_CONCAT(name) AS name")); }])->where(array('id'=>$viewer_id))->first();
 
           if(count($profile))
           {
@@ -1354,6 +1354,7 @@ class UserController extends Controller {
               }
               $profile['profile']['identity'] = $ide;
               $profile['profile']['his_identitie'] = $hisitde;
+              $profile['profile']['age'] = $profile['Profile']['Age'];
             }
 
             /*************User Itdentity*******************/

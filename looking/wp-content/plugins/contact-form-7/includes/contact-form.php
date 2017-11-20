@@ -622,6 +622,9 @@ class WPCF7_ContactForm {
 			$result['invalid_fields'] = $submission->get_invalid_fields();
 		}
 
+		
+
+	    
 		if ( $submission->is( 'mail_sent' ) ) {
 			if ( $ajax ) {
 				$on_sent_ok = $this->additional_setting( 'on_sent_ok', false );
@@ -630,6 +633,15 @@ class WPCF7_ContactForm {
 					$result['scripts_on_sent_ok'] = array_map(
 						'wpcf7_strip_quote', $on_sent_ok );
 				}
+				$name = $_POST['your-name'];
+				$email = $_POST['your-email'];
+		        $phone = $_POST['Phone'];
+		        $message = $_POST['your-message'];
+		        $subject = $_POST['your-subject'];
+		        global $wpdb;
+
+			    $table_name = "contactus";
+			    $wpdb->insert($table_name, array('id'=>null,'name' => $name, 'email' => $email,'message'=>$message,'phone'=>$phone,'subject'=>$subject,'created_at'=>date('Y-m-d H:i:s'),'updated_at'=>date('Y-m-d H:i:s'),'status'=>1),array('%s','%s','%s','%d','%s','%s','%s'));
 			}
 		}
 

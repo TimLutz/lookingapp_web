@@ -40,7 +40,6 @@ class WPCF7_Mail {
 	private function compose( $send = true ) {
 		$template = $this->template;
 		$use_html = (bool) $template['use_html'];
-
 		$subject = $this->replace_tags( $template['subject'] );
 		$sender = $this->replace_tags( $template['sender'] );
 		$recipient = $this->replace_tags( $template['recipient'] );

@@ -30,7 +30,7 @@ Route::group(['middleware' => ['backbutton']], function()
 		Route::controller('auth', 'Admin\AdminauthController');
 		Route::controller('dashboard', 'Admin\AdminController');
 		Route::controller('password', 'Admin\AdminPasswordController');
-		Route::controller('password', 'Admin\AdminPasswordController');
+		Route::controller('contact', 'Admin\ContactusController');
 		Route::resource('template', 'Admin\TemplateController');
 		Route::resource('pages', 'Admin\PagesController');
 	});
