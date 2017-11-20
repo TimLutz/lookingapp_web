@@ -1121,10 +1121,12 @@ class UserController extends Controller {
             $Userdetails['User_Lookdate_Profile_Active'] = array();
             if(!empty($profile->last_seen))
             {
+              $Userdetails['lastseen'] = $profile->last_seen;
               $Userdetails['last_seen'] = $common->check_difference_in_hours($profile->last_seen);
             }
             else
             {
+              $Userdetails['lastseen'] = '0000-00-00 00:00:00';
               $Userdetails['last_seen'] = 2;
             }
 
